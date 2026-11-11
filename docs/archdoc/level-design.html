@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Level Progression & Room Design · REBOUND</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-page="level-design.html">
+  <header class="site-header">
+    <div class="site-header-left">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-controls="site-sidebar" aria-expanded="true">
+        <span>☰</span> <span>Menu</span>
+      </button>
+      <a href="index.html" class="site-title-link">REBOUND Architecture Docs</a>
+    </div>
+    <div class="site-header-right">
+      <button type="button" onclick="window.print()" class="search-trigger" aria-label="Print or export as PDF"><span>Print</span> <kbd>⌘P</kbd></button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">🌓 Auto</button>
+    </div>
+  </header>
+
+  <div class="site-layout">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Sidebar navigation"></aside>
+
+    <main class="site-main">
+      <div class="wrap">
+        <header>
+          <div class="eyebrow">Level Architecture · Room Progression</div>
+          <h1>Level Architecture & Room Progression</h1>
+          <p class="meta prose">A room-by-room blueprint for REBOUND's seven test chambers. Explains how each room teaches one clear mechanic using a reusable modular prefab kit.</p>
+        </header>
+
+        <!-- Level Philosophy -->
+        <section id="philosophy">
+          <h2>Level Design Core Principles</h2>
+          <p class="prose">
+            REBOUND borrows the proven puzzle design philosophy seen in games like <em>Portal 2</em>: the environment itself teaches the player what to do. The player should never need a text box or voiceover explaining the solution.
+          </p>
+
+          <div class="grid2">
+            <div class="box">
+              <h3>Core Principles</h3>
+              <ul>
+                <li><strong>Immediate Objective:</strong> When stepping into a room, the player must immediately spot the exit door and the obstacle in between.</li>
+                <li><strong>One Lesson Per Chamber:</strong> Introduce only one new mechanic or combination per room.</li>
+                <li><strong>Safe Play Area:</strong> Place movable objects in a safe starting area where the player can test their powers before risking a fall.</li>
+                <li><strong>Instant Recovery:</strong> If the player misses a jump and falls into a hazard pit, teleport them back to the entrance immediately. Never force a full game restart.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>Banned Level Anti-Patterns</h3>
+              <ul>
+                <li><strong>No Invisible Rules:</strong> Never hide keys or triggers in obscure corners without visual clues.</li>
+                <li><strong>No Blind Leaps:</strong> The destination platform must always be visible before jumping.</li>
+                <li><strong>No Empty Corridors:</strong> Avoid long, boring hallways that add walking time without gameplay.</li>
+                <li><strong>No Irreversible Softlocks:</strong> If an object falls into a pit, it must respawn automatically at its starting point.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Seven Room Campaign -->
+        <section id="campaign-rooms">
+          <h2>The 7-Room Progression Matrix</h2>
+          <p class="prose">
+            The campaign is organized into seven sequential rooms that systematically build player skill:
+          </p>
+
+          <!-- ROOM 1 BLUEPRINT -->
+          <article class="endpoint-card" style="margin: 20px 0;">
+            <div class="endpoint-header">
+              <span class="step-pill" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; color: #fff; background: var(--accent);">ROOM 1</span>
+              <strong style="font-size: 1.1rem;">Learn Pull: Bridging the 3-Meter Gap</strong>
+              <span class="pill" style="border-color: var(--accent); color: var(--accent);">Goal: Pull crate into chasm to walk across</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="920" viewBox="0 0 920 170" role="img" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="r1-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/></marker>
+                    <marker id="r1-arr-ok" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--ok)"/></marker>
+                  </defs>
+                  <rect class="bg" width="920" height="170"/>
+
+                  <!-- Start Platform -->
+                  <rect class="zone" x="20" y="25" width="220" height="120" rx="8"/>
+                  <circle cx="70" cy="85" r="18" class="player"/>
+                  <text class="player-t" x="70" y="90" text-anchor="middle">YOU</text>
+                  <text class="title-lg" x="140" y="80">Start Ledge</text>
+                  <text class="text-sub" x="140" y="100">Safe testing area</text>
+
+                  <!-- 3m Hazard Gap -->
+                  <rect class="hazard" x="260" y="25" width="220" height="120" rx="8"/>
+                  <text class="hazard-t" x="370" y="80" text-anchor="middle">3m HAZARD PIT</text>
+                  <text class="text-sub" x="370" y="100" text-anchor="middle" style="fill:var(--crit)">Falling resets player in 1 sec</text>
+
+                  <!-- Target Crate pulled into gap -->
+                  <rect class="crate" x="345" y="60" width="50" height="50" rx="6" stroke-dasharray="4 3"/>
+                  <text class="text-sub" x="370" y="125" text-anchor="middle">Crate fills gap</text>
+
+                  <!-- Far Platform with Crate & Exit -->
+                  <rect class="zone" x="500" y="25" width="400" height="120" rx="8"/>
+
+                  <!-- Initial crate position -->
+                  <rect class="crate" x="530" y="60" width="50" height="50" rx="6"/>
+                  <text class="crate-t" x="555" y="89" text-anchor="middle">BOX</text>
+
+                  <!-- Pull Action Arrow -->
+                  <path d="M 530 85 L 405 85" class="ln acc" stroke-width="3" marker-end="url(#r1-arr)"/>
+                  <text class="tag" x="468" y="75" text-anchor="middle" style="fill:var(--accent)">1. HOLD LEFT CLICK TO PULL</text>
+
+                  <!-- Walk Path across crate to door -->
+                  <path d="M 90 120 Q 370 145 780 85" class="ln acc" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#r1-arr-ok)"/>
+                  <text class="tag" x="660" y="135" text-anchor="middle" style="fill:var(--ok)">2. WALK ACROSS TO EXIT</text>
+
+                  <!-- Exit Door -->
+                  <rect class="door" x="780" y="45" width="80" height="80" rx="8"/>
+                  <text class="title-lg" x="820" y="88" text-anchor="middle" style="fill:var(--ok)">EXIT</text>
+                  <text class="text-sub" x="820" y="106" text-anchor="middle" style="fill:var(--ok)">OPEN</text>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <!-- ROOM 2 BLUEPRINT -->
+          <article class="endpoint-card" style="margin: 20px 0;">
+            <div class="endpoint-header">
+              <span class="step-pill" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; color: #fff; background: var(--high);">ROOM 2</span>
+              <strong style="font-size: 1.1rem;">Learn Push: Activating the Floor Switch</strong>
+              <span class="pill" style="border-color: var(--high); color: var(--high);">Goal: Blast crate onto floor plate to unlock exit</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="920" viewBox="0 0 920 170" role="img" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="r2-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--high)"/></marker>
+                  </defs>
+                  <rect class="bg" width="920" height="170"/>
+
+                  <!-- Solid Room Floor -->
+                  <rect class="zone" x="20" y="25" width="880" height="120" rx="8"/>
+
+                  <!-- Player Spawn -->
+                  <circle cx="80" cy="85" r="18" class="player"/>
+                  <text class="player-t" x="80" y="90" text-anchor="middle">YOU</text>
+
+                  <!-- Crate in front of player -->
+                  <rect class="crate" x="220" y="60" width="50" height="50" rx="6"/>
+                  <text class="crate-t" x="245" y="89" text-anchor="middle">BOX</text>
+
+                  <!-- Push Action Arrow -->
+                  <path d="M 270 85 L 475 85" class="ln acc" stroke-width="3" style="stroke:var(--high);" marker-end="url(#r2-arr)"/>
+                  <text class="tag" x="370" y="75" text-anchor="middle" style="fill:var(--high)">1. TAP RIGHT CLICK (PUSH BLAST)</text>
+
+                  <!-- Floor Pressure Switch -->
+                  <rect class="plate" x="490" y="55" width="60" height="60" rx="8"/>
+                  <text class="plate-t" x="520" y="85" text-anchor="middle">SWITCH</text>
+                  <text class="text-sub" x="520" y="103" text-anchor="middle">Weighted</text>
+
+                  <!-- Glowing Wire to Door -->
+                  <path d="M 550 85 H 770" class="ln" stroke-width="2.5" stroke-dasharray="4 3" style="stroke:var(--ok);"/>
+                  <text class="tag" x="660" y="75" text-anchor="middle" style="fill:var(--ok)">2. WIRE UNLOCKS DOOR</text>
+
+                  <!-- Exit Door -->
+                  <rect class="door" x="780" y="45" width="80" height="80" rx="8"/>
+                  <text class="title-lg" x="820" y="88" text-anchor="middle" style="fill:var(--ok)">DOOR</text>
+                  <text class="text-sub" x="820" y="106" text-anchor="middle" style="fill:var(--ok)">UNLOCKED</text>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <!-- ROOM 3 BLUEPRINT -->
+          <article class="endpoint-card" style="margin: 20px 0;">
+            <div class="endpoint-header">
+              <span class="step-pill" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; color: #fff; background: var(--crit);">ROOM 3</span>
+              <strong style="font-size: 1.1rem;">Learn Recoil: The Rocket Jump Leap</strong>
+              <span class="pill" style="border-color: var(--crit); color: var(--crit);">Goal: Boost across a 6m chasm using push recoil</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="920" viewBox="0 0 920 170" role="img" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="r3-arr-recoil" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--ok)"/></marker>
+                    <marker id="r3-arr-blast" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--crit)"/></marker>
+                  </defs>
+                  <rect class="bg" width="920" height="170"/>
+
+                  <!-- Start Platform -->
+                  <rect class="zone" x="20" y="25" width="220" height="120" rx="8"/>
+                  <circle cx="70" cy="85" r="18" class="player"/>
+                  <text class="player-t" x="70" y="90" text-anchor="middle">YOU</text>
+                  <text class="title-lg" x="140" y="75">1. Run &amp; Jump</text>
+                  <text class="text-sub" x="140" y="95">Normal jump = 3m max</text>
+
+                  <!-- 6m Wide Hazard Chasm -->
+                  <rect class="hazard" x="260" y="25" width="380" height="120" rx="8"/>
+                  <text class="hazard-t" x="450" y="135" text-anchor="middle">6m WIDE CHASM (TOO FAR TO JUMP NORMALLY)</text>
+
+                  <!-- Mid-Air Boost Action -->
+                  <circle cx="360" cy="65" r="16" class="player" style="fill:var(--accent);"/>
+                  <text class="player-t" x="360" y="70" text-anchor="middle">YOU</text>
+
+                  <!-- Blast shoots backward/down -->
+                  <line x1="350" y1="75" x2="300" y2="115" class="ln bad" stroke-width="2.5" marker-end="url(#r3-arr-blast)"/>
+                  <text class="tag" x="300" y="130" text-anchor="middle" style="fill:var(--crit)">AIM DOWN</text>
+
+                  <!-- Recoil boost trajectory arc across pit -->
+                  <path d="M 375 60 Q 520 20 680 75" class="ln acc" stroke-width="3" stroke-dasharray="4 3" marker-end="url(#r3-arr-recoil)"/>
+                  <text class="tag" x="520" y="35" text-anchor="middle" style="fill:var(--ok)">2. RECOIL LAUNCHES YOU ACROSS CHASM</text>
+
+                  <!-- Exit Platform -->
+                  <rect class="zone" x="660" y="25" width="240" height="120" rx="8"/>
+                  <text class="title-lg" x="720" y="75">3. Land Safely</text>
+                  <text class="text-sub" x="720" y="95">Reach exit door</text>
+
+                  <!-- Exit Door -->
+                  <rect class="door" x="800" y="45" width="80" height="80" rx="8"/>
+                  <text class="title-lg" x="840" y="88" text-anchor="middle" style="fill:var(--ok)">EXIT</text>
+                  <text class="text-sub" x="840" y="106" text-anchor="middle" style="fill:var(--ok)">GOAL</text>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <!-- ROOM 4 BLUEPRINT -->
+          <article class="endpoint-card" style="margin: 20px 0;">
+            <div class="endpoint-header">
+              <span class="step-pill" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; color: #fff; background: var(--ok);">ROOM 4</span>
+              <strong style="font-size: 1.1rem;">Learn Slow Motion: Timing the Speed Trap</strong>
+              <span class="pill" style="border-color: var(--ok); color: var(--ok);">Goal: Slow down the sliding hazard to walk through safely</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="920" viewBox="0 0 920 170" role="img" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="r4-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--ok)"/></marker>
+                  </defs>
+                  <rect class="bg" width="920" height="170"/>
+
+                  <!-- Start Zone -->
+                  <rect class="zone" x="20" y="25" width="200" height="120" rx="8"/>
+                  <circle cx="70" cy="85" r="18" class="player"/>
+                  <text class="player-t" x="70" y="90" text-anchor="middle">YOU</text>
+                  <text class="title-lg" x="135" y="75">Wait Zone</text>
+                  <text class="text-sub" x="135" y="95">Safe from trap</text>
+
+                  <!-- Trap Zone with Rapid Sliding Barrier -->
+                  <rect class="hazard" x="240" y="25" width="420" height="120" rx="8"/>
+                  
+                  <!-- Sliding Barrier -->
+                  <rect class="crate" x="380" y="35" width="140" height="40" rx="6" style="fill:rgba(194, 54, 43, 0.25); stroke:var(--crit);"/>
+                  <text class="title-lg" x="450" y="60" text-anchor="middle" style="fill:var(--crit)">CRUSHER ◄►</text>
+                  <text class="hazard-t" x="450" y="95" text-anchor="middle">NORMAL SPEED: SLAMS EVERY 0.6 SECONDS (LETHAL)</text>
+
+                  <!-- Slow Motion Active Indicator -->
+                  <rect class="soft" x="260" y="105" width="380" height="30" rx="4" style="stroke:var(--ok);"/>
+                  <text class="tag" x="450" y="125" text-anchor="middle" style="fill:var(--ok)">HOLD LEFT SHIFT: TRAP SLOWS TO 2.4s (SAFE 4x WINDOW)</text>
+
+                  <!-- Player Safe Walking Path -->
+                  <path d="M 90 85 H 770" class="ln acc" stroke-width="2.5" stroke-dasharray="4 3" marker-end="url(#r4-arr)"/>
+
+                  <!-- Exit Zone -->
+                  <rect class="zone" x="680" y="25" width="220" height="120" rx="8"/>
+                  <rect class="door" x="780" y="45" width="80" height="80" rx="8"/>
+                  <text class="title-lg" x="820" y="88" text-anchor="middle" style="fill:var(--ok)">EXIT</text>
+                  <text class="text-sub" x="820" y="106" text-anchor="middle" style="fill:var(--ok)">SAFE</text>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <!-- ROOM 5 BLUEPRINT -->
+          <article class="endpoint-card" style="margin: 20px 0;">
+            <div class="endpoint-header">
+              <span class="step-pill" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; color: #fff; background: var(--accent);">ROOM 5</span>
+              <strong style="font-size: 1.1rem;">Combine Hands: Simultaneous Dual Coordination</strong>
+              <span class="pill" style="border-color: var(--accent); color: var(--accent);">Goal: Pull high crate with Left Hand while blasting gate with Right Hand</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="920" viewBox="0 0 920 170" role="img" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="r5-arr-pull" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/></marker>
+                    <marker id="r5-arr-push" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill:var(--high)"/></marker>
+                  </defs>
+                  <rect class="bg" width="920" height="170"/>
+
+                  <!-- Solid Chamber Floor -->
+                  <rect class="zone" x="20" y="25" width="880" height="120" rx="8"/>
+
+                  <!-- Left Hand Action: High Ledge Crate & Floor Switch -->
+                  <rect class="soft" x="40" y="35" width="150" height="50" rx="6"/>
+                  <text class="tag" x="115" y="52" text-anchor="middle">HIGH WALL SHELF</text>
+                  <rect class="crate" x="90" y="58" width="35" height="22" rx="3"/>
+                  <text class="text-mono" x="107" y="74" text-anchor="middle">BOX</text>
+
+                  <!-- Pull Line down to switch -->
+                  <path d="M 125 70 Q 230 65 310 85" class="ln acc" stroke-width="2.5" marker-end="url(#r5-arr-pull)"/>
+                  <text class="tag" x="180" y="105" text-anchor="middle" style="fill:var(--accent)">1. LEFT HAND: PULL DOWN</text>
+
+                  <!-- Floor Switch for High Crate -->
+                  <rect class="plate" x="310" y="60" width="50" height="50" rx="6"/>
+                  <text class="plate-t" x="335" y="89" text-anchor="middle">SWITCH</text>
+
+                  <!-- Player in center using both hands -->
+                  <circle cx="460" cy="85" r="20" class="player"/>
+                  <text class="player-t" x="460" y="90" text-anchor="middle">YOU</text>
+                  <text class="text-sub" x="460" y="125" text-anchor="middle">Both Hands Active</text>
+
+                  <!-- Right Hand Action: Blast Doorway Gate -->
+                  <path d="M 485 85 H 660" class="ln acc" stroke-width="2.5" style="stroke:var(--high);" marker-end="url(#r5-arr-push)"/>
+                  <text class="tag" x="575" y="75" text-anchor="middle" style="fill:var(--high)">2. RIGHT HAND: BLAST GATE</text>
+
+                  <!-- Blocking Gate -->
+                  <rect class="crate" x="670" y="50" width="30" height="70" rx="4" style="fill:rgba(196, 106, 16, 0.25); stroke:var(--high);"/>
+                  <text class="crate-t" x="685" y="89" text-anchor="middle" transform="rotate(-90 685 89)">GATE</text>
+
+                  <!-- Wire from Switch to Door -->
+                  <path d="M 335 110 V 135 H 770 V 105" class="ln dash" stroke-width="2" style="stroke:var(--ok);"/>
+
+                  <!-- Exit Door -->
+                  <rect class="door" x="780" y="45" width="80" height="80" rx="8"/>
+                  <text class="title-lg" x="820" y="88" text-anchor="middle" style="fill:var(--ok)">EXIT</text>
+                  <text class="text-sub" x="820" y="106" text-anchor="middle" style="fill:var(--ok)">UNLOCKED</text>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Room #</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Teaching Objective</th>
+                  <th class="col-auto">Room Layout & Physical Challenge</th>
+                  <th class="col-lg">Intended Player Action & Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Room 1</strong></td>
+                  <td><strong>Learn Pull</strong></td>
+                  <td>The player starts on a platform separated from the exit by a 3-metre gap. A movable crate sits on the far platform.</td>
+                  <td>Player aims at the crate, holds Left Click to pull it into the gap, creating a bridge to walk across and exit.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 2</strong></td>
+                  <td><strong>Learn Push</strong></td>
+                  <td>The exit door is locked. A heavy floor pressure plate is visible to the side, and a medium crate rests in the center.</td>
+                  <td>Player positions themselves behind the crate, taps Right Click to push it onto the pressure plate, triggering the door open.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 3</strong></td>
+                  <td><strong>Learn Recoil</strong></td>
+                  <td>A 6-metre gap separates the player from the exit ledge. The gap is too wide for a standard jump. No movable objects exist in the room.</td>
+                  <td>Player sprints forward, jumps into the air, and taps Right Click aiming backward/downward. The recoil impulse boosts the player across the chasm.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 4</strong></td>
+                  <td><strong>Learn Slow Motion</strong></td>
+                  <td>A fast hydraulic barrier slides rapidly across the walkway every 0.6 seconds, knocking anyone who steps through into a reset pit.</td>
+                  <td>Player holds Left Shift to slow time by 75%. The barrier slows down noticeably, allowing the player to walk safely past during the opening.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 5</strong></td>
+                  <td><strong>Combine Pull & Push</strong></td>
+                  <td>A heavy barrier blocks the doorway, while a crate sits on a high ledge. The player must clear the door and weigh down a switch simultaneously.</td>
+                  <td>Player holds Left Click to pull the crate off the ledge, while simultaneously tapping Right Click with the right hand to blast the barrier away.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 6</strong></td>
+                  <td><strong>Combine All Abilities</strong></td>
+                  <td>A moving platform oscillates across a vast pit. An essential crate is falling from a ceiling chute.</td>
+                  <td>Player activates Slow Motion, catches the falling crate with Pull, leaps toward the moving platform, and uses Push Recoil to ensure a safe landing.</td>
+                </tr>
+                <tr>
+                  <td><strong>Room 7</strong></td>
+                  <td><strong>Final Mastery Chamber</strong></td>
+                  <td>A multi-stage test chamber featuring a timed moving platform, two weighted switches, and a high exit ledge requiring recoil jumping.</td>
+                  <td>Mastery test: Pulling crates onto switches, timing slow-motion runs across moving platforms, and executing an aerial recoil boost to reach the final exit.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Reusable Prefab Kit -->
+        <section id="modular-kit">
+          <h2>The Reusable Modular Prefab Kit</h2>
+          <p class="prose">
+            Person 3 (Environment Lead) must build these standardized prefabs first. Every room in the game is assembled using this modular kit:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Prefab Category</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Prefab Name</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Standard Dimensions</th>
+                  <th class="col-auto">Physics & Script Properties</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>Structural</code></td>
+                  <td><code>FloorTile_4x4</code></td>
+                  <td>4m × 0.5m × 4m</td>
+                  <td>Static BoxCollider. Snaps to 4m grid. Layer: <code>Environment</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>Structural</code></td>
+                  <td><code>WallSection_4x4</code></td>
+                  <td>4m × 4m × 0.5m</td>
+                  <td>Static BoxCollider. Blocks ability raycasts. Layer: <code>Environment</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>Structural</code></td>
+                  <td><code>Ramp_4x2</code></td>
+                  <td>4m × 2m × 4m (30° slope)</td>
+                  <td>Walkable slope. Capsule controller traverses smoothly. Layer: <code>Environment</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>Interactive</code></td>
+                  <td><code>Crate_Light</code></td>
+                  <td>1m × 1m × 1m</td>
+                  <td>Rigidbody (mass = 2.0kg), <code>AbilityTarget</code> (CanPull=true, CanPush=true). Easily moved.</td>
+                </tr>
+                <tr>
+                  <td><code>Interactive</code></td>
+                  <td><code>Crate_Medium</code></td>
+                  <td>1.5m × 1.5m × 1.5m</td>
+                  <td>Rigidbody (mass = 10.0kg), <code>AbilityTarget</code> (CanPull=true, CanPush=true). Standard puzzle block.</td>
+                </tr>
+                <tr>
+                  <td><code>Interactive</code></td>
+                  <td><code>Block_Heavy</code></td>
+                  <td>2m × 2m × 2m</td>
+                  <td>Rigidbody (mass = 50.0kg), <code>AbilityTarget</code> (slow pull, minimal push displacement).</td>
+                </tr>
+                <tr>
+                  <td><code>Interactive</code></td>
+                  <td><code>PressurePlate</code></td>
+                  <td>2m × 0.2m × 2m</td>
+                  <td>Trigger collider. Detects <code>AbilityTarget</code> overlap; fires UnityEvent to open linked door.</td>
+                </tr>
+                <tr>
+                  <td><code>Interactive</code></td>
+                  <td><code>MovingPlatform</code></td>
+                  <td>3m × 0.5m × 3m</td>
+                  <td>Kinematic Rigidbody with waypoint ping-pong script. Responds to slow-motion time scaling.</td>
+                </tr>
+                <tr>
+                  <td><code>System</code></td>
+                  <td><code>ExitDoor</code></td>
+                  <td>2m × 3m × 0.5m</td>
+                  <td>Sliding door visual with <code>LevelExit.cs</code> trigger behind it. Illuminates green when unlocked.</td>
+                </tr>
+                <tr>
+                  <td><code>System</code></td>
+                  <td><code>HazardPit</code></td>
+                  <td>Variable width × 1m</td>
+                  <td>Trigger collider on <code>Hazards</code> layer. Resets player position to room start on contact.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Room Design Evaluation Checklist -->
+        <section id="room-checklist">
+          <h2>Room Design Evaluation Checklist</h2>
+          <p class="prose">
+            Before adding a room to the official build, the level designer must test it against these ten questions:
+          </p>
+
+          <div class="box">
+            <ol style="margin: 0; padding-left: 24px;">
+              <li><strong>Is the exit door visible from the room start?</strong> (If not, add overhead lighting or directional signs).</li>
+              <li><strong>Can the player clearly tell which objects are movable?</strong> (Verify all interactables have emissive trim or colored materials).</li>
+              <li><strong>Does the room teach only one primary concept?</strong> (Avoid combining two new mechanics in the same room).</li>
+              <li><strong>Can the player experiment safely before attempting a risky maneuver?</strong></li>
+              <li><strong>If an object drops into a pit, does it respawn automatically?</strong></li>
+              <li><strong>Does falling into a pit reset the player cleanly within 1 second?</strong></li>
+              <li><strong>Can the room be solved without exploiting glitches?</strong></li>
+              <li><strong>Is the intended jump distance comfortable with a standard recoil blast?</strong></li>
+              <li><strong>Does slow motion provide an obvious, tangible advantage?</strong></li>
+              <li><strong>Has someone who did not build the room completed it without verbal hints?</strong></li>
+            </ol>
+          </div>
+        </section>
+
+        <footer class="site-footer">
+          <p>REBOUND Game Architecture Documentation · Year 3 Game Development Project · 2026</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/nav.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>

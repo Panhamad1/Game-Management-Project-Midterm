@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Overview & ADRs · REBOUND Architecture</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body data-root="./" data-page="index.html">
+    <header class="site-header">
+      <div class="site-header-left">
+        <button
+          type="button"
+          class="sidebar-toggle"
+          id="sidebar-toggle"
+          aria-label="Toggle navigation"
+          aria-controls="site-sidebar"
+          aria-expanded="true"
+        >
+          <span>☰</span> <span>Menu</span>
+        </button>
+        <a href="index.html" class="site-title-link"
+          >REBOUND Architecture Docs</a
+        >
+      </div>
+      <div class="site-header-right">
+        <button
+          type="button"
+          onclick="window.print()"
+          class="search-trigger"
+          aria-label="Print or export as PDF"
+        >
+          <span>Print</span> <kbd>⌘P</kbd>
+        </button>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Toggle light/dark theme"
+        >
+          🌓 Auto
+        </button>
+      </div>
+    </header>
+
+    <div class="site-layout">
+      <div class="sidebar-backdrop" aria-hidden="true"></div>
+      <aside
+        class="site-sidebar"
+        id="site-sidebar"
+        aria-label="Sidebar navigation"
+      ></aside>
+
+      <main class="site-main">
+        <div class="wrap">
+          <header>
+            <div class="eyebrow">Architecture Specification · Core System</div>
+            <h1>REBOUND System Overview & Design Records</h1>
+            <p class="meta prose">
+              A complete technical and design reference for REBOUND, a
+              first-person physics puzzle and movement game built in Unity for a
+              four-person student team.
+            </p>
+          </header>
+
+          <!-- DO FIRST BANNER -->
+          <section id="critical-gate">
+            <div class="do-first-banner">
+              <div>
+                <strong
+                  >DO FIRST → Confirm Four Technical Decisions Before Writing
+                  Code</strong
+                >
+                <p class="prose" style="margin: 4px 0 0; font-size: 0.92rem">
+                  The team must lock these four foundational settings before
+                  creating scenes or scripts:
+                  <strong>1. Unity Version & Render Pipeline</strong> (agree on
+                  one LTS version, e.g. 2022.3 LTS with URP);
+                  <strong>2. Rigidbody Player Controller</strong> (standard
+                  CharacterController blocks physics recoil);
+                  <strong>3. Time Scale Strategy</strong> (test global
+                  <code>Time.timeScale</code> vs custom fixed delta);
+                  <strong>4. Shared Git Repository</strong> (commit
+                  <code>Assets</code> and <code>ProjectSettings</code>, ignore
+                  <code>Library/</code> and <code>Temp/</code>).
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Core Concept Section -->
+          <section id="core-concept">
+            <h2>1. What is REBOUND?</h2>
+            <p class="prose">
+              REBOUND is a single-player, first-person physics puzzle and
+              movement game. The player wakes up in a compact testing facility
+              and must reach the exit door of each room. Rather than fighting
+              enemies or shooting weapons, the player manipulates objects and
+              their own momentum using three abilities:
+            </p>
+
+            <div class="scroll">
+              <table class="wide">
+                <thead>
+                  <tr>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Ability
+                    </th>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Physical Input
+                    </th>
+                    <th class="col-auto">Core Mechanic & Physics Action</th>
+                    <th class="col-lg">Gameplay Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Left Click: Push (Wind Blast)</strong></td>
+                    <td><code>Click Left Mouse Button (LMB)</code></td>
+                    <td>
+                      Shoots a compressed air blast that shoves objects forward, and kicks the player backward with 3D rocket recoil.
+                    </td>
+                    <td>
+                      Pushes blocks onto buttons, launches the player across pits, and deflects incoming enemy rockets.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Right Click: Pull (Vacuum Vortex)</strong></td>
+                    <td><code>Hold Right Mouse Button (RMB)</code></td>
+                    <td>
+                      Creates a suction vortex that reels in crates or projectiles, hovering them 2.5 meters in front of your camera.
+                    </td>
+                    <td>
+                      Retrieves distant blocks, catches enemy grenades, and carries blocks to throw or stack.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Both Hands: Crate Cannon</strong></td>
+                    <td><code>LMB while holding RMB</code></td>
+                    <td>
+                      Instantly releases the vacuum lock and fires the carried block forward as a high-speed projectile.
+                    </td>
+                    <td>
+                      Breaks barricades, crushes heavy armored enemies, and solves long-distance throwing puzzles.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Eyes: Slow Motion</strong></td>
+                    <td><code>Hold Left Shift</code></td>
+                    <td>
+                      Slows down the world to 25% speed while keeping your run, look, and aim at normal full speed.
+                    </td>
+                    <td>
+                      Gives extra time to time mid-air rocket jumps, catch enemy rockets, and dodge moving hazards.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Visual Ability Model Illustration -->
+            <figure class="fig" id="fig-mechanics-overview" style="margin-top: 24px;">
+              <div class="fig-tools" role="toolbar" aria-label="Diagram size">
+                <button type="button" data-z="out" aria-label="Zoom out">−</button>
+                <span class="z-val" aria-live="polite">Fit</span>
+                <button type="button" data-z="in" aria-label="Zoom in">+</button>
+                <button type="button" data-z="fit">Fit width</button>
+                <button type="button" data-z="full">Full screen</button>
+              </div>
+              <div class="fig-scroll" tabindex="0">
+                <svg class="dg" data-w="960" viewBox="0 0 960 350" role="img" aria-labelledby="mo-title mo-desc" xmlns="http://www.w3.org/2000/svg">
+                  <title id="mo-title">How REBOUND's Three Abilities Work (Visual Guide)</title>
+                  <desc id="mo-desc">Easy visual guide showing how the left hand pulls, the right hand pushes and boosts the player, and slow motion gives you time to react.</desc>
+                  <defs>
+                    <marker id="m-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
+                    </marker>
+                    <marker id="m-arr-crit" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" style="fill:var(--crit)"/>
+                    </marker>
+                    <marker id="m-arr-ok" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" style="fill:var(--ok)"/>
+                    </marker>
+                  </defs>
+
+                  <rect class="bg" width="960" height="350"/>
+
+                  <!-- Card 1: PUSH & RECOIL (Left Click) -->
+                  <rect class="card-bg" x="25" y="20" width="295" height="310" rx="10"/>
+                  <rect class="card-focal" x="40" y="35" width="265" height="36" rx="6" style="fill:rgba(196, 106, 16, 0.15); stroke:var(--high);"/>
+                  <text class="title-lg" x="172" y="58" text-anchor="middle" style="fill:var(--high)">1. PUSH (Left Click - LMB)</text>
+
+                  <!-- Visual Graphic -->
+                  <circle cx="120" cy="135" r="20" class="player"/>
+                  <text class="player-t" x="120" y="140" text-anchor="middle">YOU</text>
+
+                  <!-- Red recoil kicks player back -->
+                  <path d="M 95 135 L 55 135" class="ln bad" stroke-width="3" marker-end="url(#m-arr-crit)"/>
+                  <text class="tag" x="75" y="115" text-anchor="middle" style="fill:var(--crit)">RECOIL</text>
+
+                  <!-- Green blast pushes crate away -->
+                  <path d="M 145 135 L 220 135" class="ln acc" stroke-width="3" marker-end="url(#m-arr-ok)"/>
+                  <text class="tag" x="185" y="115" text-anchor="middle" style="fill:var(--ok)">BLAST</text>
+
+                  <rect x="235" y="117" width="36" height="36" rx="4" class="crate"/>
+                  <text class="crate-t" x="253" y="139" text-anchor="middle">BOX</text>
+
+                  <!-- Friendly summary -->
+                  <rect class="soft" x="40" y="180" width="265" height="85" rx="6"/>
+                  <text class="text-reg" x="55" y="202">Click Left Mouse Button</text>
+                  <text class="text-sub" x="55" y="222">Blasts crates onto switches or clears foes.</text>
+                  <text class="text-sub" x="55" y="240">Aim down to rocket-jump over chasms!</text>
+                  <text class="text-mono" x="55" y="256" style="fill:var(--high)">Cooldown: 0.45s · Always gives recoil</text>
+
+                  <rect class="step-pill" x="40" y="278" width="265" height="28" rx="5" style="fill:var(--high);"/>
+                  <text class="step-pill-t" x="172" y="296" text-anchor="middle">WIND BLAST &amp; ROCKET RECOIL</text>
+
+                  <!-- Card 2: PULL & CARRY (Right Click) -->
+                  <rect class="card-bg" x="332" y="20" width="295" height="310" rx="10"/>
+                  <rect class="card-focal" x="347" y="35" width="265" height="36" rx="6"/>
+                  <text class="title-lg" x="480" y="58" text-anchor="middle">2. PULL (Right Click - RMB)</text>
+
+                  <!-- Visual Graphic -->
+                  <circle cx="395" cy="135" r="20" class="player"/>
+                  <text class="player-t" x="395" y="140" text-anchor="middle">YOU</text>
+
+                  <!-- Floating hold spot -->
+                  <circle cx="485" cy="135" r="16" fill="rgba(47, 95, 208, 0.15)" stroke="var(--accent)" stroke-dasharray="3 3"/>
+                  <text class="text-sub" x="485" y="110" text-anchor="middle">Hold Point (2.5m)</text>
+
+                  <!-- Crate moving in -->
+                  <rect x="545" y="117" width="36" height="36" rx="4" class="crate"/>
+                  <text class="crate-t" x="563" y="139" text-anchor="middle">BOX</text>
+
+                  <!-- Pull beam line -->
+                  <path d="M 545 135 L 505 135" class="ln acc" stroke-width="3" marker-end="url(#m-arr)"/>
+
+                  <!-- Friendly summary -->
+                  <rect class="soft" x="347" y="180" width="265" height="85" rx="6"/>
+                  <text class="text-reg" x="362" y="202">Hold Right Mouse Button</text>
+                  <text class="text-sub" x="362" y="222">Vacuum suction reels in crates smoothly.</text>
+                  <text class="text-sub" x="362" y="240">LMB fires Crate Cannon! Release drops.</text>
+                  <text class="text-mono" x="362" y="256">Reach: 12m · Snaps if LOS broken</text>
+
+                  <rect class="step-pill" x="347" y="278" width="265" height="28" rx="5"/>
+                  <text class="step-pill-t" x="480" y="296" text-anchor="middle">VACUUM VORTEX &amp; CRATE CARRY</text>
+
+                  <!-- Card 3: SLOW MOTION (Eyes) -->
+                  <rect class="card-bg" x="640" y="20" width="295" height="310" rx="10"/>
+                  <rect class="card-focal" x="655" y="35" width="265" height="36" rx="6" style="fill:rgba(61, 122, 82, 0.15); stroke:var(--ok);"/>
+                  <text class="title-lg" x="787" y="58" text-anchor="middle" style="fill:var(--ok)">3. SLOW MOTION (Left Shift)</text>
+
+                  <!-- Visual Graphic: Reticle & Clock -->
+                  <circle cx="787" cy="120" r="28" stroke="var(--ok)" stroke-width="2" fill="rgba(61, 122, 82, 0.1)"/>
+                  <circle cx="787" cy="120" r="4" fill="var(--ok)"/>
+                  <line x1="787" y1="120" x2="787" y2="102" stroke="var(--ok)" stroke-width="2"/>
+                  <line x1="787" y1="120" x2="800" y2="120" stroke="var(--ok)" stroke-width="2"/>
+                  <text class="text-mono" x="787" y="160" text-anchor="middle" style="fill:var(--ok)">WORLD RUNS AT 25% SPEED</text>
+
+                  <!-- Friendly summary -->
+                  <rect class="soft" x="655" y="180" width="265" height="85" rx="6"/>
+                  <text class="text-reg" x="670" y="202">Hold Left Shift Key</text>
+                  <text class="text-sub" x="670" y="222">Slows world physics &amp; grants floaty air-time.</text>
+                  <text class="text-sub" x="670" y="240">YOUR movement &amp; aiming stay at full speed.</text>
+                  <text class="text-mono" x="670" y="256" style="fill:var(--ok)">Meter: 4s capacity · 6s recharge</text>
+
+                  <rect class="step-pill" x="655" y="278" width="265" height="28" rx="5" style="fill:var(--ok);"/>
+                  <text class="step-pill-t" x="787" y="296" text-anchor="middle">TIME JUMPS, DEFLECT ROCKETS &amp; DODGE</text>
+                </svg>
+              </div>
+              <figcaption>How the three abilities work: Left Click blasts and rocket-jumps, Right Click vacuum-pulls and carries objects, and Slow Motion buys you reaction time.</figcaption>
+            </figure>
+          </section>
+
+          <!-- The Core Gameplay Loop -->
+          <section id="gameplay-loop">
+            <h2>2. The Core Gameplay Loop</h2>
+            <p class="prose">
+              Every room in REBOUND is a focused puzzle. The game deliberately
+              avoids wandering in open landscapes or listening to long dialogue
+              scenes.
+            </p>
+
+            <div class="grid2">
+              <div class="box">
+                <h3>The 6-Step Player Loop</h3>
+                <ol style="margin: 0; padding-left: 20px">
+                  <li>
+                    <strong>Enter Room:</strong> The player steps into the
+                    chamber; the exit door and the physical obstacle are
+                    immediately visible.
+                  </li>
+                  <li>
+                    <strong>Inspect:</strong> The player identifies interactable
+                    objects (crates, barriers, switches) via visual glow
+                    highlights.
+                  </li>
+                  <li>
+                    <strong>Experiment:</strong> The player tests pull, push,
+                    recoil boosts, or slow motion in a safe starting area.
+                  </li>
+                  <li>
+                    <strong>Execute:</strong> The player chains abilities
+                    together (e.g., pulling a platform while pushing into empty
+                    air to jump a gap).
+                  </li>
+                  <li>
+                    <strong>Reach Exit:</strong> The player triggers the exit
+                    sensor, opening the door to the next stage.
+                  </li>
+                  <li>
+                    <strong>Progress:</strong> The game loads the next room with
+                    a new, slightly harder variation of the mechanics.
+                  </li>
+                </ol>
+              </div>
+              <div class="box">
+                <h3>Core Design Guardrails</h3>
+                <ul>
+                  <li>
+                    <strong>One Lesson Per Room:</strong> Never introduce two
+                    unfamiliar mechanics in the same room.
+                  </li>
+                  <li>
+                    <strong>Zero Invisible Rules:</strong> Solutions must rely
+                    on visible physics, not hidden triggers or secret buttons.
+                  </li>
+                  <li>
+                    <strong>Predictable Recoil:</strong> Pushing empty air
+                    produces the exact same backwards kick as pushing a wall or
+                    box.
+                  </li>
+                  <li>
+                    <strong>Fast Recovery:</strong> Falling into a pit resets
+                    the player quickly at the start of that room without
+                    reloading the entire game.
+                  </li>
+                  <li>
+                    <strong>Independent Hands:</strong> Left hand and right hand
+                    operate simultaneously on two separate objects.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Architectural Decision Records (ADRs) -->
+          <section id="adrs">
+            <h2>3. Architectural Decision Records (ADRs)</h2>
+            <p class="prose">
+              An Architectural Decision Record (ADR) documents an important
+              engineering choice, why it was chosen, and what trade-offs were
+              accepted. Below are the five foundational ADRs for REBOUND:
+            </p>
+
+            <div class="scroll">
+              <table class="wide">
+                <thead>
+                  <tr>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Decision ID
+                    </th>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Architecture Decision
+                    </th>
+                    <th class="col-auto">
+                      Why This Was Chosen (Plain English)
+                    </th>
+                    <th class="col-lg">Accepted Trade-Off & Risk Mitigation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>ADR-01</code></td>
+                    <td><strong>Rigidbody Player Controller</strong></td>
+                    <td>
+                      Unity's built-in
+                      <code>CharacterController</code> component does not
+                      naturally respond to physics forces, impulses, or
+                      explosions. Because the push recoil mechanic pushes the
+                      player backwards through physics impulses, a
+                      <code>Rigidbody</code> player controller is required.
+                    </td>
+                    <td>
+                      Rigidbody characters can tip over or snag on floor seams.
+                      Mitigation: Freeze X and Z rotations in Rigidbody
+                      constraints, and use a smooth capsule collider with
+                      continuous collision detection.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-02</code></td>
+                    <td><strong>Predictable, Flat Recoil Amount</strong></td>
+                    <td>
+                      In real physics, pushback depends on target mass and
+                      distance. In REBOUND, push recoil gives a fixed 5.0
+                      impulse units whether the player hits a heavy block, a
+                      light box, or empty space. This makes jumping and
+                      air-movement predictable for the player to master.
+                    </td>
+                    <td>
+                      The game breaks real-world Newton physics intentionally to
+                      prioritize fun and predictable platforming.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-03</code></td>
+                    <td>
+                      <strong
+                        >Continuous Physics Force Pull (No Childing)</strong
+                      >
+                    </td>
+                    <td>
+                      When pulling an object, the script applies an accelerating
+                      physics force toward a point in front of the camera. The
+                      object is <em>never</em> made a child of the camera
+                      transform. Childing breaks physics collisions and causes
+                      objects to phase through walls.
+                    </td>
+                    <td>
+                      Objects can wobble or overshoot if force is unchecked.
+                      Mitigation: Add velocity damping, a maximum speed clamp,
+                      and a 0.2m dead zone around the target point.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-04</code></td>
+                    <td>
+                      <strong>Single Target Per Hand &amp; Target Lock</strong>
+                    </td>
+                    <td>
+                      Each hand can only control one object at a time. The left
+                      hand cannot pull the exact same object that the right hand
+                      is pushing in the same frame. A target lock on the object
+                      prevents conflicting physics forces.
+                    </td>
+                    <td>
+                      Players cannot multi-grab piles of items. This keeps physics calculations clean and stops erratic jitter.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-05</code></td>
+                    <td><strong>Greybox-First Development</strong></td>
+                    <td>
+                      All levels and mechanics must be built and proven using
+                      primitive gray boxes and prototype materials before 3D
+                      models or art assets are imported. If a room is not fun as
+                      gray boxes, visual art will not fix it.
+                    </td>
+                    <td>
+                      Graphics look simple during early development, but team
+                      time is protected against wasted art rework.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Project Scope Boundaries -->
+          <section id="scope-matrix">
+            <h2>4. Project Scope Boundaries</h2>
+            <p class="prose">
+              Scope discipline is critical for a student game. The team must
+              stay focused on what makes REBOUND fun and eliminate non-essential
+              features:
+            </p>
+
+            <div class="grid2">
+              <div class="box">
+                <h3>Strictly In Scope (Must Build)</h3>
+                <ul>
+                  <li>
+                    First-person movement (WASD, mouse look, jump, air control).
+                  </li>
+                  <li>Left-hand continuous pull with physics damping.</li>
+                  <li>
+                    Right-hand push impulse with player recoil (air-pushing
+                    supported).
+                  </li>
+                  <li>Dual-hand simultaneous control on separate objects.</li>
+                  <li>Crate Cannon combo launch and projectile deflection.</li>
+                  <li>
+                    Slow-motion energy meter with floaty mid-air fall gravity.
+                  </li>
+                  <li>
+                    Enemy AI integration via <code>IKineticTarget</code> (3 Archetypes: Swarm, Turret, Brute).
+                  </li>
+                  <li>
+                    One dedicated Prototype Lab scene for physics & combat testing.
+                  </li>
+                  <li>A progression of 5 to 7 compact puzzle & encounter rooms.</li>
+                  <li>
+                    Basic UI: Crosshair, hand status icons, slow-motion meter,
+                    pause menu.
+                  </li>
+                  <li>
+                    Simple audio cues: wind blast, suction hum, slow-mo chime, impact
+                    thuds.
+                  </li>
+                </ul>
+              </div>
+              <div class="box">
+                <h3>Strictly Out of Scope (Forbidden / Cut)</h3>
+                <ul>
+                  <li>
+                    <strong>No Complex Gun Inventories:</strong> No ammo counters, weapon wheels, or conventional firearms (air powers only).
+                  </li>
+                  <li>
+                    <strong>No Story Cutscenes:</strong> No character dialogue,
+                    voice actors, or scripted cinematics.
+                  </li>
+                  <li>
+                    <strong>No Open World:</strong> No sprawling maps, terrain
+                    systems, or outdoor hubs.
+                  </li>
+                  <li>
+                    <strong>No Complex Destruction:</strong> No mesh fracturing
+                    or real-time breaking glass.
+                  </li>
+                  <li>
+                    <strong>No Inventory or Crafting:</strong> No bag management
+                    or item combining.
+                  </li>
+                  <li>
+                    <strong>No Multiplayer:</strong> Single-player offline only.
+                  </li>
+                  <li>
+                    <strong>No Character Customization:</strong> No skill trees,
+                    stat upgrades, or skins.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Prototype Success Checklist -->
+          <section id="success-criteria">
+            <h2>5. Definition of First Successful Prototype (M4 Gate)</h2>
+            <p class="prose">
+              The team should not build full level rooms until the core
+              prototype passes this test in the <code>PrototypeLab</code> scene:
+            </p>
+            <div class="scroll">
+              <table class="wide">
+                <thead>
+                  <tr>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Check ID
+                    </th>
+                    <th class="col-sm" style="white-space: nowrap; width: 1%">
+                      Requirement
+                    </th>
+                    <th class="col-auto">Verification Action</th>
+                    <th class="col-status">Target Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>GATE-01</code></td>
+                    <td><strong>Movement & Camera</strong></td>
+                    <td>
+                      Walk, jump across a gap, and look smoothly without camera
+                      jitter or capsule tipping.
+                    </td>
+                    <td><span class="tag ok">Required</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>GATE-02</code></td>
+                    <td><strong>Object Manipulation</strong></td>
+                    <td>
+                      Pull a light box from 10m away, hold it stably, and push
+                      it across the room into a target area.
+                    </td>
+                    <td><span class="tag ok">Required</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>GATE-03</code></td>
+                    <td><strong>Recoil Platforming</strong></td>
+                    <td>
+                      Jump into the air, push empty space downward/backward, and
+                      land on a ledge that is otherwise too far to reach.
+                    </td>
+                    <td><span class="tag ok">Required</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>GATE-04</code></td>
+                    <td><strong>Simultaneous Hands</strong></td>
+                    <td>
+                      Hold a crate with the left hand while pushing a barrier
+                      away with the right hand.
+                    </td>
+                    <td><span class="tag ok">Required</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>GATE-05</code></td>
+                    <td><strong>Slow Motion Responsiveness</strong></td>
+                    <td>
+                      Activate slow motion during a jump; verify physics slow
+                      down while mouse aiming and player controls stay
+                      responsive.
+                    </td>
+                    <td><span class="tag ok">Required</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <footer class="site-footer">
+            <p>
+              REBOUND Game Architecture Documentation · Year 3 Game Development
+              Project · 2026
+            </p>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <script src="assets/nav.js"></script>
+    <script src="assets/site.js"></script>
+  </body>
+</html>

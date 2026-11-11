@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unity Project Structure · REBOUND Architecture</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-page="project-structure.html">
+  <header class="site-header">
+    <div class="site-header-left">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-controls="site-sidebar" aria-expanded="true">
+        <span>☰</span> <span>Menu</span>
+      </button>
+      <a href="index.html" class="site-title-link">REBOUND Architecture Docs</a>
+    </div>
+    <div class="site-header-right">
+      <button type="button" onclick="window.print()" class="search-trigger" aria-label="Print or export as PDF"><span>Print</span> <kbd>⌘P</kbd></button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">🌓 Auto</button>
+    </div>
+  </header>
+
+  <div class="site-layout">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Sidebar navigation"></aside>
+
+    <main class="site-main">
+      <div class="wrap">
+        <header>
+          <div class="eyebrow">Project Organization · Unity Architecture</div>
+          <h1>Unity Project Structure & Asset Organization</h1>
+          <p class="meta prose">The official directory layout, naming standards, and Git version control rules for the four-person REBOUND development team. Designed to prevent merge conflicts, asset clutter, and broken references.</p>
+        </header>
+
+        <!-- The Clean Assets/_Project Standard -->
+        <section id="directory-standard">
+          <h2>1. The Clean <code>Assets/_Project/</code> Standard</h2>
+          <p class="prose">
+            Standard student projects often dump all scripts, downloaded textures, and test scenes into the root <code>Assets/</code> folder. When multiple team members import third-party packages, root folders collide and Git merge conflicts become frequent.
+          </p>
+          <p class="prose">
+            REBOUND enforces the industry standard <strong><code>Assets/_Project/</code></strong> layout. All code, prefabs, materials, and scenes created by the team live exclusively inside <code>_Project/</code>. All external asset packs live isolated in <code>Assets/ThirdParty/</code>:
+          </p>
+
+          <div class="box" style="margin: 18px 0; background: var(--surface);">
+            <pre class="tree" style="margin: 0; padding: 12px; font-size: 0.88rem; line-height: 1.6;"><code><span class="t-dir">Assets/</span>
+├── <span class="t-dir">_Project/</span>                          <span class="sub">// Team-created game content ONLY</span>
+│   ├── <span class="t-dir">Art/</span>                           <span class="sub">// Materials, textures, shaders, VFX</span>
+│   │   ├── <span class="t-dir">Materials/</span>                 <span class="sub">// MAT_Interactable_Glow, MAT_FloorTile</span>
+│   │   ├── <span class="t-dir">Models/</span>                    <span class="sub">// Modular wall sections, door meshes</span>
+│   │   └── <span class="t-dir">VFX/</span>                       <span class="sub">// Pull beam LineRenderer, push blast particles</span>
+│   ├── <span class="t-dir">Audio/</span>                         <span class="sub">// Sound clips and audio mixer assets</span>
+│   │   ├── <span class="t-dir">SFX/</span>                       <span class="sub">// SND_Push_Blast, SND_Pull_Hum, SND_Reset</span>
+│   │   └── <span class="t-dir">Music/</span>                     <span class="sub">// Ambient background tracks</span>
+│   ├── <span class="t-dir">Prefabs/</span>                       <span class="sub">// Reusable GameObject blueprints</span>
+│   │   ├── <span class="t-dir">Player/</span>                    <span class="sub">// PF_PlayerRoot (Rigidbody + Camera)</span>
+│   │   ├── <span class="t-dir">Interactables/</span>             <span class="sub">// PF_Crate_Light, PF_Crate_Medium, PF_Block_Heavy</span>
+│   │   ├── <span class="t-dir">Environment/</span>               <span class="sub">// PF_FloorTile_4x4, PF_WallSection, PF_Ramp</span>
+│   │   └── <span class="t-dir">System/</span>                    <span class="sub">// PF_ExitDoor, PF_PressurePlate, PF_HazardPit</span>
+│   ├── <span class="t-dir">Scenes/</span>                        <span class="sub">// Game levels and testing sandboxes</span>
+│   │   ├── <span class="t-dir">00_Boot/</span>                   <span class="sub">// MainMenu.unity</span>
+│   │   ├── <span class="t-dir">01_Prototype/</span>              <span class="sub">// PrototypeLab.unity (Physics testing playground)</span>
+│   │   └── <span class="t-dir">02_Levels/</span>                 <span class="sub">// Level_01.unity through Level_07.unity</span>
+│   ├── <span class="t-dir">Scripts/</span>                       <span class="sub">// C# modular subsystem code</span>
+│   │   ├── <span class="t-dir">Player/</span>                    <span class="sub">// PlayerMovement.cs, MouseLook.cs</span>
+│   │   ├── <span class="t-dir">Abilities/</span>                 <span class="sub">// PullAbility.cs, PushAbility.cs, SlowMotionAbility.cs</span>
+│   │   ├── <span class="t-dir">Physics/</span>                   <span class="sub">// AbilityTarget.cs (Interactable tag)</span>
+│   │   ├── <span class="t-dir">Level/</span>                     <span class="sub">// LevelExit.cs, PressurePlate.cs, DoorController.cs</span>
+│   │   └── <span class="t-dir">UI/</span>                        <span class="sub">// AbilityHUD.cs, ReticleFeedback.cs</span>
+│   └── <span class="t-dir">Settings/</span>                      <span class="sub">// Unity Input Actions, URP assets, Physics settings</span>
+└── <span class="t-dir">ThirdParty/</span>                        <span class="sub">// Downloaded packages (Kenney, Quaternius) - DO NOT MODIFY</span></code></pre>
+          </div>
+        </section>
+
+        <!-- Script Registry and Ownership -->
+        <section id="script-registry">
+          <h2>2. Script Registry & Ownership Mapping</h2>
+          <p class="prose">
+            To prevent merge conflicts, each script has a single primary author. Other team members interact with a script exclusively through its public methods and events:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Script File</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Primary Owner</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Subsystem</th>
+                  <th class="col-auto">Physical Responsibility in the Game</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PlayerMovement.cs</code></td>
+                  <td><span class="tag ok">Person 1</span></td>
+                  <td>Player Core</td>
+                  <td>Controls WASD movement, jumping, ground checks, and applies physics recoil impulses to the Rigidbody.</td>
+                </tr>
+                <tr>
+                  <td><code>MouseLook.cs</code></td>
+                  <td><span class="tag ok">Person 1</span></td>
+                  <td>Camera</td>
+                  <td>Rotates the body horizontally (Yaw) and the camera pivot vertically (Pitch clamped -85° to +85°).</td>
+                </tr>
+                <tr>
+                  <td><code>PullAbility.cs</code></td>
+                  <td><span class="tag high">Person 2</span></td>
+                  <td>Abilities</td>
+                  <td>Casts ray from origin, targets valid objects, and applies damped spring force towards the holding point (2.5m).</td>
+                </tr>
+                <tr>
+                  <td><code>PushAbility.cs</code></td>
+                  <td><span class="tag high">Person 2</span></td>
+                  <td>Abilities</td>
+                  <td>Fires impulse blast at target (+12 units) and immediately triggers player recoil (-5 units) even in empty air.</td>
+                </tr>
+                <tr>
+                  <td><code>AbilityTarget.cs</code></td>
+                  <td><span class="tag high">Person 2</span></td>
+                  <td>Physics Objects</td>
+                  <td>Attached to every movable crate. Defines mass multipliers, whether it can be pulled/pushed, and manages hover glow.</td>
+                </tr>
+                <tr>
+                  <td><code>PressurePlate.cs</code></td>
+                  <td><span class="tag med">Person 3</span></td>
+                  <td>Level Mechanics</td>
+                  <td>Weighted floor sensor. Detects crate overlaps and invokes UnityEvent to open linked doors.</td>
+                </tr>
+                <tr>
+                  <td><code>LevelExit.cs</code></td>
+                  <td><span class="tag med">Person 3</span></td>
+                  <td>Level Progression</td>
+                  <td>Exit door sensor volume. Notifies GameFlow to load the next room when the player steps through.</td>
+                </tr>
+                <tr>
+                  <td><code>SlowMotionAbility.cs</code></td>
+                  <td><span class="tag low">Person 4</span></td>
+                  <td>Time & Systems</td>
+                  <td>Manages the 4-second energy meter, sets <code>Time.timeScale = 0.25f</code>, and syncs <code>Time.fixedDeltaTime = 0.005f</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>AbilityHUD.cs</code></td>
+                  <td><span class="tag low">Person 4</span></td>
+                  <td>UI & Presentation</td>
+                  <td>Renders crosshair reticle states, slow-motion stamina bar, and push cooldown ring using unscaled time.</td>
+                </tr>
+                <tr>
+                  <td><code>GameFlow.cs</code></td>
+                  <td><span class="tag low">Person 4</span></td>
+                  <td>Game State</td>
+                  <td>Coordinates room loading, pause screens, player reset on pit falls, and victory completion screen.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Prefab Standards and Naming Rules -->
+        <section id="naming-standards">
+          <h2>3. Asset Naming Conventions</h2>
+          <p class="prose">
+            Consistent naming allows the team to find assets quickly using Unity's project search bar without clicking through nested folders:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Asset Type</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Prefix</th>
+                  <th class="col-sm">Naming Pattern</th>
+                  <th class="col-lg">Concrete Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Prefabs</strong></td>
+                  <td><code>PF_</code></td>
+                  <td><code>PF_[Category]_[Name]</code></td>
+                  <td><code>PF_PlayerRoot</code>, <code>PF_Crate_Medium</code>, <code>PF_Door_Sliding</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Materials</strong></td>
+                  <td><code>MAT_</code></td>
+                  <td><code>MAT_[Surface]_[Color/Type]</code></td>
+                  <td><code>MAT_Concrete_Wall</code>, <code>MAT_Interactable_BlueGlow</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Textures</strong></td>
+                  <td><code>T_</code></td>
+                  <td><code>T_[Name]_[MapType]</code></td>
+                  <td><code>T_MetalGrid_Albedo</code>, <code>T_MetalGrid_Normal</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Audio Clips</strong></td>
+                  <td><code>SND_</code></td>
+                  <td><code>SND_[Action]_[Variant]</code></td>
+                  <td><code>SND_Push_Blast_01</code>, <code>SND_Pull_Hum_Loop</code>, <code>SND_Door_Open</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Scenes</strong></td>
+                  <td><em>None</em></td>
+                  <td><code>[Type]_[Number/Name]</code></td>
+                  <td><code>PrototypeLab.unity</code>, <code>Level_01.unity</code>, <code>MainMenu.unity</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Git Rules & .gitignore Checklist -->
+        <section id="git-hygiene">
+          <h2>4. Version Control Hygiene & Unity Git Rules</h2>
+          <p class="prose">
+            Unity projects create thousands of temporary cache files every time a scene is opened. <strong>Never commit Unity's generated cache files to Git.</strong> Doing so inflates the repository size to gigabytes and causes impossible merge conflicts.
+          </p>
+
+          <div class="grid2">
+            <div class="box">
+              <h3>Folders That MUST Be Committed (Source of Truth)</h3>
+              <ul>
+                <li><code>Assets/</code> — All scripts, prefabs, materials, and scenes created by the team.</li>
+                <li><code>Packages/manifest.json</code> — Unity Package Manager dependency list.</li>
+                <li><code>ProjectSettings/</code> — Physics layers, input actions, tags, and editor configurations.</li>
+                <li><code>.gitignore</code> — Root repository exclusion rules.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>Folders That MUST Be Ignored (Never Commit)</h3>
+              <ul>
+                <li><code>Library/</code> — Unity's local asset cache (regenerated automatically on each computer).</li>
+                <li><code>Temp/</code> — Runtime temporary build files.</li>
+                <li><code>Obj/</code> & <code>Build/</code> — Compiled C# assemblies and standalone game builds.</li>
+                <li><code>Logs/</code> & <code>MemoryCaptures/</code> — Editor diagnostic output.</li>
+                <li><code>.vs/</code> & <code>.idea/</code> — Visual Studio / Rider IDE user settings.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="do-first-banner" style="margin-top: 18px;">
+            <div>
+              <strong>Gold Standard Team Collaboration Rule:</strong>
+              <p class="prose" style="margin: 4px 0 0; font-size: 0.92rem;">
+                <strong>Never allow two team members to edit the same <code>.unity</code> scene file at the same time.</strong> Unity scene files are massive YAML files that cannot be merged with Git. Instead, work inside separate scenes (e.g. Person 1 in <code>PrototypeLab</code>, Person 3 in <code>Level_01</code>), and package all gameplay objects into <strong>Prefabs</strong> before sharing them.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <footer class="site-footer">
+          <p>REBOUND Game Architecture Documentation · Year 3 Game Development Project · 2026</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/nav.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>

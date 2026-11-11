@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team Plan & Risk Matrix · REBOUND Architecture</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-page="production-plan.html">
+  <header class="site-header">
+    <div class="site-header-left">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-controls="site-sidebar" aria-expanded="true">
+        <span>☰</span> <span>Menu</span>
+      </button>
+      <a href="index.html" class="site-title-link">REBOUND Architecture Docs</a>
+    </div>
+    <div class="site-header-right">
+      <button type="button" onclick="window.print()" class="search-trigger" aria-label="Print or export as PDF"><span>Print</span> <kbd>⌘P</kbd></button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">🌓 Auto</button>
+    </div>
+  </header>
+
+  <div class="site-layout">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Sidebar navigation"></aside>
+
+    <main class="site-main">
+      <div class="wrap">
+        <header>
+          <div class="eyebrow">Production · Team Plan & Execution</div>
+          <h1>Team Plan, Milestones & Technical Risk Matrix</h1>
+          <p class="meta prose">A complete development roadmap for the four-person student team. Details individual subsystem ownership, an interactive eight-milestone execution tracker, and an empirical risk mitigation matrix.</p>
+        </header>
+
+        <!-- Live Metrics Dashboard -->
+        <section id="dashboard">
+          <div class="dashboard">
+            <div class="dash-card d-total">
+              <div class="dash-num" id="dash-total">0</div>
+              <div class="dash-label">Total Steps</div>
+            </div>
+            <div class="dash-card d-done">
+              <div class="dash-num" id="dash-done">0</div>
+              <div class="dash-label">Completed</div>
+            </div>
+            <div class="dash-card d-todo">
+              <div class="dash-num" id="dash-todo">0</div>
+              <div class="dash-label">Remaining</div>
+            </div>
+            <div class="dash-card d-pct">
+              <div class="dash-num" id="dash-pct">0%</div>
+              <div class="dash-label">Progress</div>
+            </div>
+          </div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progress-text">0 of 8 milestones completed</div>
+        </section>
+
+        <!-- Four-Person Team Role Split -->
+        <section id="team-roles">
+          <h2>1. Four-Person Team Roles & Deliverables</h2>
+          <p class="prose">
+            Every subsystem has exactly one primary owner. This ensures clear accountability and prevents team members from overwriting each other's code:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Role</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Team Member</th>
+                  <th class="col-auto">Core Responsibilities & Systems Owned</th>
+                  <th class="col-lg">Key Deliverable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Person 1</strong></td>
+                  <td><strong>Player & Camera Lead</strong></td>
+                  <td>
+                    First-person WASD movement, mouse look pitch/yaw, jump physics, ground check, Rigidbody constraints, and responding to recoil impulses from the push ability.
+                  </td>
+                  <td>A responsive Rigidbody player controller that moves, jumps, and recoils reliably without tipping over.</td>
+                </tr>
+                <tr>
+                  <td><strong>Person 2</strong></td>
+                  <td><strong>Abilities & Physics Objects</strong></td>
+                  <td>
+                    Target detection raycasting, right-hand push impulse, left-hand continuous pull force, <code>AbilityTarget</code> component, mass tuning, and dual-hand target lock.
+                  </td>
+                  <td>A stable push and pull mechanic that manipulates test crates smoothly without wall clipping.</td>
+                </tr>
+                <tr>
+                  <td><strong>Person 3</strong></td>
+                  <td><strong>Level Design & Environment</strong></td>
+                  <td>
+                    Modular prefab kit (floors, walls, ramps), greybox room layouts (Rooms 1 through 7), moving platforms, pressure plates, door triggers, and scene progression.
+                  </td>
+                  <td>A playable sequence of seven test chambers with clear goals and zero confusing dead-ends.</td>
+                </tr>
+                <tr>
+                  <td><strong>Person 4</strong></td>
+                  <td><strong>Slow-Mo, UI, Audio & Flow</strong></td>
+                  <td>
+                    Slow-motion time scale manager, energy meter drain/recharge, ability HUD, reticle target feedback, sound effect integration, main menu, pause menu, and playtest coordination.
+                  </td>
+                  <td>Working slow-motion mechanic, informative HUD readout, clear sound cues, and overall game flow.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Phased Milestone Roadmap -->
+        <section id="timeline">
+          <h2>2. Interactive Milestone Roadmap (M0 to M7)</h2>
+          <p class="prose">
+            Click status badges to cycle states (Not started → In progress → Done). Check tasks to update the live progress dashboard automatically:
+          </p>
+
+          <ol class="step-list">
+            <!-- Milestone 0 -->
+            <li class="step-item s-crit" data-step="step-0">
+              <div class="step-dot">0</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M0: Technical Agreement & Setup</strong>
+                  <span class="status-badge" data-step-status="step-0">Not started</span>
+                </div>
+                <p class="prose">Lock foundational project parameters before writing code.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m0-1"> Agree on identical Unity Editor version and URP render pipeline across all four computers.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m0-2"> Initialize Git repository with correct Unity <code>.gitignore</code> (ignore <code>Library/</code> and <code>Temp/</code>).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m0-3"> Create <code>Assets/_Project/</code> folder layout and set up Physics Layers (Player, Environment, Interactables, Hazards).</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 1 -->
+            <li class="step-item s-high" data-step="step-1">
+              <div class="step-dot">1</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M1: Core Player Movement</strong>
+                  <span class="status-badge" data-step-status="step-1">Not started</span>
+                </div>
+                <p class="prose">Build the first-person Rigidbody character controller.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-1"> Build <code>PlayerRoot</code> prefab with Rigidbody, CapsuleCollider, and frozen X/Z rotations.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-2"> Implement <code>PlayerMovement.cs</code> (WASD walking, jumping, ground check sphere).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-3"> Implement <code>MouseLook.cs</code> on CameraPivot with vertical pitch clamping (-85° to +85°).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-4"> Test walking up 30° ramps and jumping across a 3m test gap without snagging.</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 2 -->
+            <li class="step-item s-high" data-step="step-2">
+              <div class="step-dot">2</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M2: Right-Hand Push & Player Recoil</strong>
+                  <span class="status-badge" data-step-status="step-2">Not started</span>
+                </div>
+                <p class="prose">Implement outward push blast and the backwards recoil jump.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-1"> Create <code>AbilityTarget.cs</code> component and attach to test cubes of 2kg, 10kg, and 50kg.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-2"> Implement <code>PushAbility.cs</code> raycasting (12m range, 12.0 impulse units on target).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-3"> Implement player recoil: call <code>PlayerMovement.ApplyRecoil()</code> with 5.0 impulse units.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-4"> Verify recoil triggers when pushing empty space, and enforce 0.45s cooldown.</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 3 -->
+            <li class="step-item s-high" data-step="step-3">
+              <div class="step-dot">3</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M3: Left-Hand Continuous Pull</strong>
+                  <span class="status-badge" data-step-status="step-3">Not started</span>
+                </div>
+                <p class="prose">Implement continuous physics pull force towards the player.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-1"> Implement <code>PullAbility.cs</code> raycast and target acquisition while LMB is held.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-2"> Calculate hold point 2.5m in front of camera and apply damped accelerating force.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-3"> Add 0.2m dead zone and 8.0 m/s maximum speed limit to eliminate jitter and wall clipping.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-4"> Verify releasing LMB safely drops the object without residual momentum spikes.</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 4 -->
+            <li class="step-item s-crit" data-step="step-4">
+              <div class="step-dot">4</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M4: Combined Prototype Lab (Major Gate)</strong>
+                  <span class="status-badge" data-step-status="step-4">Not started</span>
+                </div>
+                <p class="prose">Combine dual-hand powers and slow motion in the test lab.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-1"> Implement <code>SlowMotionAbility.cs</code> (0.25 timeScale, synchronized <code>fixedDeltaTime = 0.005f</code>).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-2"> Implement 4s drain and 6s recharge energy meter with unscaled UI update.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-3"> Test dual-hand control: pull crate with left hand while pushing barrier with right hand.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-4"> Pass Prototype Success Gate in <code>PrototypeLab.unity</code> before building levels.</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 5 -->
+            <li class="step-item s-med" data-step="step-5">
+              <div class="step-dot">5</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M5: Level Progression Set (Rooms 1 to 7)</strong>
+                  <span class="status-badge" data-step-status="step-5">Not started</span>
+                </div>
+                <p class="prose">Build the full 7-room greybox campaign using modular prefabs.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-1"> Build modular prefabs: floors, walls, ramps, doors, pressure plates, moving platforms.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-2"> Greybox Room 1 (Pull) and Room 2 (Push) with exit triggers.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-3"> Greybox Room 3 (Recoil Jump) and Room 4 (Slow-Mo Timing).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-4"> Greybox Rooms 5, 6, and 7 (Combined puzzle challenges and final chamber).</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 6 -->
+            <li class="step-item s-low" data-step="step-6">
+              <div class="step-dot">6</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M6: Audio, Visual Feedback & Polish</strong>
+                  <span class="status-badge" data-step-status="step-6">Not started</span>
+                </div>
+                <p class="prose">Add sound effects, hand visuals, materials, and UI polish.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-1"> Connect audio clips: push blast, pull energy hum, slow-mo whoosh, door open, impact thuds.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-2"> Add visual feedback: reticle highlight on valid objects, line renderer pull beam, push blast ring.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-3"> Apply industrial materials and emissive accent lighting to interactable objects.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-4"> Implement clean Main Menu, Pause Menu, and Room Completion screens.</label></li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Milestone 7 -->
+            <li class="step-item s-ok" data-step="step-7">
+              <div class="step-dot">7</div>
+              <div class="step-card">
+                <div class="step-head">
+                  <strong>Milestone M7: Final Quality Assurance & Release</strong>
+                  <span class="status-badge" data-step-status="step-7">Not started</span>
+                </div>
+                <p class="prose">Run end-to-end playtests, fix edge-case bugs, and create the standalone build.</p>
+                <ul>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-1"> Conduct blind playtest with external students (zero verbal hints allowed).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-2"> Verify softlock prevention: falling into any hazard resets within 1 second.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-3"> Create standalone Windows PC 64-bit build and verify 60+ FPS performance.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-4"> Package submission build and verify game finishes from Room 1 through Room 7.</label></li>
+                </ul>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <!-- Technical Risk Mitigation Matrix -->
+        <section id="risk-matrix">
+          <h2>3. Technical Risk Mitigation Matrix</h2>
+          <p class="prose">
+            Identified risks from <code>OPEN_QUESTIONS_AND_RISKS.md</code> and <code>PHYSICS_AND_UNITY_NOTES.md</code> paired with concrete preventative solutions:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Risk ID</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Severity</th>
+                  <th class="col-auto">Failure Mode Description</th>
+                  <th class="col-lg">Empirical Engineering Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>RISK-01</code></td>
+                  <td><span class="tag crit">Critical</span></td>
+                  <td><strong>Slow motion also slows player movement:</strong> Reducing <code>Time.timeScale</code> causes the player Rigidbody to move at 25% speed, defeating the entire gameplay purpose.</td>
+                  <td>
+                    <strong>Solution:</strong> When slow motion triggers, multiply player movement force and jump impulse by <code>(1.0f / Time.timeScale)</code> to compensate, and calculate camera look using <code>Time.unscaledDeltaTime</code>. If global time remains unstable, switch to per-object time control on puzzle entities.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>RISK-02</code></td>
+                  <td><span class="tag crit">Critical</span></td>
+                  <td><strong>Objects clipping through walls when pulled:</strong> High pull acceleration causes crates to tunnel through thin wall colliders.</td>
+                  <td>
+                    <strong>Solution:</strong> Enable <code>CollisionDetectionMode.Continuous</code> on all interactable crates. Enforce an 8.0 m/s maximum velocity clamp in <code>PullAbility.FixedUpdate()</code> and use thick (0.5m+) wall colliders.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>RISK-03</code></td>
+                  <td><span class="tag high">High</span></td>
+                  <td><strong>Both hands grabbing the same object:</strong> Left hand pulls while right hand pushes, causing opposing impulses that crash or violently vibrate the object.</td>
+                  <td>
+                    <strong>Solution:</strong> Enforce a target lock in <code>AbilityTarget.cs</code>: if <code>IsControlled == true</code>, reject interactions from the other hand until released.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>RISK-04</code></td>
+                  <td><span class="tag high">High</span></td>
+                  <td><strong>Player recoil tipping capsule over:</strong> Powerful upward or downward push recoil causes the Rigidbody capsule to fall over like a bowling pin.</td>
+                  <td>
+                    <strong>Solution:</strong> Check <code>Freeze Rotation X</code> and <code>Freeze Rotation Z</code> in the Rigidbody inspector. Rotate the camera pivot independently for pitch.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>RISK-05</code></td>
+                  <td><span class="tag med">Medium</span></td>
+                  <td><strong>Git merge conflicts in scene files:</strong> Two team members work on the same scene simultaneously, corrupting Unity's YAML serialization.</td>
+                  <td>
+                    <strong>Solution:</strong> Strict rule: only one person edits a given <code>.unity</code> scene file at a time. All reusable assets, triggers, and level blocks must be built as <strong>Prefabs</strong>.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>RISK-06</code></td>
+                  <td><span class="tag med">Medium</span></td>
+                  <td><strong>Irreversible puzzle softlocks:</strong> An essential crate falls off a ledge into an unreachable pit, making the room impossible to complete.</td>
+                  <td>
+                    <strong>Solution:</strong> Attach an auto-respawner trigger in every hazard pit that resets dropped puzzle objects back to their initial spawn transform.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="site-footer">
+          <p>REBOUND Game Architecture Documentation · Year 3 Game Development Project · 2026</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/nav.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>

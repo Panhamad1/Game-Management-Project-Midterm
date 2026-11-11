@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Title · Project Docs</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-page="index.html">
+  <!-- Top Header -->
+  <header class="site-header">
+    <div class="site-header-left">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-controls="site-sidebar" aria-expanded="true">
+        <span>☰</span> <span>Menu</span>
+      </button>
+      <a href="index.html" class="site-title-link">Project Documentation</a>
+    </div>
+    <div class="site-header-right">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">🌓 Auto</button>
+    </div>
+  </header>
+
+  <!-- Main Site Layout -->
+  <div class="site-layout">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Sidebar navigation"></aside>
+
+    <main class="site-main">
+      <div class="wrap">
+        <header>
+          <div class="eyebrow">Category · Topic</div>
+          <h1>Page Title</h1>
+          <p class="meta prose">A short one-paragraph summary of this page's focus and contents.</p>
+        </header>
+
+        <section id="section-1">
+          <h2>First section</h2>
+          <p class="prose">Content goes here...</p>
+        </section>
+
+        <section id="section-2">
+          <h2>Second section</h2>
+          <p class="prose">More content goes here...</p>
+        </section>
+
+        <footer class="site-footer">
+          <p>Project Documentation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/nav.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>

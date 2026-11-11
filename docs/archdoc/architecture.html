@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Architecture & Script Contracts · REBOUND</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-page="architecture.html">
+  <header class="site-header">
+    <div class="site-header-left">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-controls="site-sidebar" aria-expanded="true">
+        <span>☰</span> <span>Menu</span>
+      </button>
+      <a href="index.html" class="site-title-link">REBOUND Architecture Docs</a>
+    </div>
+    <div class="site-header-right">
+      <button type="button" onclick="window.print()" class="search-trigger" aria-label="Print or export as PDF"><span>Print</span> <kbd>⌘P</kbd></button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">🌓 Auto</button>
+    </div>
+  </header>
+
+  <div class="site-layout">
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Sidebar navigation"></aside>
+
+    <main class="site-main">
+      <div class="wrap">
+        <header>
+          <div class="eyebrow">Topology · Unity Architecture</div>
+          <h1>System Architecture & Script Contracts</h1>
+          <p class="meta prose">A simple breakdown of how REBOUND works in Unity. Explains how the player, abilities, physics, enemies, and rooms connect without messy bugs or tangled scripts.</p>
+        </header>
+
+        <!-- System Layers Diagram -->
+        <section id="system-diagram">
+          <h2>The Four Simple Code Layers</h2>
+          <p class="prose">
+            The code is organized into four clean steps. Input flows down into ability math; ability math moves physics bodies; physics bodies trigger puzzle switches and hurt enemies. Zoom and pan the diagram below:
+          </p>
+
+          <figure class="fig" id="fig-architecture">
+            <div class="fig-tools" role="toolbar" aria-label="Diagram size">
+              <button type="button" data-z="out" aria-label="Zoom out">−</button>
+              <span class="z-val" aria-live="polite">Fit</span>
+              <button type="button" data-z="in" aria-label="Zoom in">+</button>
+              <button type="button" data-z="fit">Fit width</button>
+              <button type="button" data-z="full">Full screen</button>
+            </div>
+            <div class="fig-scroll" tabindex="0">
+              <svg class="dg" data-w="960" viewBox="0 0 960 420" role="img" aria-labelledby="arch-title arch-desc" xmlns="http://www.w3.org/2000/svg">
+                <title id="arch-title">How REBOUND's Code Fits Together</title>
+                <desc id="arch-desc">Four simple steps: player input down to physics movement, enemy hits, and puzzle triggers.</desc>
+                <defs>
+                  <marker id="arr-m" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" style="fill:var(--muted)"/>
+                  </marker>
+                  <marker id="arr-acc" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
+                  </marker>
+                </defs>
+
+                <rect class="bg" width="960" height="380"/>
+
+                <!-- Layer 1: Input & Screen -->
+                <rect class="card-bg" x="40" y="20" width="880" height="70" rx="8"/>
+                <rect class="step-pill" x="55" y="32" width="70" height="24" rx="4"/>
+                <text class="step-pill-t" x="90" y="48" text-anchor="middle">STEP 1</text>
+                <text class="title-lg" x="140" y="48">Input &amp; HUD (What you press and what you see)</text>
+                <text class="text-sub" x="140" y="68">PlayerAbilityInput.cs (LMB Push, RMB Pull, Shift SlowMo) · MouseLook.cs · AbilityHUD.cs (crosshair &amp; energy)</text>
+                <text class="tag" x="900" y="55" text-anchor="end" style="fill:var(--accent)">SENDS COMMANDS DOWN ▼</text>
+
+                <!-- Layer 2: Powers & Rules -->
+                <rect class="card-focal" x="40" y="105" width="880" height="75" rx="8"/>
+                <rect class="step-pill" x="55" y="118" width="70" height="24" rx="4" style="fill:var(--accent);"/>
+                <text class="step-pill-t" x="90" y="134" text-anchor="middle">STEP 2</text>
+                <text class="title-lg" x="140" y="134">Ability Rules (Wind Cannon, Vacuum Vortex, SlowMo)</text>
+                <text class="text-sub" x="140" y="154">PushAbility.cs (LMB wind blast + 3D recoil) · PullAbility.cs (RMB vacuum suction + Crate Cannon) · SlowMotionAbility.cs</text>
+                <text class="tag" x="900" y="142" text-anchor="end" style="fill:var(--accent)">APPLIES FORCES TO BODIES ▼</text>
+
+                <!-- Layer 3: Physics & Enemies -->
+                <rect class="card-bg" x="40" y="195" width="880" height="75" rx="8"/>
+                <rect class="step-pill" x="55" y="208" width="70" height="24" rx="4" style="fill:var(--high);"/>
+                <text class="step-pill-t" x="90" y="224" text-anchor="middle">STEP 3</text>
+                <text class="title-lg" x="140" y="224" style="fill:var(--high)">Physics &amp; Enemy Reaction (How things move &amp; take hits)</text>
+                <text class="text-sub" x="140" y="244">PlayerMovement.cs (Rigidbody rocket jumps) · InteractableProp.cs (crates) · EnemyPhysicsReceiver.cs (staggers/crush)</text>
+                <text class="tag" x="900" y="232" text-anchor="end" style="fill:var(--high)">TRIGGERS SWITCHES &amp; DEFEATS FOES ▼</text>
+
+                <!-- Layer 4: Room & Game State -->
+                <rect class="card-bg" x="40" y="285" width="880" height="75" rx="8"/>
+                <rect class="step-pill" x="55" y="298" width="70" height="24" rx="4" style="fill:var(--ok);"/>
+                <text class="step-pill-t" x="90" y="314" text-anchor="middle">STEP 4</text>
+                <text class="title-lg" x="140" y="314" style="fill:var(--ok)">Rooms &amp; Game Flow (Level progression)</text>
+                <text class="text-sub" x="140" y="334">PressurePlate.cs (crate switches) · LevelExit.cs (unlocks door) · GameFlow.cs (loads next stage)</text>
+                <text class="tag" x="900" y="322" text-anchor="end" style="fill:var(--ok)">PROGRESSES TO NEXT LEVEL ✓</text>
+              </svg>
+            </div>
+            <figcaption>Clean top-to-bottom game loop: You press a button -> Ability rules calculate force -> Physics moves blocks and enemies -> The room opens the door.</figcaption>
+          </figure>
+        </section>
+
+        <!-- Player Prefab Component Hierarchy -->
+        <section id="player-hierarchy">
+          <h2>Player Prefab Structure (PlayerRoot)</h2>
+          <p class="prose">
+            The player is built as a nested prefab. Physics movement belongs on the body capsule; looking and abilities belong on the camera pivot. This stops the camera from tumbling when you get hit by push recoil:
+          </p>
+
+          <figure class="fig" id="fig-player-prefab" style="margin-top: 18px; margin-bottom: 24px;">
+            <div class="fig-tools" role="toolbar" aria-label="Diagram size">
+              <button type="button" data-z="out" aria-label="Zoom out">−</button>
+              <span class="z-val" aria-live="polite">Fit</span>
+              <button type="button" data-z="in" aria-label="Zoom in">+</button>
+              <button type="button" data-z="fit">Fit width</button>
+              <button type="button" data-z="full">Full screen</button>
+            </div>
+            <div class="fig-scroll" tabindex="0">
+              <svg class="dg" data-w="960" viewBox="0 0 960 360" role="img" aria-labelledby="pp-title pp-desc" xmlns="http://www.w3.org/2000/svg">
+                <title id="pp-title">Player Prefab Nodes and Physics Setup</title>
+                <desc id="pp-desc">Capsule collider, locked X/Z rotation, decoupled camera pivot, and ability hand anchors.</desc>
+                <defs>
+                  <marker id="pa-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
+                  </marker>
+                </defs>
+
+                <rect class="bg" width="960" height="360"/>
+
+                <!-- Left Section: Physical Body (PlayerRoot) -->
+                <rect class="panel" x="40" y="25" width="380" height="310" rx="8"/>
+                <rect class="focal" x="55" y="40" width="350" height="36" rx="4"/>
+                <text class="nm big" x="230" y="63" text-anchor="middle">PHYSICAL BODY (PlayerRoot)</text>
+
+                <!-- Capsule Graphic -->
+                <rect x="90" y="100" width="70" height="150" rx="35" class="crate" style="fill:rgba(47, 95, 208, 0.1); stroke:var(--accent); stroke-width:1.8;"/>
+                <circle cx="125" cy="175" r="5" fill="var(--crit)"/>
+                <text class="tag" x="125" y="195" text-anchor="middle" style="fill:var(--crit)">CENTER OF MASS</text>
+
+                <!-- Freeze Rotation Locks Callout -->
+                <rect class="soft" x="180" y="95" width="220" height="65" rx="6"/>
+                <text class="tag" x="190" y="112">RIGIDBODY LOCKS</text>
+                <text class="nm" x="190" y="130">Freeze Rotation: X ✓ | Z ✓</text>
+                <text class="sub" x="190" y="148">Prevents capsule from falling over</text>
+
+                <!-- Ground Check Sensor -->
+                <circle cx="125" cy="255" r="14" class="hazard" style="fill:rgba(61, 122, 82, 0.2); stroke:var(--ok);"/>
+                <text class="tag" x="125" y="258" text-anchor="middle" style="fill:var(--ok)">R=0.2m</text>
+                
+                <rect class="soft" x="180" y="175" width="220" height="65" rx="6"/>
+                <text class="tag" x="190" y="192">GROUND SENSOR</text>
+                <text class="nm" x="190" y="210">Physics.CheckSphere</text>
+                <text class="sub" x="190" y="228">Enables jump &amp; prevents box-surfing</text>
+
+                <rect class="badge" x="90" y="285" width="280" height="24" rx="4"/>
+                <text class="badge-t" x="230" y="301" text-anchor="middle">LAYER 8: PLAYER · IGNORED BY OWN ABILITY RAYS</text>
+
+                <!-- Connection Arrow from Root to Camera Pivot -->
+                <path d="M 420 120 H 480" class="ln acc" stroke-width="2" marker-end="url(#pa-arr)"/>
+                <text class="tag" x="450" y="112" text-anchor="middle">PARENT OF</text>
+
+                <!-- Right Section: Visual & Camera Nodes -->
+                <rect class="panel" x="480" y="25" width="440" height="310" rx="8"/>
+                <rect class="box" x="495" y="40" width="410" height="36" rx="4"/>
+                <text class="nm big" x="700" y="63" text-anchor="middle">LOOKING &amp; ABILITIES (CameraPivot)</text>
+
+                <!-- CameraPivot Card -->
+                <rect class="soft" x="500" y="90" width="400" height="60" rx="6"/>
+                <text class="tag" x="515" y="108">CAMERA PIVOT (Eye Height Y = 1.6m)</text>
+                <text class="nm" x="515" y="126">MouseLook: Pitch -85° to +85°</text>
+                <text class="sub" x="515" y="142">Body turns Left/Right · Head pitches Up/Down</text>
+
+                <!-- Child nodes under pivot -->
+                <rect class="focal" x="515" y="165" width="180" height="65" rx="4"/>
+                <text class="tag" x="525" y="182">TARGETING ORIGIN</text>
+                <text class="nm" x="525" y="199">AbilityRayOrigin</text>
+                <text class="sub" x="525" y="215">Ray starts ahead of lens</text>
+
+                <rect class="box" x="710" y="165" width="185" height="65" rx="4"/>
+                <text class="tag" x="720" y="182">CAMERA VIEW</text>
+                <text class="nm" x="720" y="199">Main Camera</text>
+                <text class="sub" x="720" y="215">AudioListener attached</text>
+
+                <!-- Hands -->
+                <rect class="soft" x="515" y="245" width="180" height="65" rx="4"/>
+                <text class="tag" x="525" y="262" style="fill:var(--high)">LEFT HAND (PUSH / WIND)</text>
+                <text class="nm" x="525" y="279">ParticleSystem (Blast)</text>
+                <text class="sub" x="525" y="295">Air burst + recoil kick</text>
+
+                <rect class="soft" x="710" y="245" width="185" height="65" rx="4"/>
+                <text class="tag" x="720" y="262" style="fill:var(--accent)">RIGHT HAND (PULL / VORTEX)</text>
+                <text class="nm" x="720" y="279">LineRenderer (Tether)</text>
+                <text class="sub" x="720" y="295">Vacuum beam + hold anchor</text>
+              </svg>
+            </div>
+            <figcaption>Player prefab setup: Separated camera pivot ensures recoil forces do not jerk the camera uncomfortably.</figcaption>
+          </figure>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Node</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Components</th>
+                  <th class="col-auto">Job in the Game</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PlayerRoot</code></td>
+                  <td>
+                    <code>Rigidbody</code><br>
+                    <code>CapsuleCollider</code><br>
+                    <code>PlayerMovement</code><br>
+                    <code>PlayerAbilityInput</code>
+                  </td>
+                  <td>
+                    <strong>Physical Body:</strong> Handles running, jumping, gravity, and push recoil. X and Z rotations are frozen so you stay upright.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>└── CameraPivot</code></td>
+                  <td>
+                    <code>Transform</code><br>
+                    <code>MouseLook</code>
+                  </td>
+                  <td>
+                    <strong>Look Pivot:</strong> Rotates up and down (-85° to +85° clamp) and left/right with the mouse.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>    ├── MainCamera</code></td>
+                  <td>
+                    <code>Camera</code><br>
+                    <code>AudioListener</code>
+                  </td>
+                  <td>
+                    <strong>Viewport:</strong> Renders what you see and plays sound effects.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>    ├── AbilityRayOrigin</code></td>
+                  <td>
+                    <code>Transform</code>
+                  </td>
+                  <td>
+                    <strong>Aim Origin:</strong> Starts 0.3m ahead of the lens so ability rays never accidentally hit the player's own body.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>    ├── LeftHandVisual</code></td>
+                  <td>
+                    <code>MeshRenderer</code><br>
+                    <code>ParticleSystem (Blast)</code>
+                  </td>
+                  <td>
+                    <strong>Left Hand:</strong> Fires the Wind Blast (Push) air burst and plays recoil animation.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>    └── RightHandVisual</code></td>
+                  <td>
+                    <code>MeshRenderer</code><br>
+                    <code>LineRenderer (Tether)</code>
+                  </td>
+                  <td>
+                    <strong>Right Hand:</strong> Shoots the Vacuum Vortex beam to reel in crates and enemy projectiles.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Script Interface Contract Matrix -->
+        <section id="script-contracts">
+          <h2>Script Interface Contracts (How the Team Codes Together)</h2>
+          <p class="prose">
+            Each team member owns specific scripts. Here is the contract showing what methods each script provides so everyone can work in parallel without breaking each other:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Script Name</th>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Owner</th>
+                  <th class="col-auto">Methods Exposed (Public API)</th>
+                  <th class="col-lg">Strict Rule / Boundary</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PlayerMovement.cs</code></td>
+                  <td><strong>Player Dev</strong></td>
+                  <td>
+                    <code>void SetMoveInput(Vector2 dir)</code><br>
+                    <code>void Jump()</code><br>
+                    <code>void ApplyRecoil(Vector3 impulse)</code><br>
+                    <code>bool IsGrounded { get; }</code><br>
+                    <code>Transform GroundedObject { get; }</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Apply recoil through <code>Rigidbody.AddForce(impulse, ForceMode.Impulse)</code>.<br>
+                    <strong>Forbidden:</strong> Reading keyboard inputs directly inside movement physics.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>PushAbility.cs</code></td>
+                  <td><strong>Ability Dev</strong></td>
+                  <td>
+                    <code>bool TryPush()</code><br>
+                    <code>float CooldownPercent { get; }</code><br>
+                    <code>event Action OnPushed</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Fire on Left Click. Apply recoil to player even if hitting empty air. 0.45s cooldown.<br>
+                    <strong>Forbidden:</strong> Bypassing <code>PlayerMovement.ApplyRecoil()</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>PullAbility.cs</code></td>
+                  <td><strong>Ability Dev</strong></td>
+                  <td>
+                    <code>void StartPull()</code><br>
+                    <code>void StopPull()</code><br>
+                    <code>bool TryLaunchHeldObject()</code><br>
+                    <code>bool IsCarrying { get; }</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Fire on Right Click hold. Hover object at 2.5m. Snap tether if LOS broken or >15m.<br>
+                    <strong>Forbidden:</strong> Pulling an object the player is currently standing on.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>SlowMotionAbility.cs</code></td>
+                  <td><strong>Ability Dev</strong></td>
+                  <td>
+                    <code>void ActivateSlowMotion()</code><br>
+                    <code>void DeactivateSlowMotion()</code><br>
+                    <code>float EnergyPercent { get; }</code><br>
+                    <code>bool IsActive { get; }</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Set <code>Time.timeScale = 0.25f</code> and reduce air fall gravity so player floats.<br>
+                    <strong>Forbidden:</strong> Slowing down player camera aim.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>InteractableProp.cs</code></td>
+                  <td><strong>Ability Dev</strong></td>
+                  <td>
+                    <code>bool CanPull { get; }</code><br>
+                    <code>bool CanPush { get; }</code><br>
+                    <code>WeightClass Class { get; }</code><br>
+                    <code>void SetHighlighted(bool on)</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Heavy blocks drag across ground only (cannot be lifted into the air).<br>
+                    <strong>Forbidden:</strong> Missing a Rigidbody.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>IKineticTarget.cs</code> &amp; <code>EnemyPhysicsReceiver.cs</code></td>
+                  <td><strong>Enemy Dev</strong></td>
+                  <td>
+                    <code>void OnPushed(Vector3 dir, float force, Vector3 point)</code><br>
+                    <code>void OnPulled(Transform origin, float force)</code><br>
+                    <code>void OnPhysicsCrush(float speed, GameObject prop)</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Attached to enemies so player wind blasts, vortexes, and thrown crates hurt or stagger them.<br>
+                    <strong>Forbidden:</strong> Touching player ability scripts directly.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>AbilityHUD.cs</code></td>
+                  <td><strong>UI Dev</strong></td>
+                  <td>
+                    <code>void UpdateEnergy(float pct)</code><br>
+                    <code>void UpdatePushCooldown(float pct)</code><br>
+                    <code>void SetCrosshairState(bool validTarget)</code>
+                  </td>
+                  <td>
+                    <strong>Must:</strong> Animate UI smoothly using unscaled time.<br>
+                    <strong>Forbidden:</strong> Modifying gameplay or physics variables.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Physics Collision Matrix -->
+        <section id="physics-matrix">
+          <h2>Physics Layer Setup & Collision Matrix</h2>
+          <p class="prose">
+            Setting up Unity Physics layers correctly prevents glitches (like raycasts hitting your own face) and keeps performance high:
+          </p>
+
+          <div class="scroll">
+            <table class="wide">
+              <thead>
+                <tr>
+                  <th class="col-sm" style="white-space: nowrap; width: 1%;">Layer Name</th>
+                  <th class="col-auto">What Belongs on This Layer</th>
+                  <th class="col-lg">Behavior with Player Abilities</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>Layer 8: Player</code></td>
+                  <td>PlayerRoot capsule collider and ground sensors.</td>
+                  <td>Collides with Environment, Blocks, and Enemies. <strong>Ignored</strong> by ability rays so you never target yourself.</td>
+                </tr>
+                <tr>
+                  <td><code>Layer 9: Environment</code></td>
+                  <td>Static floors, walls, ceilings, and ramps.</td>
+                  <td>Collides with everything. Blocks ability rays (cannot pull objects through solid walls).</td>
+                </tr>
+                <tr>
+                  <td><code>Layer 10: Interactables</code></td>
+                  <td>Crates, puzzle blocks, and physics props.</td>
+                  <td>Targeted by Wind Blast and Vacuum Vortex. Collides safely with player.</td>
+                </tr>
+                <tr>
+                  <td><code>Layer 11: Hazards</code></td>
+                  <td>Bottomless pits and reset triggers.</td>
+                  <td>Trigger only. Detects player fall to restart room.</td>
+                </tr>
+                <tr>
+                  <td><code>Layer 12: Enemies</code></td>
+                  <td>Enemy bodies and hurtboxes.</td>
+                  <td>Targeted by wind blasts (Push) and thrown crates (Crush). Small swarms can be pulled.</td>
+                </tr>
+                <tr>
+                  <td><code>Layer 13: Projectiles</code></td>
+                  <td>Incoming enemy rockets, grenades, and plasma orbs.</td>
+                  <td>Can be deflected with Wind Blast (Push) or caught with Vacuum Vortex (Pull).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="site-footer">
+          <p>REBOUND Game Architecture Documentation · Year 3 Game Development Project · 2026</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/nav.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>
