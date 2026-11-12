@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Physics & Ability Flow · REBOUND Architecture</title>
+  <title>Physics &amp; Combat Journey · REBOUND Architecture</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -30,16 +30,16 @@
     <main class="site-main">
       <div class="wrap">
         <header>
-          <div class="eyebrow">Runtime · Physics & Ability Lifecycles</div>
-          <h1>Physical Mechanics & Ability Execution Flow</h1>
-          <p class="meta prose">A simple step-by-step walkthrough of how player inputs fire rays, calculate forces, trigger recoil jumps, and slow down time smoothly.</p>
+          <div class="eyebrow">Runtime · Physics &amp; Ability Lifecycles</div>
+          <h1>High-Speed Locomotion &amp; Weaponless Combat Flow</h1>
+          <p class="meta prose">A visual step-by-step walkthrough of how momentum sliding, grapple slingshotting, Spider-Sense threat warnings, bullet deflections, and the 4 enemy archetypes interact in real time.</p>
         </header>
 
         <!-- Sequence Diagram -->
         <section id="sequence-diagram">
-          <h2>The Core Action Loop: Time Slow, Vortex Pull, & Rocket Launch</h2>
+          <h2>The 5-Step Speedrun &amp; Combat Action Loop</h2>
           <p class="prose">
-            This diagram shows what happens when you combine powers: slowing down time, pulling a crate into your hands with Right Click, and blasting the floor with Left Click to rocket jump across a chasm:
+            This diagram traces the full high-speed loop: accelerating down a slope, boosting forward with Push recoil, slingshotting past a Hulk slam, triggering Spider-Sense Slow-Mo to deflect a sniper bullet, and blasting through a barricade into a bunny-hop:
           </p>
 
           <figure class="fig" id="fig-sequence">
@@ -51,9 +51,9 @@
               <button type="button" data-z="full">Full screen</button>
             </div>
             <div class="fig-scroll" tabindex="0">
-              <svg class="dg" data-w="960" viewBox="0 0 960 360" role="img" aria-labelledby="seq-title seq-desc" xmlns="http://www.w3.org/2000/svg">
-                <title id="seq-title">How an Action Works: The Dual-Handed Chasm Leap</title>
-                <desc id="seq-desc">Four clear chronological steps showing slow-motion activation, crate pulling, push recoil jumping, and safe landing.</desc>
+              <svg class="dg" data-w="960" viewBox="0 0 960 380" role="img" aria-labelledby="seq-title seq-desc" xmlns="http://www.w3.org/2000/svg">
+                <title id="seq-title">High-Speed Locomotion &amp; Gunless Combat Loop</title>
+                <desc id="seq-desc">Five steps: slope slide boost, grapple slingshot past Hulk, spider-sense sniper deflection, crate cannon blast, and bunny-hop landing.</desc>
                 <defs>
                   <marker id="sq-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
                     <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
@@ -66,111 +66,152 @@
                   </marker>
                 </defs>
 
-                <rect class="bg" width="960" height="360"/>
+                <rect class="bg" width="960" height="380" rx="8"/>
 
-                <!-- Step 1 Card: Slow Motion -->
-                <rect class="card-bg" x="25" y="25" width="215" height="310" rx="8"/>
-                <rect class="step-pill" x="35" y="38" width="65" height="22" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="67" y="53" text-anchor="middle">STEP 1</text>
-                <text class="title-lg" x="110" y="54" style="fill:var(--ok)">Slow Time</text>
+                <!-- Step 1 Card: Slide & Bowling Strike -->
+                <rect class="card-bg" x="15" y="20" width="175" height="340" rx="8"/>
+                <rect class="step-pill" x="25" y="32" width="60" height="22" rx="4" style="fill:var(--high);"/>
+                <text class="step-pill-t" x="55" y="47" text-anchor="middle">STEP 1</text>
+                <text class="title-lg" x="92" y="48" style="fill:var(--high)">Slide Strike</text>
                 
-                <circle cx="132" cy="120" r="30" stroke="var(--ok)" stroke-width="2" fill="rgba(61, 122, 82, 0.1)"/>
-                <circle cx="132" cy="120" r="4" fill="var(--ok)"/>
-                <line x1="132" y1="120" x2="132" y2="100" stroke="var(--ok)" stroke-width="2"/>
-                <line x1="132" y1="120" x2="148" y2="120" stroke="var(--ok)" stroke-width="2"/>
+                <!-- Graphic: Slide down ramp + Bowling swarmers -->
+                <path d="M 30 140 L 95 160 L 170 160" stroke="var(--muted)" stroke-width="2" fill="none"/>
+                <rect x="75" y="142" width="30" height="16" rx="8" class="player"/>
+                <text class="player-t" x="90" y="154" text-anchor="middle" font-size="10">YOU</text>
+                <!-- Swarmers flying -->
+                <circle cx="130" cy="145" r="4" fill="var(--high)"/>
+                <circle cx="140" cy="135" r="4" fill="var(--high)"/>
+                <circle cx="150" cy="150" r="4" fill="var(--high)"/>
+                <path d="M 105 150 L 135 150" class="ln bad" stroke-width="2.5" marker-end="url(#sq-arr-crit)"/>
 
-                <rect class="soft" x="35" y="175" width="195" height="95" rx="6"/>
-                <text class="text-reg" x="45" y="198">Hold Left Shift</text>
-                <text class="text-sub" x="45" y="218">World slows to 25% speed.</text>
-                <text class="text-sub" x="45" y="236">You float gently in air,</text>
-                <text class="text-sub" x="45" y="254">with plenty of time to aim.</text>
+                <rect class="soft" x="25" y="175" width="155" height="115" rx="6"/>
+                <text class="text-reg" x="33" y="195">Crouch + Boost</text>
+                <text class="text-sub" x="33" y="213">Slide down slope.</text>
+                <text class="text-sub" x="33" y="229">Push boosts to 22 m/s.</text>
+                <text class="text-sub" x="33" y="245">Plows straight through</text>
+                <text class="text-sub" x="33" y="261">Swarmer pack (Bowling).</text>
 
-                <rect class="step-pill" x="35" y="285" width="195" height="26" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="132" y="302" text-anchor="middle">SLOWMO ACTIVE</text>
+                <rect class="step-pill" x="25" y="305" width="155" height="26" rx="4" style="fill:var(--high);"/>
+                <text class="step-pill-t" x="102" y="322" text-anchor="middle">SWARMERS BOWLED</text>
 
                 <!-- Flow arrow 1 to 2 -->
-                <path d="M 240 180 H 260" class="ln acc" stroke-width="2.5" marker-end="url(#sq-arr)"/>
+                <path d="M 190 190 H 202" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 2 Card: Pull Crate -->
-                <rect class="card-bg" x="260" y="25" width="215" height="310" rx="8"/>
-                <rect class="step-pill" x="270" y="38" width="65" height="22" rx="4" style="fill:var(--accent);"/>
-                <text class="step-pill-t" x="302" y="53" text-anchor="middle">STEP 2</text>
-                <text class="title-lg" x="345" y="54" style="fill:var(--accent)">Vacuum Pull</text>
+                <!-- Step 2 Card: Slingshot Over Hulk Slam -->
+                <rect class="card-bg" x="205" y="20" width="175" height="340" rx="8"/>
+                <rect class="step-pill" x="215" y="32" width="60" height="22" rx="4" style="fill:var(--accent);"/>
+                <text class="step-pill-t" x="245" y="47" text-anchor="middle">STEP 2</text>
+                <text class="title-lg" x="282" y="48" style="fill:var(--accent)">Hulk Vault</text>
 
-                <!-- Graphic: Beam pulling box -->
-                <circle cx="300" cy="120" r="14" class="player"/>
-                <text class="player-t" x="300" y="124" text-anchor="middle">YOU</text>
-                <path d="M 430 120 L 340 120" class="ln acc" stroke-width="3" marker-end="url(#sq-arr)"/>
-                <rect x="430" y="106" width="28" height="28" rx="4" class="crate"/>
-                <text class="crate-t" x="444" y="123" text-anchor="middle">BOX</text>
+                <!-- Graphic: Grapple over shockwave -->
+                <circle cx="295" cy="95" r="8" fill="var(--high)"/>
+                <line x1="295" y1="103" x2="265" y2="140" class="ln acc" stroke-width="2.5"/>
+                <circle cx="265" cy="140" r="14" class="player"/>
+                <text class="player-t" x="265" y="144" text-anchor="middle">YOU</text>
+                <!-- Hulk landing on ground -->
+                <rect x="330" y="140" width="26" height="20" rx="4" fill="var(--crit)"/>
+                <path d="M 320 160 Q 343 152 366 160" stroke="var(--crit)" stroke-width="2" fill="none"/>
 
-                <rect class="soft" x="270" y="175" width="195" height="95" rx="6"/>
-                <text class="text-reg" x="280" y="198">Hold Right Click (RMB)</text>
-                <text class="text-sub" x="280" y="218">Vacuum tether sucks in crate.</text>
-                <text class="text-sub" x="280" y="236">Hovers smoothly 2.5m away</text>
-                <text class="text-sub" x="280" y="254">ready to drop or launch.</text>
+                <rect class="soft" x="215" y="175" width="155" height="115" rx="6"/>
+                <text class="text-reg" x="223" y="195">Grapple Ceiling</text>
+                <text class="text-sub" x="223" y="213">Hulk leaps to slam.</text>
+                <text class="text-sub" x="223" y="229">Grapple tether lifts</text>
+                <text class="text-sub" x="223" y="245">you cleanly over the</text>
+                <text class="text-sub" x="223" y="261">ground shockwave.</text>
 
-                <rect class="step-pill" x="270" y="285" width="195" height="26" rx="4" style="fill:var(--accent);"/>
-                <text class="step-pill-t" x="367" y="302" text-anchor="middle">CRATE IN HOLD (2.5m)</text>
+                <rect class="step-pill" x="215" y="305" width="155" height="26" rx="4" style="fill:var(--accent);"/>
+                <text class="step-pill-t" x="292" y="322" text-anchor="middle">SHOCKWAVE CLEARED</text>
 
                 <!-- Flow arrow 2 to 3 -->
-                <path d="M 475 180 H 495" class="ln acc" stroke-width="2.5" marker-end="url(#sq-arr)"/>
+                <path d="M 380 190 H 392" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 3 Card: Recoil Boost -->
-                <rect class="card-bg" x="495" y="25" width="215" height="310" rx="8"/>
-                <rect class="step-pill" x="505" y="38" width="65" height="22" rx="4" style="fill:var(--crit);"/>
-                <text class="step-pill-t" x="537" y="53" text-anchor="middle">STEP 3</text>
-                <text class="title-lg" x="580" y="54" style="fill:var(--crit)">Rocket Jump</text>
+                <!-- Step 3 Card: Spider Sense & Bullet Deflection -->
+                <rect class="card-bg" x="395" y="20" width="175" height="340" rx="8"/>
+                <rect class="step-pill" x="405" y="32" width="60" height="22" rx="4" style="fill:var(--crit);"/>
+                <text class="step-pill-t" x="435" y="47" text-anchor="middle">STEP 3</text>
+                <text class="title-lg" x="472" y="48" style="fill:var(--crit)">Deflection</text>
 
-                <!-- Graphic: Player leaping with blast -->
-                <circle cx="560" cy="115" r="14" class="player"/>
-                <text class="player-t" x="560" y="119" text-anchor="middle">YOU</text>
-                <!-- Blast arrow down -->
-                <line x1="550" y1="125" x2="520" y2="155" class="ln bad" stroke-width="2.5" marker-end="url(#sq-arr-crit)"/>
-                <!-- Boost arrow up/forward -->
-                <path d="M 575 105 Q 640 65 675 110" class="ln acc" stroke-width="3" stroke-dasharray="4 3" marker-end="url(#sq-arr-ok)"/>
+                <!-- Graphic: Spider Sense Arc + Reflected Bullet -->
+                <circle cx="450" cy="125" r="14" class="player"/>
+                <text class="player-t" x="450" y="129" text-anchor="middle">YOU</text>
+                <!-- Spider sense arc -->
+                <path d="M 466 112 A 20 20 0 0 1 472 138" stroke="var(--crit)" stroke-width="3" fill="none"/>
+                <!-- Bullet reflected -->
+                <line x1="535" y1="125" x2="480" y2="125" stroke="var(--high)" stroke-width="2" stroke-dasharray="3 2"/>
+                <line x1="475" y1="125" x2="540" y2="115" class="ln bad" stroke-width="2.5" marker-end="url(#sq-arr-crit)"/>
 
-                <rect class="soft" x="505" y="175" width="195" height="95" rx="6"/>
-                <text class="text-reg" x="515" y="198">Click Left Click (LMB)</text>
-                <text class="text-sub" x="515" y="218">Aim at floor &amp; blast air.</text>
-                <text class="text-sub" x="515" y="236">Opposite recoil launches</text>
-                <text class="text-sub" x="515" y="254">you high over the pit!</text>
+                <rect class="soft" x="405" y="175" width="155" height="115" rx="6"/>
+                <text class="text-reg" x="413" y="195">Sense + Push</text>
+                <text class="text-sub" x="413" y="213">Spider Sense flashes.</text>
+                <text class="text-sub" x="413" y="229">Tap Shift (SlowMo).</text>
+                <text class="text-sub" x="413" y="245">Push (`LMB`) reflects</text>
+                <text class="text-sub" x="413" y="261">bullet back to sniper!</text>
 
-                <rect class="step-pill" x="505" y="285" width="195" height="26" rx="4" style="fill:var(--crit);"/>
-                <text class="step-pill-t" x="602" y="302" text-anchor="middle">ROCKET RECOIL BOOST</text>
+                <rect class="step-pill" x="405" y="305" width="155" height="26" rx="4" style="fill:var(--crit);"/>
+                <text class="step-pill-t" x="482" y="322" text-anchor="middle">SNIPER ONE-SHOTTED</text>
 
                 <!-- Flow arrow 3 to 4 -->
-                <path d="M 710 180 H 730" class="ln acc" stroke-width="2.5" marker-end="url(#sq-arr)"/>
+                <path d="M 570 190 H 582" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 4 Card: Land & Exit -->
-                <rect class="card-bg" x="730" y="25" width="205" height="310" rx="8"/>
-                <rect class="step-pill" x="740" y="38" width="65" height="22" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="772" y="53" text-anchor="middle">STEP 4</text>
-                <text class="title-lg" x="815" y="54" style="fill:var(--ok)">Solve &amp; Defeat</text>
+                <!-- Step 4 Card: Crate Shield & Cannon Blast -->
+                <rect class="card-bg" x="585" y="20" width="175" height="340" rx="8"/>
+                <rect class="step-pill" x="595" y="32" width="60" height="22" rx="4" style="fill:var(--ok);"/>
+                <text class="step-pill-t" x="625" y="47" text-anchor="middle">STEP 4</text>
+                <text class="title-lg" x="662" y="48" style="fill:var(--ok)">Riot Cannon</text>
 
-                <!-- Graphic: Door open -->
-                <rect class="door" x="800" y="90" width="55" height="60" rx="6"/>
-                <text class="title-lg" x="827" y="125" text-anchor="middle" style="fill:var(--ok)">EXIT</text>
+                <!-- Graphic: Held crate shielding then launching -->
+                <circle cx="630" cy="125" r="14" class="player"/>
+                <text class="player-t" x="630" y="129" text-anchor="middle">YOU</text>
+                <rect x="660" y="113" width="22" height="24" rx="4" class="crate" style="stroke:var(--ok); stroke-width:2;"/>
+                <text class="crate-t" x="671" y="129" text-anchor="middle" font-size="10">BOX</text>
+                <path d="M 685 125 L 740 125" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
 
-                <rect class="soft" x="740" y="175" width="185" height="95" rx="6"/>
-                <text class="text-reg" x="750" y="198">Touchdown</text>
-                <text class="text-sub" x="750" y="218">Land on far ledge.</text>
-                <text class="text-sub" x="750" y="236">Fire crate at enemy</text>
-                <text class="text-sub" x="750" y="254">or drop it on the switch!</text>
+                <rect class="soft" x="595" y="175" width="155" height="115" rx="6"/>
+                <text class="text-reg" x="603" y="195">Shield &amp; Launch</text>
+                <text class="text-sub" x="603" y="213">Crate blocks rapid lasers.</text>
+                <text class="text-sub" x="603" y="229">Tap Push to fire crate</text>
+                <text class="text-sub" x="603" y="245">directly into stunned</text>
+                <text class="text-sub" x="603" y="261">Hulk's exposed back!</text>
 
-                <rect class="step-pill" x="740" y="285" width="185" height="26" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="832" y="302" text-anchor="middle">ROOM CLEARED ✓</text>
+                <rect class="step-pill" x="595" y="305" width="155" height="26" rx="4" style="fill:var(--ok);"/>
+                <text class="step-pill-t" x="672" y="322" text-anchor="middle">HULK DESTROYED</text>
+
+                <!-- Flow arrow 4 to 5 -->
+                <path d="M 760 190 H 772" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
+
+                <!-- Step 5 Card: Bunny-Hop & Medal Gate -->
+                <rect class="card-bg" x="775" y="20" width="170" height="340" rx="8"/>
+                <rect class="step-pill" x="785" y="32" width="60" height="22" rx="4" style="fill:var(--ok);"/>
+                <text class="step-pill-t" x="815" y="47" text-anchor="middle">STEP 5</text>
+                <text class="title-lg" x="852" y="48" style="fill:var(--ok)">Bunny-Hop</text>
+
+                <!-- Graphic: Jump through gate -->
+                <rect class="door" x="860" y="100" width="45" height="50" rx="4"/>
+                <text class="title-lg" x="882" y="130" text-anchor="middle" style="fill:var(--ok)">SPLIT</text>
+                <circle cx="820" cy="135" r="14" class="player"/>
+                <text class="player-t" x="820" y="139" text-anchor="middle">YOU</text>
+                <path d="M 835 135 L 855 135" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
+
+                <rect class="soft" x="785" y="175" width="150" height="115" rx="6"/>
+                <text class="text-reg" x="793" y="195">Touchdown Jump</text>
+                <text class="text-sub" x="793" y="213">Preserves 100% velocity</text>
+                <text class="text-sub" x="793" y="229">into the next section.</text>
+                <text class="text-sub" x="793" y="245">Gold Medal split</text>
+                <text class="text-sub" x="793" y="261">checkpoint logged.</text>
+
+                <rect class="step-pill" x="785" y="305" width="150" height="26" rx="4" style="fill:var(--ok);"/>
+                <text class="step-pill-t" x="860" y="322" text-anchor="middle">GOLD PACE MAINTAINED</text>
               </svg>
             </div>
-            <figcaption>The 4-step action loop: Slow time -> Pull a crate into your hands -> Blast the ground to rocket jump -> Land and clear the room.</figcaption>
+            <figcaption>The 5-step Redliner combat & locomotion cycle: Slide bowling strike -> Hulk shockwave vault -> Spider-Sense bullet deflection -> Crate shield & back crush -> Bunny-hop split.</figcaption>
           </figure>
         </section>
 
         <!-- Detailed Mathematical Mechanics -->
         <section id="mechanics-math">
-          <h2>Physics Calculations Explained in Plain English</h2>
+          <h2>Physics Calculations Explained in Direct Plain English</h2>
           <p class="prose">
-            Here is how forces are calculated under the hood so physics feels solid and consistent:
+            Here is how forces, Spider-Sense angles, and combat vector math are computed under the hood:
           </p>
 
           <figure class="fig" id="fig-physics-vectors" style="margin-top: 18px; margin-bottom: 24px;">
@@ -182,9 +223,9 @@
               <button type="button" data-z="full">Full screen</button>
             </div>
             <div class="fig-scroll" tabindex="0">
-              <svg class="dg" data-w="960" viewBox="0 0 960 340" role="img" aria-labelledby="pv-title pv-desc" xmlns="http://www.w3.org/2000/svg">
-                <title id="pv-title">REBOUND Physics Force Vectors and Recoil Mechanics</title>
-                <desc id="pv-desc">Diagram showing the spring damping pull calculation and the equal-and-opposite impulse vector on the player during push recoil.</desc>
+              <svg class="dg" data-w="960" viewBox="0 0 960 360" role="img" aria-labelledby="pv-title pv-desc" xmlns="http://www.w3.org/2000/svg">
+                <title id="pv-title">REBOUND High-Speed Force Vectors &amp; Threat Detection</title>
+                <desc id="pv-desc">Diagram showing the Spider-Sense angle calculation, sniper bullet reflection vector, and Hulk shockwave vertical clearance.</desc>
                 <defs>
                   <marker id="pv-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
                     <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
@@ -197,111 +238,120 @@
                   </marker>
                 </defs>
 
-                <rect class="bg" width="960" height="340"/>
+                <rect class="bg" width="960" height="360" rx="8"/>
 
-                <!-- Left Panel: PULL FORCE & DAMPING -->
-                <rect class="panel" x="30" y="20" width="430" height="300" rx="8"/>
-                <rect class="focal" x="45" y="35" width="400" height="34" rx="4"/>
-                <text class="nm big" x="245" y="58" text-anchor="middle">PULL: SPRING FORCE &amp; SMOOTH DAMPING</text>
+                <!-- Left Panel: SPIDER-SENSE & DEFLECTION MATH -->
+                <rect class="panel" x="30" y="20" width="435" height="320" rx="8"/>
+                <rect class="focal" x="45" y="35" width="405" height="34" rx="4"/>
+                <text class="nm big" x="247" y="58" text-anchor="middle">SPIDER-SENSE &amp; BULLET DEFLECTION</text>
 
-                <!-- Visual: Player to Crate -->
-                <circle cx="80" cy="150" r="18" class="player"/>
-                <text class="player-t" x="80" y="154" text-anchor="middle">YOU</text>
+                <!-- Visual: Player in center with threat ray -->
+                <circle cx="100" cy="140" r="16" class="player"/>
+                <text class="player-t" x="100" y="144" text-anchor="middle">YOU</text>
+                <!-- Threat ray from sniper at top right -->
+                <line x1="380" y1="90" x2="130" y2="135" stroke="var(--crit)" stroke-width="2" stroke-dasharray="4 2"/>
+                <circle cx="380" cy="90" r="8" fill="var(--crit)"/>
+                <text class="tag" x="380" y="75" text-anchor="middle" style="fill:var(--crit)">SNIPER (1.5s LOCK)</text>
 
-                <!-- Hold point -->
-                <circle cx="210" cy="150" r="16" fill="rgba(47, 95, 208, 0.15)" stroke="var(--accent)" stroke-dasharray="3 3"/>
-                <circle cx="210" cy="150" r="4" fill="var(--accent)"/>
-                <text class="tag" x="210" y="122" text-anchor="middle">HOLD POINT (2.5m)</text>
-                <text class="tag" x="210" y="182" text-anchor="middle" style="fill:var(--accent)">DEAD ZONE: 0.2m</text>
+                <!-- Spider sense HUD curved arc on right of player -->
+                <path d="M 122 125 A 25 25 0 0 1 126 155" stroke="var(--crit)" stroke-width="4" fill="none"/>
+                <text class="tag" x="155" y="145" style="fill:var(--crit)">HUD CHEVRON</text>
 
-                <!-- Target Crate -->
-                <rect x="360" y="130" width="40" height="40" rx="4" class="crate"/>
-                <text class="crate-t" x="380" y="155" text-anchor="middle">BOX</text>
+                <!-- Deflection formula callout -->
+                <rect class="soft" x="45" y="195" width="405" height="130" rx="6"/>
+                <text class="tag" x="60" y="215">DEFLECTION &amp; ANGLE FORMULA</text>
+                <text class="nm" x="60" y="235">ThreatAngle = Vector3.SignedAngle(Camera.forward, toThreat, Up)</text>
+                <text class="nm" x="60" y="255">DeflectVelocity = -bullet.velocity.normalized * 45f</text>
+                <text class="sub" x="60" y="275">1. HUD arc points towards threat off-screen angle.</text>
+                <text class="sub" x="60" y="293">2. Push blast during Slow-Mo reflects round directly back at sniper.</text>
 
-                <!-- Pull vector arrow -->
-                <path d="M 355 145 L 235 145" class="ln acc" stroke-width="2.5" marker-end="url(#pv-arr)"/>
-                <text class="tag" x="295" y="138" text-anchor="middle" style="fill:var(--accent)">PULL FORCE +18</text>
+                <!-- Right Panel: HULK SHOCKWAVE & CRATE RIOT SHIELD -->
+                <rect class="panel" x="495" y="20" width="435" height="320" rx="8"/>
+                <rect class="box" x="510" y="35" width="405" height="34" rx="4"/>
+                <text class="nm big" x="712" y="58" text-anchor="middle">HULK SHOCKWAVE &amp; CRATE RIOT SHIELD</text>
 
-                <!-- Damping resistance arrow -->
-                <path d="M 300 160 L 345 160" class="ln bad" stroke-width="2" marker-end="url(#pv-arr-crit)"/>
-                <text class="tag" x="325" y="178" text-anchor="middle" style="fill:var(--crit)">DAMPING: -v * 2.5</text>
+                <!-- Visual: Hulk landing with expanding ring -->
+                <rect x="540" y="130" width="30" height="24" rx="4" fill="var(--crit)"/>
+                <text class="crate-t" x="555" y="146" text-anchor="middle" font-size="10">HULK</text>
+                <ellipse cx="555" cy="155" rx="55" ry="12" stroke="var(--crit)" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+                <text class="tag" x="635" y="152" style="fill:var(--crit)">SHOCKWAVE (H=1.5m)</text>
 
-                <!-- Formula callout -->
-                <rect class="soft" x="45" y="210" width="400" height="90" rx="6"/>
-                <text class="tag" x="60" y="230">PLAIN-ENGLISH FORMULA</text>
-                <text class="nm" x="60" y="250">Force = (toTarget.normalized * 18.0f) - (velocity * 2.5f)</text>
-                <text class="sub" x="60" y="270">1. Pulls object straight toward the 2.5m anchor in front of your eyes</text>
-                <text class="sub" x="60" y="286">2. Damps speed as it arrives so it hovers calmly without shaking</text>
+                <!-- Player jumping over wave -->
+                <circle cx="750" cy="115" r="16" class="player"/>
+                <text class="player-t" x="750" y="119" text-anchor="middle">YOU</text>
+                <rect x="780" y="103" width="20" height="24" rx="4" class="crate"/>
+                <text class="crate-t" x="790" y="119" text-anchor="middle" font-size="9">SHIELD</text>
 
-                <!-- Right Panel: PUSH BLAST & RECOIL BOOST -->
-                <rect class="panel" x="490" y="20" width="440" height="300" rx="8"/>
-                <rect class="box" x="505" y="35" width="410" height="34" rx="4"/>
-                <text class="nm big" x="710" y="58" text-anchor="middle">PUSH: WIND BLAST &amp; 3D ROCKET RECOIL</text>
+                <!-- Rapid laser bolts absorbed -->
+                <line x1="880" y1="110" x2="805" y2="110" stroke="var(--high)" stroke-width="2.5"/>
+                <line x1="880" y1="118" x2="805" y2="118" stroke="var(--high)" stroke-width="2.5"/>
+                <text class="tag" x="845" y="98" text-anchor="middle" style="fill:var(--high)">BLOCKED</text>
 
-                <!-- Airborne Player Rocket Jump Diagram -->
-                <circle cx="660" cy="150" r="18" class="player"/>
-                <text class="player-t" x="660" y="154" text-anchor="middle">YOU</text>
-
-                <!-- Aim Ray 45 degrees down/forward -->
-                <line x1="675" y1="160" x2="770" y2="210" class="ln acc" stroke-width="1.8" marker-end="url(#pv-arr-ok)"/>
-                <text class="tag" x="740" y="180" text-anchor="middle" style="fill:var(--ok)">WIND BLAST +12</text>
-
-                <rect x="780" y="195" width="38" height="38" rx="4" class="crate"/>
-                <text class="crate-t" x="799" y="218" text-anchor="middle">BOX</text>
-
-                <!-- Recoil opposite vector up/back -->
-                <line x1="645" y1="140" x2="560" y2="90" class="ln bad" stroke-width="2.5" marker-end="url(#pv-arr-crit)"/>
-                <text class="tag" x="580" y="130" text-anchor="middle" style="fill:var(--crit)">PLAYER RECOIL -5</text>
-
-                <!-- Push Formula Callout -->
-                <rect class="soft" x="505" y="210" width="410" height="90" rx="6"/>
-                <text class="tag" x="520" y="230">PLAIN-ENGLISH FORMULA</text>
-                <text class="nm" x="520" y="250">RecoilImpulse = -Camera.main.transform.forward * 5.0f</text>
-                <text class="sub" x="520" y="270">1. Block receives forward impulse away from you</text>
-                <text class="sub" x="520" y="286">2. Player receives fixed recoil backwards (even into empty air!)</text>
+                <!-- Formula Callout -->
+                <rect class="soft" x="510" y="195" width="405" height="130" rx="6"/>
+                <text class="tag" x="525" y="215">SHOCKWAVE &amp; SHIELDING RULES</text>
+                <text class="nm" x="525" y="235">ShockwaveClearance = PlayerPosition.y &gt; GroundY + 1.5f</text>
+                <text class="nm" x="525" y="255">CrateShieldAngle = Vector3.Dot(Camera.forward, -laserDir) &gt; 0.6f</text>
+                <text class="sub" x="525" y="275">1. Jumping or grappling higher than 1.5m avoids ground wave.</text>
+                <text class="sub" x="525" y="293">2. Held crate absorbs all forward incoming rapid plasma bolts.</text>
               </svg>
             </div>
-            <figcaption>Physical force vectors: Spring damping prevents the box from oscillating; fixed 3D recoil enables rocket jumping.</figcaption>
+            <figcaption>Combat math: Spider-Sense tracks off-screen threat angles; Push reflects bullets; held crates provide 120-degree forward riot shielding against rapid plasma.</figcaption>
           </figure>
         </section>
 
         <!-- Edge Cases Section -->
         <section id="edge-cases">
-          <h2>Edge Cases & Physics Safeguards</h2>
+          <h2>Edge Cases, Safeguards &amp; Combat Balance Rules</h2>
           <div class="scroll">
             <table class="wide">
               <thead>
                 <tr>
-                  <th class="col-sm">Edge Case</th>
-                  <th class="col-sm">Potential Problem</th>
-                  <th class="col-auto">Our Implemented Solution</th>
+                  <th class="col-sm">Edge Case / State</th>
+                  <th class="col-sm">Potential Failure Mode</th>
+                  <th class="col-auto">Implemented Architecture Solution</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Box-Surfing Glitch</strong></td>
-                  <td>Standing on a crate and pulling it causes infinite flying into space.</td>
-                  <td><strong>Grounded Check Lockout:</strong> If <code>PlayerMovement.GroundedObject == target</code>, pulling is blocked completely.</td>
+                  <td><strong>Spider-Sense Threat Stacking</strong></td>
+                  <td>Multiple snipers or Hulk slams happen at the same time, confusing HUD chevrons.</td>
+                  <td><strong>Priority &amp; Multi-Arc Clamping:</strong> The closest immediate lethal attack flashes with highest opacity; secondary threats display smaller faint chevrons.</td>
                 </tr>
                 <tr>
-                  <td><strong>Snagging Behind Walls</strong></td>
-                  <td>Walking around a pillar while pulling traps the box or clips it into walls.</td>
-                  <td><strong>Leash Break:</strong> If line of sight is broken by geometry or distance exceeds 15m, the tether snaps and drops the block.</td>
+                  <td><strong>Sniper Reflection Alignment</strong></td>
+                  <td>Player Push deflection fires in a random direction and misses the sniper.</td>
+                  <td><strong>Laser-Trace Reversal:</strong> The deflected bullet calculates its return trajectory along the sniper's own targeting ray, guaranteeing a direct hit if deflected cleanly.</td>
                 </tr>
                 <tr>
-                  <td><strong>Fast Block Collision</strong></td>
-                  <td>A fast-flying box could crush or clip inside the player.</td>
-                  <td><strong>Soft Pushback:</strong> Blocks gently slide off the capsule without crushing or causing self-damage.</td>
+                  <td><strong>Hulk Ground Slam Jitter</strong></td>
+                  <td>Player is near the slam edge and gets stuck in physics jitter between capsule and wave.</td>
+                  <td><strong>Trigger Volume Sphere-Cast:</strong> Shockwave is evaluated as an expanding radial trigger volume with clear 1.5m height check (jump/grapple clears).</td>
                 </tr>
                 <tr>
-                  <td><strong>Heavy Blocks</strong></td>
-                  <td>Lifting giant 25kg blocks breaks puzzle balance.</td>
-                  <td><strong>Ground Drag Only:</strong> Heavy blocks drag across the floor; they cannot be lifted into the air.</td>
+                  <td><strong>Swarmer Ramming at Low Speed</strong></td>
+                  <td>Player walks into a Swarmer pack at 3 m/s expecting a bowling strike.</td>
+                  <td><strong>Speed Threshold (12 m/s):</strong> Bowling strike only triggers at slide/grapple speed (&gt;=12 m/s). Low-speed collisions deal contact damage to player.</td>
                 </tr>
                 <tr>
-                  <td><strong>Crate Cannon Combo</strong></td>
-                  <td>Pressing LMB while holding RMB.</td>
-                  <td><strong>Instant Launch:</strong> Disengages pull lock and fires the block forward as a high-speed missile.</td>
+                  <td><strong>Carrying Props in Tight Corridors</strong></td>
+                  <td>A crate held 2.5m ahead jams into doorframes or wedges player against corners.</td>
+                  <td><strong>Elastic Retraction:</strong> Proximity sensors retract the hover anchor from 2.5m to 1.2m when walls are detected, smoothing narrow corridor navigation.</td>
+                </tr>
+                <tr>
+                  <td><strong>Wall Collision at 35 m/s</strong></td>
+                  <td>Player or thrown crate tunnels through thin walls or floor meshes.</td>
+                  <td><strong>ContinuousDynamic CCD:</strong> Rigidbodies evaluate sweep volumes every sub-step; static level walls are modeled with minimum 0.5m thickness.</td>
+                </tr>
+                <tr>
+                  <td><strong>Un-Crouch Under Low Obstacles</strong></td>
+                  <td>Player releases Crouch inside a low vent, clipping head into geometry.</td>
+                  <td><strong>Overhead Clearance Raycast:</strong> Checks <code>Physics.Raycast(head, Vector3.up, 1.0m)</code>. If blocked, crouch height remains locked at 0.9m until fully clear.</td>
+                </tr>
+                <tr>
+                  <td><strong>Target Ambiguity (Wall vs Crate)</strong></td>
+                  <td>Player wants to grapple a wall behind an object, or grab a crate in front of a wall.</td>
+                  <td><strong>Target-Priority Hierarchy:</strong> Layer 10 (Interactables) and Layer 12 (Light Enemies) take precedence if directly under the crosshair; otherwise falls back to Layer 9/14 (Grapple).</td>
                 </tr>
               </tbody>
             </table>
