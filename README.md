@@ -1,4 +1,4 @@
-# REBOUND — First-Person Physics Action & Puzzle Game
+# REBOUND — First-Person High-Speed Physics Action & Movement Game
 
 Welcome to the **REBOUND** game repository! Built in Unity for our Year 3 Game Development Midterm.
 
@@ -20,11 +20,21 @@ Welcome to the **REBOUND** game repository! Built in Unity for our Year 3 Game D
 
 | Action | Control | Physical Effect |
 |---|---|---|
-| **Push (Wind Cannon)** | `Left Mouse Button` | Blasts objects forward with compressed air; kicks player backward with 3D rocket recoil. |
-| **Pull (Vacuum Vortex)** | `Right Mouse Button (Hold)` | Suction funnel pulls objects to a 2.5m hover anchor in front of the camera. |
-| **Crate Cannon** | `LMB while holding RMB` | Instantly launches the carried block forward as a high-speed kinetic missile. |
-| **Slow Motion** | `Left Shift` | World slows to 25% speed; player moves, aims, and falls with floaty air-time at full control. |
-| **Rocket Jump** | `Look Down + LMB` | Recoil launches the player high over pits and obstacles. |
+| **Slide & Bunny-Hop** | `C` or `Left Ctrl` | Crouch-slide down slopes to accelerate; jumping at slide end preserves 100% horizontal speed in air. |
+| **Push (Wind Blast & Boost)** | `Left Mouse Button` | Blasts objects away; kicks player backward in air, boosts player forward at high speed while sliding. |
+| **Pull (Grapple / Grab)** | `Right Mouse Button (Hold)` | Dual-mode: Pulls player toward walls/anchors (Grapple Slingshot) OR pulls highlighted objects into your hands. |
+| **Crate Cannon** | `LMB while holding RMB` | Instantly launches the carried block forward as a high-speed kinetic projectile to smash doors and enemies. |
+| **Slow Motion** | `Left Shift` | World slows to 25% speed; meter siphons recharge from high-speed movement and target impacts. |
+| **Spider Sense** | *Automatic Visual* | Directional red warning arc flashes on HUD when lethal attacks (Sniper laser lock, Hulk leap slam) are imminent. |
+
+---
+
+## The 4 Enemy Archetypes
+
+1. **Small Fast Swarmer**: 4-8 pack rushers destroyed by high-speed slide ramming (bowling strike).
+2. **Heavy Hulk Leaper**: High leap slam with ground shockwave; vulnerable back core exposed during 2.5s stun.
+3. **Slow Deadly Sniper**: 1.5s red laser tracking with lethal sonic round; deflectable back at sniper with Slow-Mo Push.
+4. **Fast Rapid-Laser Sentry**: 3-second sweeping plasma spray; physically absorbed by holding a crate as a riot shield.
 
 ---
 
@@ -38,4 +48,5 @@ Welcome to the **REBOUND** game repository! Built in Unity for our Year 3 Game D
   * Layer 11: `Hazards`
   * Layer 12: `Enemies`
   * Layer 13: `Projectiles`
+  * Layer 14: `GrappleAnchors`
 * **Version Control**: Do not commit `Library/`, `Temp/`, or `Logs/` folders (handled by `.gitignore`).

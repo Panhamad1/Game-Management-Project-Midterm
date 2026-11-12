@@ -82,35 +82,35 @@
               <tbody>
                 <tr>
                   <td><strong>Person 1</strong></td>
-                  <td><strong>Player & Camera Lead</strong></td>
+                  <td><strong>Player &amp; Locomotion Lead</strong></td>
                   <td>
-                    First-person WASD movement, mouse look pitch/yaw, jump physics, ground check, Rigidbody constraints, and responding to recoil impulses from the push ability.
+                    First-person WASD movement, mouse look pitch/yaw, momentum slide, slope acceleration, bunny-hop speed preservation, overhead raycast clearance, ContinuousDynamic CCD, and Speed Camera banking/FOV.
                   </td>
-                  <td>A responsive Rigidbody player controller that moves, jumps, and recoils reliably without tipping over.</td>
+                  <td>A responsive Rigidbody player controller that moves, slides, jumps, and recoils reliably up to 35 m/s without tipping over or clipping walls.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 2</strong></td>
-                  <td><strong>Abilities & Physics Objects</strong></td>
+                  <td><strong>Abilities &amp; Weaponless Combat Lead</strong></td>
                   <td>
-                    Target detection raycasting, right-hand push impulse, left-hand continuous pull force, <code>AbilityTarget</code> component, mass tuning, and dual-hand target lock.
+                    Push Wind Blast impulse, slide recoil-convert boost, dual-mode Pull (grapple slingshot vs outline-highlighted prop snatch), Crate Cannon projectile launch, and narrow-vent elastic retraction.
                   </td>
-                  <td>A stable push and pull mechanic that manipulates test crates smoothly without wall clipping.</td>
+                  <td>Stable push, pull, grapple, and throwing mechanics that manipulate test crates and slingshot the player smoothly without glitching.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 3</strong></td>
-                  <td><strong>Level Design & Environment</strong></td>
+                  <td><strong>Level Design &amp; Environment Lead</strong></td>
                   <td>
-                    Modular prefab kit (floors, walls, ramps), greybox room layouts (Rooms 1 through 7), moving platforms, pressure plates, door triggers, and scene progression.
+                    Modular prefab kit (floors, walls, speed ramps), greybox parkour courses (Rooms 1 through 7), aerial grapple rings, destructible wooden barricades, laser tripwires, and speedrun split gates.
                   </td>
-                  <td>A playable sequence of seven test chambers with clear goals and zero confusing dead-ends.</td>
+                  <td>A playable sequence of seven high-speed test courses with clear goals, flow-focused grapple gaps, and zero dead-ends.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 4</strong></td>
-                  <td><strong>Slow-Mo, UI, Audio & Flow</strong></td>
+                  <td><strong>Slow-Mo, Enemy AI, UI &amp; Flow Lead</strong></td>
                   <td>
-                    Slow-motion time scale manager, energy meter drain/recharge, ability HUD, reticle target feedback, sound effect integration, main menu, pause menu, and playtest coordination.
+                    Momentum-siphon slow-motion focus manager, TurretAI with 1.0s predictive aim lasers, Swarm Rusher ram physics, Armored Brute collisions, speedrun medal timer HUD, and audio crescendo.
                   </td>
-                  <td>Working slow-motion mechanic, informative HUD readout, clear sound cues, and overall game flow.</td>
+                  <td>Working momentum-siphon slow-mo, telegraphed enemy AI, speedrun medal split readout, clear sound cues, and overall game flow.</td>
                 </tr>
               </tbody>
             </table>

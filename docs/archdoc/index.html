@@ -461,6 +461,46 @@
                       time is protected against wasted art rework.
                     </td>
                   </tr>
+                  <tr>
+                    <td><code>ADR-06</code></td>
+                    <td><strong>Momentum Sliding &amp; Recoil-Convert Boost</strong></td>
+                    <td>
+                      To capture fast Redliner-style flow, crouching while moving triggers a momentum slide that accelerates down slopes and preserves horizontal speed through bunny-hops. Firing Push while sliding redirects explosive recoil into forward slide velocity rather than backward kick.
+                    </td>
+                    <td>
+                      High velocities (up to 35 m/s) risk collision tunneling. Mitigation: ContinuousDynamic CCD on player and props, thick level colliders, overhead raycast lockouts, and gentle aerodynamic drag above 35 m/s.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-07</code></td>
+                    <td><strong>Dual-Mode Pull (Grapple Slingshot vs Prop Snatch)</strong></td>
+                    <td>
+                      Instead of giving the player conventional guns, Pull serves as both high-speed traversal (grappling walls/anchors with slingshot release) and weaponized object snatching (grabbing outline-highlighted crates and light enemies to fire as kinetic projectiles).
+                    </td>
+                    <td>
+                      Potential targeting confusion when an object sits in front of a wall. Mitigation: Target-under-crosshair priority hierarchy and elastic retraction in narrow vents to prevent prop snagging.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-08</code></td>
+                    <td><strong>Momentum-Siphon Focus &amp; Telegraphed Combat</strong></td>
+                    <td>
+                      Slow-motion cannot be spammed passively; it siphons energy exclusively from high-speed movement and target impacts. Enemies challenge fast players through 1.0s predictive telegraph lasers and tripwires rather than unfair hitscan.
+                    </td>
+                    <td>
+                      Turret AI requires velocity-lead prediction algorithms and telegraph line renderers, balancing skill-expression at top speeds.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>ADR-09</code></td>
+                    <td><strong>4-Tier Enemy System &amp; Player Spider Sense</strong></td>
+                    <td>
+                      To balance high player mobility and gunless combat, enemies are built around 4 distinct mechanical profiles: Swarm Rushers (high-speed bowling), Hulk Leapers (leap slam + back weak-point), Snipers (1.5s lock + bullet deflection), and Rapid Sentries (suppression vs crate riot shield). A directional Spider Sense flashes on HUD right before lethal attacks, offering an instant Slow-Mo reflex window.
+                    </td>
+                    <td>
+                      Requires synchronized threat tracking between enemy AI scripts and the player's HUD, plus clear visual telegraphs to prevent feeling unfair.
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -482,26 +522,36 @@
                   <li>
                     First-person movement (WASD, mouse look, jump, air control).
                   </li>
-                  <li>Left-hand continuous pull with physics damping.</li>
                   <li>
-                    Right-hand push impulse with player recoil (air-pushing
-                    supported).
-                  </li>
-                  <li>Dual-hand simultaneous control on separate objects.</li>
-                  <li>Crate Cannon combo launch and projectile deflection.</li>
-                  <li>
-                    Slow-motion energy meter with floaty mid-air fall gravity.
+                    High-speed momentum slide, slope acceleration, bunny-hop speed preservation, and recoil-convert boost.
                   </li>
                   <li>
-                    Enemy AI integration via <code>IKineticTarget</code> (3 Archetypes: Swarm, Turret, Brute).
+                    Dual-mode Pull: Wall/anchor grapple slingshot AND illuminated object/light enemy snatching.
                   </li>
                   <li>
-                    One dedicated Prototype Lab scene for physics & combat testing.
+                    Crate Cannon kinetic projectile launch (smashing barricades, switches, and armor-crushing enemies).
                   </li>
-                  <li>A progression of 5 to 7 compact puzzle & encounter rooms.</li>
                   <li>
-                    Basic UI: Crosshair, hand status icons, slow-motion meter,
-                    pause menu.
+                    Momentum-siphon slow-motion meter with unscaled camera aim and floaty air control.
+                  </li>
+                  <li>
+                    Dynamic Speed Camera Controller (FOV 85-105, camera banking into turns, wind audio crescendo).
+                  </li>
+                  <li>
+                    Enemy AI integration via <code>IKineticTarget</code>: Swarm Crawlers (bowling ram), Hulk Leapers (shockwave slam + back core), Snipers (1.5s lock + bullet deflect), Rapid Laser Sentries (crate riot shield), and Laser Tripwires.
+                  </li>
+                  <li>
+                    Player Threat Sense ("Spider Sense") directional HUD warning arc with instant Slow-Mo reflex trigger.
+                  </li>
+                  <li>
+                    Continuous Dynamic CCD, overhead clearance raycast, and 35 m/s soft speed cap.
+                  </li>
+                  <li>
+                    One dedicated Prototype Lab scene for physics, movement, and combat testing.
+                  </li>
+                  <li>A progression of 5 to 7 high-speed time-trial parkour courses with split times and medal targets.</li>
+                  <li>
+                    Basic UI: Crosshair with target highlight glow, speedrun medal timer, slow-motion meter, pause menu.
                   </li>
                   <li>
                     Simple audio cues: wind blast, suction hum, slow-mo chime, impact

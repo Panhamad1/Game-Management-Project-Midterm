@@ -1,6 +1,6 @@
 # REBOUND — Complete Team Development Handbook & Technical Guide
 
-Welcome to the **REBOUND** team documentation! This guide gives everyone on the team—gamepy programmers, enemy AI developers, and level designers—the exact rules, controls, physics settings, and code contracts for our game.
+Welcome to the **REBOUND** team documentation! This guide gives everyone on the team—gameplay programmers, enemy AI developers, and level designers—the exact rules, controls, physics settings, and code contracts for our game.
 
 No complicated jargon is used here. Everything is explained in direct, simple English so you can build your part of the project without confusion.
 
@@ -8,13 +8,17 @@ No complicated jargon is used here. Everything is explained in direct, simple En
 
 ## 1. Game Concept & Thematic Fantasy
 
-**REBOUND** is a first-person physics action-puzzle game built in Unity.
+**REBOUND** is a first-person, high-speed physics action and movement game built in Unity. It blends fast momentum-based parkour with pneumatic air-pressure abilities. There are no conventional guns; all offensive combat and traversal comes from your air pressure abilities, throwing environmental physics objects, and deflecting enemy attacks.
 
-The player has pneumatic air-pressure abilities:
+The player possesses pneumatic air-pressure abilities and sensory awareness:
 
-- **Push (Left Mouse Button)**: A high-pressure **Wind Cannon**. It fires an explosive blast of air that knocks objects away. Because of Newton's third law (action and reaction), blasting the air pushes your own body backward with strong recoil.
-- **Pull (Right Mouse Button)**: A **Vacuum Vortex**. It creates a low-pressure suction funnel that pulls crates, objects, and enemy projectiles toward your hand, letting you carry and aim them.
-- **Slow Motion (Left Shift)**: Focus bullet-time. The world slows down to 25% speed, but you run, look, and aim at normal speed.
+- **Push (Left Mouse Button)**: A high-pressure **Wind Cannon**. Blasts physics objects away. In normal flight, it pushes your body backward with recoil. While sliding, it converts that recoil into an instant forward speed boost. Can also deflect incoming enemy sniper rounds and missiles!
+- **Pull (Right Mouse Button)**: A dual-mode **Vacuum Tether**.
+  - Aimed at static walls or anchors: Acts as an elastic grapple, pulling your body quickly toward the target to slingshot you into high-speed slides.
+  - Aimed at highlighted crates or light enemies: Pulls the target into your hands so you can carry, shield with, or launch it.
+- **Crate Cannon (LMB while holding RMB)**: Instantly fires the held object forward as a high-velocity kinetic projectile to smash doors, activate distant buttons, and crush enemies.
+- **Slow Motion (Left Shift)**: Focus bullet-time. Slows world physics down to 25% speed while keeping your camera aim and movement speed at 100%.
+- **Spider Sense (Threat Warning)**: Directional red warning arc that flashes on screen when high-threat attacks (Sniper laser lock, Hulk leap slam) are about to strike.
 
 ---
 
@@ -22,136 +26,161 @@ The player has pneumatic air-pressure abilities:
 
 ### Control Mapping
 
-| Input                     | Action                   | Description                                                       |
-| ------------------------- | ------------------------ | ----------------------------------------------------------------- |
-| **WASD**                  | Move                     | Responsive ground walking and air steering                        |
-| **Mouse**                 | Look                     | Standard first-person camera aim                                  |
-| **Space**                 | Jump                     | Vertical ground jump                                              |
-| **Left Click (LMB)**      | **Push (Wind Blast)**    | Blasts target block forward; kicks player backward with 3D recoil |
-| **Right Click (RMB)**     | **Pull (Vacuum Vortex)** | Reels in a block and hovers it 2.5m in front of your face         |
-| **LMB while holding RMB** | **Crate Cannon**         | Instantly launches the carried block forward like a projectile    |
-| **Left Shift**            | **Slow Motion**          | Slows down world physics; gives you floaty air-time               |
-| **Escape**                | Pause                    | Opens pause menu                                                  |
+| Input                     | Action                         | Description                                                                 |
+| ------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| **WASD**                  | Move                           | Responsive ground walking and air steering                                  |
+| **C / Left Ctrl**         | **Slide / Crouch**             | High-speed ground slide; accelerates down slopes, ducks under obstacles     |
+| **Mouse**                 | Look                           | First-person camera aim with dynamic banking and speed FOV                  |
+| **Space**                 | Jump / Bunny-Hop               | Ground jump; jumping out of a slide preserves 100% horizontal speed in air  |
+| **Left Click (LMB)**      | **Push (Wind Blast / Boost)**  | Pushes objects forward; kicks player backward in air, boosts forward in slide |
+| **Right Click (RMB)**     | **Pull (Grapple / Grab)**      | Pulls player to walls/anchors OR pulls highlighted objects into your hands  |
+| **LMB while holding RMB** | **Crate Cannon**               | Launches the held object forward as a high-speed kinetic projectile         |
+| **Left Shift**            | **Slow Motion**                | Slows down world physics; meter siphons recharge from high speed & hits     |
+| **Automatic Visual**      | **Spider Sense**               | Directional HUD flash warning of incoming sniper rounds or leap slams       |
+| **Escape**                | Pause                          | Opens pause menu                                                            |
 
 ---
 
-### Detailed Ability Rules
+### Detailed Ability & Locomotion Rules
 
-#### 1. Push & 3D Rocket Recoil
+#### 1. Momentum Slide & Bunny-Hopping
+- **Sliding**: Pressing Crouch while moving enters a slide. Camera height lowers from 1.6m to 0.9m.
+- **Slope Acceleration**: Sliding down angled slopes converts gravity into direct forward acceleration.
+- **Friction & Bunny-Hopping**: Flat ground gently applies kinetic friction to slide velocity. Pressing Jump right before the slide slows down launches you into the air, preserving all accumulated speed without friction.
+- **Recoil-Convert Boost**: Blasting Push (`LMB`) while sliding redirects the explosion force into forward linear slide acceleration rather than a backward kick.
 
-- **Targeting**: Single-target raycast up to **12 meters**. Only the exact block under your crosshair is pushed (no accidental disturbance of nearby puzzle blocks).
-- **Constant Recoil**: The recoil force on the player is **always fixed**. It does not change with distance to the target.
-- **Rocket Jumps**: Recoil pushes you directly opposite to your camera aim. If you look straight down and click Push, you launch high into the air.
-- **Empty Air Push**: Pushing into thin air still gives you full recoil backward.
-- **Cooldown**: **0.45 seconds** between pushes to prevent infinite flight while rewarding rhythmic platforming jumps.
+#### 2. Dual-Mode Pull (Grapple Slingshot vs Object Snatching)
+- **Target Priority**:
+  - If crosshair points at an outline-highlighted interactive object (crate, debris, or light enemy), Pull reels that target into your hands.
+  - If crosshair points at static architecture, walls, or grapple anchors, Pull attaches an elastic tether pulling your player toward the contact point.
+- **Elastic Slingshot Fling**: Releasing `RMB` or pressing Jump at the peak of the grapple tether flings the player forward with spring tension, directly into a high-speed slide or leap.
+- **Crate Shielding**: Holding a crate in your hands physically blocks incoming fast-laser fire, functioning as a portable riot shield.
+- **Leash Break**: If the grapple or carry line is blocked by walls or exceeds **18 meters**, the tether automatically snaps.
+- **Anti-Box-Riding Glitch**: If standing directly on top of an object, you cannot pull it.
 
-#### 2. Pull & Physics Carry
+#### 3. Crate Cannon (Shooting Without Guns)
+- Holding `RMB` to carry an object and tapping `LMB` (Push):
+  - Releases the object and fires it forward at high velocity.
+  - Smashes destructible wooden barricades, triggers remote pressure switches, and crushes enemies.
+  - Applies a standard recoil kick to the player.
 
-- **Suction & Float**: Holding Right Click reels in a block. Once it reaches **2.5 meters** in front of you, it floats steadily and rotates with your camera.
-- **Energy Tether**: A glowing beam (`LineRenderer`) connects your hand to the block while pulling.
-- **Releasing**: Letting go of Right Click drops the block smoothly under normal gravity.
-- **Leash Break**: If the block gets wedged behind a wall (line of sight broken) or is dragged farther than **15 meters**, the tether automatically snaps and releases the block.
-- **Anti-Box-Riding Glitch**: If you are standing on top of a block, you **cannot** pull it. This prevents the flying box glitch.
-
-#### 3. Crate Cannon (Combo Launch)
-
-- If you hold Right Click (carrying a block) and tap Left Click (Push):
-  - The pull lock instantly disengages.
-  - The block is fired forward at high speed as a kinetic projectile.
-  - You receive standard push recoil backward.
-
-#### 4. Slow Motion (Bullet-Time)
-
+#### 4. Slow Motion & Momentum Siphon
 - **World Speed**: World physics and movable objects slow down to **0.25x speed** (`Time.timeScale = 0.25`).
-- **Player Ground Speed**: Player walk, run, and camera look speeds remain at **1.0x normal speed**.
-- **Floaty Air-Time**: While in the air during SlowMo, your fall gravity is reduced so you float down gently, giving you plenty of time to aim, push, and pull mid-air.
-- **Energy Bar**: Lasts for **4 seconds** of continuous use; recharges in **6 seconds**. Turns off automatically when empty.
+- **Player Responsiveness**: Player look and aim remain at **1.0x normal speed**.
+- **Floaty Air-Time**: Fall gravity is reduced during slow-motion, giving you time to aim mid-air grapples, deflect bullets, or snatch flying crates.
+- **Momentum Siphon Recharge**: The Focus meter does not recharge when standing still. Maintaining high slide speed and hitting targets siphons kinetic energy into the meter.
+
+#### 5. Spider Sense (Threat Warning Indicator)
+- **Visual Alert**: When an enemy sniper finishes charging or a Hulk begins its downward slam, a sharp curved directional chevron flashes red on the player's HUD pointing toward the incoming attack.
+- **Reflex Slow-Mo Window**: Pressing **Left Shift** during the flash grants an instant Slow-Motion focus window, giving the player reaction time to slide under the shot, grapple out of the slam zone, or time a Push deflection.
 
 ---
 
-## 3. Interactable Puzzle Blocks & Weight Classes
+## 3. Interactable Props, Weight Classes & Tight Spaces
 
-Never hardcode object names or tags. Attach the `InteractableProp` script to any movable object.
+Never hardcode object names. Attach the `InteractableProp` script to any movable object.
 
-| Block Type       | Mass  | Pull Behavior                                                       | Push Behavior             | Primary Purpose                                              |
+| Prop Type        | Mass  | Pull Behavior                                                       | Push Behavior             | Combat / Puzzle Role                                         |
 | ---------------- | ----- | ------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------ |
-| **Light Crate**  | ~1.0  | Easily lifted, hovers at 2.5m, can be thrown                        | Flies very far            | Fast projectile, simple stacking, quick puzzle triggers      |
-| **Medium Crate** | ~5.0  | Lifted at normal speed, hovers at 2.5m                              | Moves a moderate distance | Standard puzzle block, counter-weights, combat projectile    |
-| **Heavy Block**  | ~25.0 | **Ground Drag Only**. Drags across floor; cannot be lifted into air | Nudges slightly           | Heavy door weights, immovable barricades, ground positioning |
+| **Light Crate**  | ~1.0  | Fast hover at 2.5m, can be launched as projectile                   | Flies very far            | Fast projectile, rapid barricade clearing, easy mid-air grab |
+| **Medium Crate** | ~5.0  | Lifted at normal speed, hovers at 2.5m                              | Moves a moderate distance | Heavy projectile, riot shield vs lasers, Hulk weak-point hit |
+| **Heavy Block**  | ~25.0 | **Ground Drag Only**. Drags across floor; cannot be lifted into air | Nudges slightly           | Heavy door weights, immovable barricades, cover from snipers |
 
-### Visual Feedback
-
-- When the crosshair points at an interactable within 12 meters, the crosshair expands and the block shows a highlighted outline glow.
-- Looking away immediately disables the glow.
-- Safe collision is enabled: blocks gently bump and slide off the player's body without crushing or clipping.
+### Elastic Retraction in Narrow Spaces
+- When carrying an object through tight corridors or doorways, the object smoothly retracts closer to your chest (down from 2.5m to 1.2m).
+- This prevents props from snagging on doorframes, catching on walls, or blocking your forward slide.
 
 ---
 
-## 4. Enemy System & Combat Balance (For Enemy Developers)
+## 4. Enemy System & Combat Balance (The 4 Enemy Archetypes)
 
-Because the player has strong movement and telekinetic abilities, enemies must not be mindless targets. We balance the game using **3 clear enemy archetypes** and a **weight/armor tier system**.
+Because the player has extreme speed and kinetic powers, enemies are built around clear behavioral niches, telegraphed attacks, and weight tiers rather than simple hitscan attacks.
 
-### The 3 Enemy Archetypes
+### The 4 Enemy Archetypes
 
-#### 1. Swarm Rusher (Light Enemy)
+#### 1. Small Fast Swarmer (Light Pack Enemy)
+- **Spawns**: Packs of 4 to 8.
+- **Behavior**: Fast, low-profile crawlers that scuttle along floors and walls, leaping at the player when within 5 meters.
+- **How to Defeat**:
+  - **High-Speed Slide (Bowling Strike)**: Ramming into a pack while sliding at high speed plows straight through them and destroys them without reducing your velocity.
+  - **Crate Cannon**: Throwing a single crate in a straight line crushes multiple swarmers.
+  - **Vacuum Grab**: Can be pulled directly into your hands with `RMB` and launched with `LMB` into other enemies or switches.
 
-- **Behavior**: Fast, fragile melee crawlers that run at the player in small packs.
-- **Power Reaction**:
-  - **Pull**: Can be sucked in and carried.
-  - **Push**: Blown backward or knocked down.
-- **How They Threaten the Player**: If they surround you while your Wind Blast is on its 0.45s cooldown, they will deal quick melee damage.
+#### 2. Heavy Hulk Leaper (Juggernaut)
+- **Spawns**: 1 or 2 at a time in large chambers or arena chokepoints.
+- **Behavior**: Giant, armored mechanical brute. Crouches and leaps high into the air, targeting the player's predicted landing area.
+- **Leap Slam & Shockwave**: Upon landing, creates a radial ground shockwave that forces the player to jump or grapple over it. Ramming into the Hulk stops the player's slide immediately and deals heavy collision damage.
+- **Vulnerable Stun Recovery**: After landing the leap slam, the Hulk remains stunned on hands and knees for 2.5 seconds, exposing an unarmored glowing core on its back.
+- **How to Defeat**: Pull a medium crate and launch it directly into its exposed back core with Crate Cannon.
 
-#### 2. Ranged Shooter / Turret (Medium Enemy)
+#### 3. Slow Deadly Sniper (Precision High-Ground Enemy)
+- **Spawns**: Perched on elevated pillars, catwalks, or distant ledges.
+- **Behavior**: Tracks the player with a visible red laser targeting line for 1.5 seconds.
+- **The Shot**: Right before firing, the player's Spider Sense flashes red. The sniper fires a high-velocity sonic round that deals massive damage.
+- **How to Defeat / Counterplay**:
+  - **Slide / Grapple Dodge**: Breaking line-of-sight or executing a slide/grapple right as Spider Sense flashes avoids the shot.
+  - **Push Deflection (One-Shot Return)**: Activating Slow-Mo and tapping Push (`LMB`) right as the bullet reaches you deflects the round straight back along the laser path, instantly destroying the sniper!
 
-- **Behavior**: Stationary turrets or wall snipers that fire visible, slow-to-medium speed rockets, grenades, or plasma orbs.
-- **Power Reaction (Deflect & Catch)**:
-  - **Push Deflection**: Tapping Push (Left Click) right before an incoming projectile hits you deflects it straight back at the enemy!
-  - **Pull Catching**: Holding Pull (Right Click) catches slow grenades or rockets mid-air, allowing you to fire them back using Crate Cannon!
-  - **Slow Motion Synergy**: Players use SlowMo to time projectile catches and deflections cleanly.
+#### 4. Fast Rapid-Laser Sentry (Continuous Suppression)
+- **Spawns**: Corridor bottlenecks and mid-range vantage points.
+- **Behavior**: Fires 3-second rapid bursts of sweeping plasma laser bolts that chip away at player health and degrade momentum.
+- **How to Defeat / Counterplay**:
+  - **Crate Shielding**: Holding a crate in front of you with Pull (`RMB`) absorbs all incoming laser bolts like a portable riot shield while you advance.
+  - **Flanking**: Sliding under the spread or grappling behind the sentry to crush it with a point-blank crate launch.
 
-#### 3. Armored Brute (Heavy Enemy)
-
-- **Behavior**: Slow-moving mechanical juggernauts with front shields or heavy armor plating.
-- **Power Reaction (Immune to Direct Air)**:
-  - **Direct Push**: Does nothing (they are too heavy).
-  - **Direct Pull**: Does nothing.
-- **How to Defeat**: Players must use **indirect physics combat**:
-  - Grab a medium crate or explosive barrel using Pull.
-  - Fire it with **Crate Cannon** at their unarmored back or head to crush them!
+#### 5. Laser Tripwires (Area Denial Hazard)
+- Static or sweeping horizontal laser grids. Touching a beam triggers an electric shock that halts your slide and deals damage.
+- Players must slide underneath low beams (0.8m) or grapple over high beams.
 
 ---
 
-## 5. Teammate Code Contract: Connecting Enemies to Abilities
+## 5. Technical Safeguards & Edge Cases
 
-If you are building the Enemy AI, you do **not** need to touch the player's movement or ability code.
+To maintain stability at high speeds (up to 35 m/s):
 
-Simply implement the `IKineticTarget` interface or attach the `EnemyPhysicsReceiver` component to your enemy prefab.
+1. **Continuous Collision Detection (CCD)**:
+   - The player capsule Rigidbody and all interactable props must use `CollisionDetectionMode.ContinuousDynamic`.
+   - Level walls and obstacles use standard static mesh colliders with thickness of at least 0.5m to prevent collision tunneling.
+2. **Overhead Clearance Sensor**:
+   - Releasing the Crouch key while under low ceilings or pipes uses a vertical raycast (`Physics.Raycast(headOrigin, Vector3.up, 1.0m)`).
+   - If blocked, the player remains crouched until clearing the obstacle, preventing clipping into geometry.
+3. **Soft Velocity Cap (~35 m/s)**:
+   - When horizontal velocity exceeds 35 m/s, exponential aerodynamic drag is applied to gently stabilize speed without jarring clamps.
+4. **Target-Priority Raycast Layering**:
+   - Raycast tests Layer 10 (`Interactables`) and Layer 12 (`Enemies`) first. If an object is hit, Pull acts as object snatch.
+   - If no interactable is hit, the raycast tests Layer 9 (`Environment`) for grapple surface attachment.
 
-### The C# Interface (`IKineticTarget.cs`)
+---
+
+## 6. Teammate Code Contracts
+
+Teammates implementing enemy AI or props do not need to alter player locomotion scripts. Use these clean contracts:
+
+### The C# Target Interface (`IKineticTarget.cs`)
 
 ```csharp
 using UnityEngine;
 
 /// <summary>
-/// Attach this interface to any enemy or object that should react to
-/// the player's Wind Blast (Push), Vacuum Vortex (Pull), or thrown crates.
+/// Interface for any enemy or object reacting to wind blasts,
+/// grapple pulls, thrown props, bullet deflections, or high-speed player collisions.
 /// </summary>
 public interface IKineticTarget
 {
-    // Can this enemy be lifted and pulled toward the player?
     bool CanBePulled { get; }
-
-    // Can this enemy be shoved backward by wind blasts?
     bool CanBePushed { get; }
 
-    // Called when the player hits this enemy with a Wind Blast (Push)
+    // Called when hit by wind blast or deflected bullet
     void OnPushed(Vector3 forceDirection, float forceMagnitude, Vector3 hitPoint);
 
-    // Called while the player is pulling this enemy with Vacuum Vortex
+    // Called while being pulled by vacuum
     void OnPulled(Transform pullOrigin, float pullForce);
 
-    // Called when a thrown crate or heavy physics prop smashes into this enemy
-    void OnPhysicsCrush(float impactSpeed, GameObject flyingProp);
+    // Called when smashed by a thrown crate or prop
+    void OnPhysicsCrush(float impactSpeed, GameObject flyingProp, bool hitWeakPoint);
+
+    // Called when the player physically rams into this target at high slide speed
+    void OnPlayerRam(float playerSpeed, Vector3 ramDirection);
 }
 ```
 
@@ -164,13 +193,19 @@ using UnityEngine;
 public class EnemyPhysicsReceiver : MonoBehaviour, IKineticTarget
 {
     [Header("Enemy Armor Settings")]
-    [SerializeField] private bool canBePulled = true;   // False for heavy brutes
-    [SerializeField] private bool canBePushed = true;   // False for heavy brutes
+    [SerializeField] private bool canBePulled = true;   // False for heavy Hulk
+    [SerializeField] private bool canBePushed = true;   // False for heavy Hulk
+    [SerializeField] private bool isHeavy = false;      // True for heavy Hulk
     [SerializeField] private float mass = 2.0f;
 
     [Header("Health & Damage")]
     [SerializeField] private float health = 100f;
-    [SerializeField] private float crushSpeedThreshold = 4.0f; // Minimum speed to hurt
+    [SerializeField] private float crushSpeedThreshold = 4.0f;
+    [SerializeField] private float ramSpeedThreshold = 12.0f;
+
+    [Header("Weak Points")]
+    [SerializeField] private Collider weakPointCollider;
+    [SerializeField] private float weakPointDamageMultiplier = 3.0f;
 
     private Rigidbody rb;
 
@@ -186,86 +221,82 @@ public class EnemyPhysicsReceiver : MonoBehaviour, IKineticTarget
     public void OnPushed(Vector3 forceDirection, float forceMagnitude, Vector3 hitPoint)
     {
         if (!canBePushed) return;
-
-        // Apply knockback impulse
         rb.AddForceAtPosition(forceDirection * forceMagnitude, hitPoint, ForceMode.Impulse);
-
-        // Optional: Trigger stumble/knockdown animation here
     }
 
     public void OnPulled(Transform pullOrigin, float pullForce)
     {
         if (!canBePulled) return;
-
-        // Pull enemy towards player suction point
         Vector3 pullDir = (pullOrigin.position - transform.position).normalized;
         rb.AddForce(pullDir * pullForce, ForceMode.Acceleration);
     }
 
-    public void OnPhysicsCrush(float impactSpeed, GameObject flyingProp)
+    public void OnPhysicsCrush(float impactSpeed, GameObject flyingProp, bool hitWeakPoint)
     {
         if (impactSpeed < crushSpeedThreshold) return;
-
-        // Calculate damage based on how fast the crate was flying
         float damage = (impactSpeed - crushSpeedThreshold) * 15f;
-        health -= damage;
+        if (hitWeakPoint) damage *= weakPointDamageMultiplier;
+        TakeDamage(damage);
+    }
 
-        Debug.Log($"{gameObject.name} took {damage} crush damage from {flyingProp.name}! Remaining HP: {health}");
+    public void OnPlayerRam(float playerSpeed, Vector3 ramDirection)
+    {
+        if (isHeavy) return; // Heavy enemies halt player and deal collision damage to player
 
-        if (health <= 0f)
+        if (playerSpeed >= ramSpeedThreshold)
         {
-            Die();
+            rb.AddForce(ramDirection * playerSpeed * 1.5f, ForceMode.Impulse);
+            TakeDamage(playerSpeed * 6f);
         }
     }
 
-    private void Die()
+    public void TakeDamage(float amount)
     {
-        // Play death effect / ragdoll / destroy
-        Destroy(gameObject);
+        health -= amount;
+        if (health <= 0f) Destroy(gameObject);
     }
 }
 ```
 
 ---
 
-## 6. Level Designer Guide (For Map Builders)
+## 7. Level Designer Guide (Speedrun & Combat Encounters)
 
-When creating puzzle rooms and combat arenas:
+When designing test courses:
 
-1. **Drop In the Player**:
-   - Drag the `Player_Rig.prefab` into your scene. It has the camera, physics, UI crosshair, and energy meter built in.
-2. **Placing Puzzle Blocks**:
-   - Use `Block_Light.prefab` for tall stacking or items that must be carried across long gaps.
-   - Use `Block_Medium.prefab` for pressure plates and standard obstacle clearing.
-   - Use `Block_Heavy.prefab` for ground-drag puzzles, anchor switches, or barricades.
-3. **Designing Rocket Jump Gaps**:
-   - A standard ground jump clears **1.5 meters** vertically.
-   - A downward Wind Blast (Rocket Jump) boosts the player **4.5 to 6 meters** into the air.
-   - Use high platforms that can only be reached with a well-timed rocket jump or a crate elevator.
-4. **Combat Encounters**:
-   - Place 1 or 2 Turrets on elevated ledges with crates placed nearby so the player can either deflect their shots or use crates as portable shields.
-   - Place Swarmers in narrow corridors to encourage the player to use Wind Blast like a crowd-clearing shotgun.
+1. **Swarmer Chokepoints**:
+   - Place Swarmer packs at the base of long downhill ramps to reward players with high-speed bowling smashes.
+2. **Hulk Arena Platforms**:
+   - Place the Hulk in open arena chambers with plenty of vertical grapple anchors so the player can vault over ground shockwaves and attack from behind.
+3. **Sniper High-Ground Placement**:
+   - Position Snipers on elevated ledges with long sightlines. Ensure players have cover blocks or clear timing windows to deflect bullets with Slow-Mo Push.
+4. **Rapid-Laser Chokepoints**:
+   - Place crates 10 meters before Rapid-Laser Sentries to allow players to snatch a crate and use it as a forward riot shield.
+5. **Speedrun Medal Targets**:
+   - Each course displays target clear times (Gold, Silver, Bronze) with split checkpoints at major chamber transitions.
 
 ---
 
-## 7. Physics Layers Setup in Unity
+## 8. Physics Layers Setup in Unity
 
-To ensure raycasts and physics interact cleanly without glitching, verify these layers under **Project Settings > Tags and Layers**:
+Verify these layers in **Project Settings > Tags and Layers**:
 
 - **Layer 8: `Player`** — PlayerRoot capsule. Ignored by player raycasts.
-- **Layer 9: `Environment`** — Static walls, floors, ramps, and ceilings.
+- **Layer 9: `Environment`** — Static walls, floors, ramps, and grapple surfaces.
 - **Layer 10: `Interactables`** — All crates, boxes, and movable physics objects.
-- **Layer 11: `Hazards`** — Pit reset triggers and deadly traps.
+- **Layer 11: `Hazards`** — Pit reset triggers, kill planes, and laser tripwires.
 - **Layer 12: `Enemies`** — Enemy bodies and hurtboxes.
-- **Layer 13: `Projectiles`** — Incoming rockets, grenades, and plasma orbs.
+- **Layer 13: `Projectiles`** — Incoming sniper rounds, rockets, and rapid laser bolts.
+- **Layer 14: `GrappleAnchors`** — Dedicated high-priority aerial swing points.
 
 ---
 
 ## Summary Checklist for the Team
 
-- [x] **Controls Confirmed**: Left Click = Push, Right Click = Pull, Left Shift = SlowMo, Space = Jump.
-- [x] **Physics Rules Locked**: 3D Rocket Recoil, 2.5m Physics Carry, 0.45s push cooldown.
-- [x] **Glitches Guarded**: No box-riding flight, 15m leash break, safe pushback collisions.
-- [x] **Enemies Integrated**: 3 archetypes (Swarm, Turret, Brute) with deflection and crushing.
-- [x] **Teammate Code Ready**: `IKineticTarget` interface and `EnemyPhysicsReceiver` component.
-- [x] **Prefabs Packaged**: `Player_Rig`, `Block_Light`, `Block_Medium`, `Block_Heavy`.
+- [x] **Locomotion Verified**: Slide, Slope Acceleration, Bunny-Hop preservation, and Recoil-Convert boost.
+- [x] **Dual-Mode Pull Implemented**: Wall Grapple Slingshot vs Highlighted Prop Snatch.
+- [x] **Combat Balanced Without Guns**: Crate Cannon throws, bullet deflection, crate riot shielding, and Swarmer bowling ram.
+- [x] **4 Enemy Archetypes Integrated**: Swarm Rusher (pack), Hulk Leaper (ground slam), Sniper (deflectable round), Rapid Sentry (suppression).
+- [x] **Player Spider Sense Added**: Directional HUD threat flash and Slow-Mo reflex window.
+- [x] **Technical Edge Cases Guarded**: Continuous Collision Detection (CCD), overhead clearance sensor, elastic prop retraction, 35 m/s soft cap.
+- [x] **Feedback & Presentation**: Dynamic FOV (85-105), camera banking, wind audio crescendo, speedrun medal timer.
