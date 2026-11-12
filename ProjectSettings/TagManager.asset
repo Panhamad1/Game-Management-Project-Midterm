@@ -13,12 +13,12 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Environment
+  - Interactables
+  - Hazards
+  - Enemies
+  - Projectiles
   - 
   - 
   - 
