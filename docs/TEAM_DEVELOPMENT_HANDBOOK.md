@@ -28,51 +28,61 @@ The player possesses pneumatic air-pressure abilities and sensory awareness:
 
 | Input                     | Action                         | Description                                                                 |
 | ------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
-| **WASD**                  | Move                           | Responsive ground walking and air steering                                  |
-| **C / Left Ctrl**         | **Slide / Crouch**             | High-speed ground slide; accelerates down slopes, ducks under obstacles     |
-| **Mouse**                 | Look                           | First-person camera aim with dynamic banking and speed FOV                  |
-| **Space**                 | Jump / Bunny-Hop               | Ground jump; jumping out of a slide preserves 100% horizontal speed in air  |
-| **Left Click (LMB)**      | **Push (Wind Blast / Boost)**  | Pushes objects forward; kicks player backward in air, boosts forward in slide |
-| **Right Click (RMB)**     | **Pull (Grapple / Grab)**      | Pulls player to walls/anchors OR pulls highlighted objects into your hands  |
-| **LMB while holding RMB** | **Crate Cannon**               | Launches the held object forward as a high-speed kinetic projectile         |
-| **Left Shift**            | **Slow Motion**                | Slows down world physics; meter siphons recharge from high speed & hits     |
+| **WASD**                  | Walk                           | Normal movement at 6.5 m/s; pressing Crouch while walking ducks into 3.5 m/s crouch-walk |
+| **Left Shift + W + C**    | **Power Slide / Surf**         | Sprinting + Crouch powers into an explosive 14–22 m/s slide; slopes accelerate to 35 m/s! |
+| **Mouse**                 | Look                           | First-person camera aim with dynamic banking (-2.5° to +2.5°) and speed FOV |
+| **Space (Hold)**          | **Auto-Bunny-Hop**             | Holding Space chains frame-perfect hops on every floor contact (+2.5 m/s per hop!) |
+| **A / D + Mouse (Air)**   | **Air-Strafing**               | Turning camera into air-strafe adds +1.5 to +3.5 m/s speed per turn up to 35 m/s |
+| **Left Click (LMB)**      | **Push (Wind Blast / Boost)**  | Pushes objects forward; Rocket Jump against floor, Wall Kick against wall, Slide Boost in slide |
+| **Right Click (RMB)**     | **Pull (Grapple / Grab)**      | 75m Grapple Hook to walls/towers OR pulls highlighted crate up to 45m to hands |
+| **LMB while holding RMB** | **Crate Cannon**               | Launches the held object forward at 35.0 m/s as a high-speed kinetic projectile |
+| **Q / F**                 | **Infinite Slow Motion**       | Slows world to 25% speed; zero cooldown and infinite duration, toggle on/off anytime |
+| **F3**                    | **Telemetry HUD**              | Toggles real-time diagnostic physics overlay (speeds, angles, timers, forces) |
 | **Automatic Visual**      | **Spider Sense**               | Directional HUD flash warning of incoming sniper rounds or leap slams       |
-| **Escape**                | Pause                          | Opens pause menu                                                            |
+| **R**                     | **Quick Checkpoint Reset**     | Instantly resets player onto the safe elevated platform                    |
+| **Escape**                | Pause                          | Opens pause menu / unlocks cursor                                           |
 
 ---
 
 ### Detailed Ability & Locomotion Rules
 
-#### 1. Momentum Slide & Bunny-Hopping
-- **Sliding**: Pressing Crouch while moving enters a slide. Camera height lowers from 1.6m to 0.9m.
-- **Slope Acceleration**: Sliding down angled slopes converts gravity into direct forward acceleration.
-- **Friction & Bunny-Hopping**: Flat ground gently applies kinetic friction to slide velocity. Pressing Jump right before the slide slows down launches you into the air, preserving all accumulated speed without friction.
-- **Recoil-Convert Boost**: Blasting Push (`LMB`) while sliding redirects the explosion force into forward linear slide acceleration rather than a backward kick.
+#### 1. Momentum Slide, Slope Surfing & Auto-Bunny-Hopping
+- **Walking vs Crouching**: Walking at 6.5 m/s and pressing `C` or `Ctrl` ducks down into a quiet crouch-walk at 3.5 m/s. It will **not** slide by accident.
+- **Power Sliding**: Sprinting forward (`Shift + W`) and pressing `C` launches you into an explosive slide at **14.0 to 22.0 m/s**.
+- **Slope Acceleration**: Sliding down angled slopes converts gravity into direct forward acceleration (`28 m/s²`). You can reach the **35 m/s maximum speed cap**!
+- **Hold-Space Auto-Bunny-Hop**: Players can simply hold down `Space` to continuously chain frame-perfect hops without friction loss, gaining `+2.5 m/s` boost per hop.
+- **Air-Strafing Acceleration**: Turning the camera into an air-strafe with `A` or `D` adds `+1.5 to +3.5 m/s` per curve, allowing skilled players to maintain top speed across the entire map.
+- **Slide Bowling Ram**: When sliding faster than 7.5 m/s, your body physically smashes through wooden barricades and sends physics crates flying like bowling pins.
+- **Recoil-Convert Boost**: Blasting Push (`LMB`) while sliding redirects the explosion force into forward linear slide acceleration (+10 m/s).
 
-#### 2. Dual-Mode Pull (Grapple Slingshot vs Object Snatching)
+#### 2. Dual-Mode Pull (75m Grapple Hook vs 45m Object Snatching)
 - **Target Priority**:
-  - If crosshair points at an outline-highlighted interactive object (crate, debris, or light enemy), Pull reels that target into your hands.
-  - If crosshair points at static architecture, walls, or grapple anchors, Pull attaches an elastic tether pulling your player toward the contact point.
-- **Elastic Slingshot Fling**: Releasing `RMB` or pressing Jump at the peak of the grapple tether flings the player forward with spring tension, directly into a high-speed slide or leap.
+  - Aiming at a movable crate, barrel, or debris within **45.0m**: Pull reels that target to hover 2.5m in front of your hands (Gravity Gun style). Uses magnetic 0.85m SphereCast fallback and weight-class reel dynamics (Light 32 m/s, Medium 24 m/s, Heavy 12 m/s).
+  - Aiming at static walls, floors, towers, spires, or ceilings: Pull shoots an electric cyan cable up to **75.0 meters away**!
+- **Elastic Winch Pull**: Pulls the player body toward the anchor with strong 55 m/s² spring tension while preserving tangential swinging velocity.
+- **Ground Grapple Auto-Slide**: Hooking the ground or downward ramps ahead pulls you straight into a 24–34 m/s power slide.
+- **Slingshot Fling**: Releasing `RMB` or pressing Jump during a grapple snaps the cable with an extra **+6.5 m/s forward boost**, catapulting you into aerial leaps or slides.
 - **Crate Shielding**: Holding a crate in your hands physically blocks incoming fast-laser fire, functioning as a portable riot shield.
-- **Leash Break**: If the grapple or carry line is blocked by walls or exceeds **18 meters**, the tether automatically snaps.
-- **Anti-Box-Riding Glitch**: If standing directly on top of an object, you cannot pull it.
 
 #### 3. Crate Cannon (Shooting Without Guns)
 - Holding `RMB` to carry an object and tapping `LMB` (Push):
-  - Releases the object and fires it forward at high velocity.
-  - Smashes destructible wooden barricades, triggers remote pressure switches, and crushes enemies.
-  - Applies a standard recoil kick to the player.
+  - Fires the object forward at **35.0 m/s** as a high-velocity projectile following a visible aiming arc.
+  - Smashes destructible wooden barricades, triggers remote Target Buttons, and crushes enemies upon impact.
 
-#### 4. Slow Motion & Momentum Siphon
+#### 4. Infinite Slow Motion (Focus)
 - **World Speed**: World physics and movable objects slow down to **0.25x speed** (`Time.timeScale = 0.25`).
-- **Player Responsiveness**: Player look and aim remain at **1.0x normal speed**.
-- **Floaty Air-Time**: Fall gravity is reduced during slow-motion, giving you time to aim mid-air grapples, deflect bullets, or snatch flying crates.
-- **Momentum Siphon Recharge**: The Focus meter does not recharge when standing still. Maintaining high slide speed and hitting targets siphons kinetic energy into the meter.
+- **Player Responsiveness**: Player look, aim, and camera remain at **1.0x normal speed**.
+- **Zero Cooldown / Infinite Duration**: Players can toggle Slow-Mo on and off freely with `Q` or `F` without an energy depletion penalty or cooldown timer.
 
-#### 5. Spider Sense (Threat Warning Indicator)
+#### 5. Smart Crosshair HUD Feedback
+- **Amber / Yellow Square (`[ · ]`)**: Locks onto movable crates, blocks, and buttons within 45m (`[RMB] GRAB`).
+- **Electric Cyan Diamond (`+`)**: Locks onto static walls, towers, and floors within 75m (`[RMB] GRAPPLE`).
+- **Neon Green Reticle**: Activates while holding a crate (`[LMB] FIRE CRATE CANNON`).
+- **Neutral White**: Displayed when aiming at empty air beyond 75m.
+
+#### 6. Spider Sense (Threat Warning Indicator)
 - **Visual Alert**: When an enemy sniper finishes charging or a Hulk begins its downward slam, a sharp curved directional chevron flashes red on the player's HUD pointing toward the incoming attack.
-- **Reflex Slow-Mo Window**: Pressing **Left Shift** during the flash grants an instant Slow-Motion focus window, giving the player reaction time to slide under the shot, grapple out of the slam zone, or time a Push deflection.
+- **Reflex Slow-Mo Window**: Pressing **Q / F** during the flash grants an instant Slow-Motion focus window, giving the player reaction time to slide under the shot, grapple out of the slam zone, or time a Push deflection.
 
 ---
 
@@ -89,6 +99,21 @@ Never hardcode object names. Attach the `InteractableProp` script to any movable
 ### Elastic Retraction in Narrow Spaces
 - When carrying an object through tight corridors or doorways, the object smoothly retracts closer to your chest (down from 2.5m to 1.2m).
 - This prevents props from snagging on doorframes, catching on walls, or blocking your forward slide.
+
+### TargetButton.cs (Interactive Puzzle & Arena Switches)
+Attach the `TargetButton` component (`Assets/_Project/Scripts/Interactables/TargetButton.cs`) to any wall switch, high tower target, or puzzle trigger:
+- **Implements `IKineticTarget`**: Works automatically with all player abilities.
+- **How It Activates**:
+  1. Hit by flying crate fired from Crate Cannon (`LMB` while carrying).
+  2. Rammed by player during high-speed slide (`> 5.5 m/s`).
+  3. Blasted directly with Push (`LMB`).
+- **Tactile Feedback**:
+  - Depresses physically into its casing.
+  - Glowing core switches from Bright Red to glowing Neon Green.
+  - Plays a crisp high-energy synthesized confirmation chime.
+  - Shakes the camera and rewards the player with instant Focus energy.
+- **Level Design Hooks**:
+  - Connect the `onActivated` UnityEvent in the Inspector to open gates, activate launch kickers, trigger elevators, or complete room objectives.
 
 ---
 
