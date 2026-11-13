@@ -870,10 +870,6 @@ public class PlayerMovement : MonoBehaviour
         {
             // AIRBORNE / BUNNY-HOP PRESERVATION:
             // When flying off a hill or jumping out of a slide:
-            Vector3 currentVel = rb.linearVelocity;
-            Vector3 horizontalVel = new Vector3(currentVel.x, 0f, currentVel.z);
-            float currentHorizontalSpeed = horizontalVel.magnitude;
-
             if (currentHorizontalSpeed > (walkSpeed - 0.5f))
             {
                 // REDLINER / SOURCE AIR-STRAFE ACCELERATION:
