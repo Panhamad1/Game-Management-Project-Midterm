@@ -27,11 +27,20 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Slow crouch walking speed when not sliding.")]
     [SerializeField] private float crouchSpeed = 3.5f;
 
+    [Tooltip("Ground directional acceleration rate.")]
+    [SerializeField] private float groundAcceleration = 55.0f;
+
+    [Tooltip("Ground opposing-input braking deceleration.")]
+    [SerializeField] private float groundBraking = 45.0f;
+
+    [Tooltip("Aerodynamic momentum decay when traveling above sprint speed on the ground.")]
+    [SerializeField] private float groundMomentumDrag = 3.5f;
+
     [Tooltip("Air steering acceleration.")]
     [SerializeField] private float airAcceleration = 26f;
 
-    [Tooltip("Vertical impulse force on Space. 6.6 gives a clean 1.6m hop.")]
-    [SerializeField] private float jumpImpulse = 6.6f;
+    [Tooltip("Vertical impulse force on Space. 8.7m/s gives precisely 1.6m vertical clearance under 2.4x gravity.")]
+    [SerializeField] private float jumpImpulse = 8.7f;
 
     [Tooltip("Bunny-hop velocity increment when jumping out of a slide or chaining hops.")]
     [SerializeField] private float bHopBoost = 2.5f;
@@ -133,6 +142,7 @@ public class PlayerMovement : MonoBehaviour
 
     // Component References
     [SerializeField] private PullAbility pullAbility;
+    private PlayerMovementTelemetry telemetry;
 
     // Public API Contracts
     public bool IsGrounded => isGrounded || (Time.time - lastGroundedTime <= coyoteTime);
@@ -153,7 +163,7 @@ public class PlayerMovement : MonoBehaviour
         capsule = GetComponent<CapsuleCollider>();
 
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        rb.interpolation = RigidbodyInterpolation.None;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         PhysicsMaterial frictionlessMat = new PhysicsMaterial("PlayerFrictionless")
@@ -173,6 +183,7 @@ public class PlayerMovement : MonoBehaviour
         if (mouseLook == null) mouseLook = GetComponentInChildren<MouseLook>();
         if (audioEffects == null) audioEffects = GetComponent<PlayerAudioEffects>();
         if (pullAbility == null) pullAbility = GetComponentInChildren<PullAbility>();
+        if (telemetry == null) telemetry = GetComponent<PlayerMovementTelemetry>();
 
         if (groundLayerMask.value == 0)
         {
@@ -248,6 +259,7 @@ public class PlayerMovement : MonoBehaviour
     {
         CheckGroundStatus();
         ProcessBufferedJump();
+        ProcessLedgeMantle();
         UpdateCrouchAndSlideState();
         ApplyMovementVelocity();
         ApplyCustomGravity();
@@ -499,8 +511,10 @@ public class PlayerMovement : MonoBehaviour
                 currentSlideSpeed -= totalDecel * Time.fixedDeltaTime;
             }
 
-            // Player can steer and carve slide direction with mouse aim and WASD
-            Vector3 aimDir = (transform.forward * Mathf.Max(0.2f, moveInput.y) + transform.right * moveInput.x).normalized;
+            // Player can steer and carve slide direction with mouse aim and full WASD redirection (Redliner Slide Carving)
+            Vector3 aimDir = moveInput.sqrMagnitude > 0.05f 
+                ? (transform.forward * moveInput.y + transform.right * moveInput.x).normalized 
+                : transform.forward;
             if (aimDir.sqrMagnitude > 0.05f)
             {
                 Vector3 projectedAim = Vector3.ProjectOnPlane(aimDir, groundNormal).normalized;
@@ -635,6 +649,40 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Smooth ledge mantling: when falling near a wall or platform edge while moving forward,
+    /// automatically detects the top surface and hoists the player up cleanly (02_REBOUND_CURRENT_BASELINE.md:144).
+    /// </summary>
+    private void ProcessLedgeMantle()
+    {
+        if (isGrounded || isSliding || isGrappling || rb.linearVelocity.y > 1.2f || moveInput.y < 0.2f) return;
+
+        Vector3 chestOrigin = transform.position + Vector3.up * 0.2f;
+        float forwardCheckDist = 0.85f;
+
+        if (Physics.Raycast(chestOrigin, transform.forward, out RaycastHit wallHit, forwardCheckDist, groundLayerMask, QueryTriggerInteraction.Ignore))
+        {
+            if (wallHit.normal.y < 0.35f)
+            {
+                Vector3 ledgeProbeOrigin = wallHit.point + transform.forward * 0.35f + Vector3.up * 1.2f;
+                if (Physics.Raycast(ledgeProbeOrigin, Vector3.down, out RaycastHit ledgeHit, 1.4f, groundLayerMask, QueryTriggerInteraction.Ignore))
+                {
+                    if (ledgeHit.normal.y > 0.65f && ledgeHit.point.y > transform.position.y)
+                    {
+                        Vector3 targetStandPos = new Vector3(ledgeHit.point.x, ledgeHit.point.y + Mathf.Abs(feetLocalY) + 0.05f, ledgeHit.point.z);
+                        if (!Physics.CheckCapsule(targetStandPos + Vector3.up * 0.5f, targetStandPos + Vector3.up * 1.5f, 0.4f, overheadClearanceMask, QueryTriggerInteraction.Ignore))
+                        {
+                            Vector3 mantleVel = new Vector3(transform.forward.x * 3.5f, jumpImpulse * 0.65f, transform.forward.z * 3.5f);
+                            rb.linearVelocity = mantleVel;
+                            if (audioEffects != null) audioEffects.PlayFootstep();
+                            if (mouseLook != null) mouseLook.AddScreenShake(0.08f, Vector3.up);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void ApplyRecoil(Vector3 recoilVelocity)
     {
         if (isSliding)
@@ -760,25 +808,63 @@ public class PlayerMovement : MonoBehaviour
         }
 
         Vector3 targetDirection = (transform.forward * moveInput.y + transform.right * moveInput.x);
+        Vector3 currentVel = rb.linearVelocity;
+        Vector3 horizontalVel = new Vector3(currentVel.x, 0f, currentVel.z);
+        float currentHorizontalSpeed = horizontalVel.magnitude;
 
         if (isGrounded)
         {
             float targetSpeed;
             if (isCrouching)
             {
-                targetSpeed = crouchSpeed; // 3.8 m/s
+                targetSpeed = crouchSpeed; // 3.5 m/s
             }
             else if (isSprinting && moveInput.y > 0.1f)
             {
-                targetSpeed = sprintSpeed; // 12.0 m/s sprint
+                targetSpeed = sprintSpeed; // 11.5 m/s sprint
             }
             else
             {
-                targetSpeed = walkSpeed; // 7.0 m/s walk
+                targetSpeed = walkSpeed; // 6.5 m/s walk
             }
 
             Vector3 targetVelocity = targetDirection * targetSpeed;
-            rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
+
+            // MOMENTUM-AWARE GROUND CONTROL (Section D1/D2 in 01_MASTER_AGENT_PROMPT.md):
+            // Never abruptly snap or zero out inherited velocity from aerial hops, grapple flings, or slide exits.
+            Vector3 newHorizontalVel;
+            if (currentHorizontalSpeed > targetSpeed + 0.5f)
+            {
+                // Carrying high momentum:
+                if (moveInput.sqrMagnitude > 0.05f)
+                {
+                    Vector3 wishDir = targetDirection.normalized;
+                    float dot = Vector3.Dot(horizontalVel.normalized, wishDir);
+                    if (dot > 0.1f)
+                    {
+                        // Moving along wish direction: gentle aerodynamic drag preserves speed runway
+                        newHorizontalVel = Vector3.MoveTowards(horizontalVel, targetVelocity, groundMomentumDrag * Time.fixedDeltaTime);
+                        newHorizontalVel = Vector3.RotateTowards(newHorizontalVel, wishDir, (airAcceleration * 1.2f / Mathf.Max(currentHorizontalSpeed, 6f)) * Time.fixedDeltaTime, 0f);
+                    }
+                    else
+                    {
+                        // Opposing input: active responsive braking
+                        newHorizontalVel = Vector3.MoveTowards(horizontalVel, targetVelocity, groundBraking * Time.fixedDeltaTime);
+                    }
+                }
+                else
+                {
+                    // No input: predictable deceleration to rest
+                    newHorizontalVel = Vector3.MoveTowards(horizontalVel, Vector3.zero, groundBraking * Time.fixedDeltaTime);
+                }
+            }
+            else
+            {
+                // Normal acceleration towards target speed
+                newHorizontalVel = Vector3.MoveTowards(horizontalVel, targetVelocity, groundAcceleration * Time.fixedDeltaTime);
+            }
+
+            rb.linearVelocity = new Vector3(newHorizontalVel.x, rb.linearVelocity.y, newHorizontalVel.z);
         }
         else
         {

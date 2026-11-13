@@ -41,6 +41,46 @@ public static class PlayerRigBuilder
         Debug.Log($"REBOUND: Player_Rig successfully relocated to safe platform surface: {safePos}");
     }
 
+    [InitializeOnLoadMethod]
+    [MenuItem("Tools/REBOUND/Run Movement Unit Tests", false, 3)]
+    public static void RunMovementUnitTests()
+    {
+        Debug.Log("==================================================");
+        Debug.Log("REBOUND: EXECUTING MOVEMENT PHYSICS TEST SUITE...");
+        Debug.Log("==================================================");
+
+        var tests = new MovementPhysicsTests();
+        int passed = 0;
+        int failed = 0;
+
+        void ExecuteTest(string name, System.Action testAction)
+        {
+            try
+            {
+                testAction();
+                Debug.Log($"[PASS] {name}");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] {name}: {ex.Message}");
+                failed++;
+            }
+        }
+
+        ExecuteTest("Reconciled Jump Impulse Yields 1.6m Height", tests.Test_ReconciledJumpImpulse_YieldsTarget1Point6MeterHeight);
+        ExecuteTest("Diagonal Input Normalization Unit Magnitude", tests.Test_DiagonalInputNormalization_NeverExceedsUnitMagnitude);
+        ExecuteTest("Quake/Source Air Strafing Acceleration & Preservation", tests.Test_AirStrafing_PreservesSpeedAndAddsAccelerationOnCurve);
+        ExecuteTest("Slide Aerodynamic Drag Curve Deceleration", tests.Test_SlideDrag_DeceleratesSmoothlyAtHighSpeed);
+        ExecuteTest("Slope Surfing Downhill/Uphill Dynamics", tests.Test_SlopeSurfing_DownhillAcceleratesUphillDecelerates);
+        ExecuteTest("Grapple Tangential Velocity 100% Preservation", tests.Test_GrappleDecomposition_Preserves100PercentTangentialVelocity);
+        ExecuteTest("Surface Proximity Recoil Inverse Scaling", tests.Test_SurfaceProximityRecoil_ZeroBeyondThresholdMaxAtPointBlank);
+
+        Debug.Log("==================================================");
+        Debug.Log($"REBOUND: TEST SUITE COMPLETE. Passed: {passed}, Failed: {failed}");
+        Debug.Log("==================================================");
+    }
+
     public static Vector3 GetSafeSpawnPosition()
     {
         GameObject startHub = GameObject.Find("Chamber1_StartHub");
@@ -87,7 +127,7 @@ public static class PlayerRigBuilder
         rb.mass = 75f;
         rb.linearDamping = 0.05f;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        rb.interpolation = RigidbodyInterpolation.None;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         // Capsule Collider with frictionless material to eliminate wall/floor drag
@@ -106,6 +146,7 @@ public static class PlayerRigBuilder
         PlayerAudioEffects audioEffects = root.AddComponent<PlayerAudioEffects>();
         PlayerMovement movement = root.AddComponent<PlayerMovement>();
         PlayerAbilityInput abilityInput = root.AddComponent<PlayerAbilityInput>();
+        PlayerMovementTelemetry telemetry = root.AddComponent<PlayerMovementTelemetry>();
 
         // Ground Check sensor point
         GameObject groundCheck = new GameObject("GroundCheck");
