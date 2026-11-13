@@ -11,10 +11,11 @@ using UnityEngine;
 public class PullAbility : MonoBehaviour
 {
     [Header("Vacuum Suction Tuning (Props)")]
-    [SerializeField] private float maxPullRange = 16.0f;
+    [Tooltip("Maximum range to snatch crates and props (extended to 45m for high-speed mid-air aerial snatching).")]
+    [SerializeField] private float maxPullRange = 45.0f;
     [SerializeField] private float hoverDistance = 2.5f;
-    [SerializeField] private float maxReelSpeed = 14.0f;
-    [SerializeField] private float leashBreakDistance = 18.0f;
+    [SerializeField] private float maxReelSpeed = 24.0f;
+    [SerializeField] private float leashBreakDistance = 55.0f;
 
     [Header("Grapple Slingshot Tuning (World & Anchors)")]
     [Tooltip("Maximum distance to attach a grapple hook to walls, floors, or anchors.")]
@@ -195,8 +196,16 @@ public class PullAbility : MonoBehaviour
         Vector3 origin = playerCamera != null ? playerCamera.transform.position : transform.position;
         Vector3 direction = playerCamera != null ? playerCamera.transform.forward : transform.forward;
 
-        // Priority 1: Interactive Prop / Crate Snatch (within maxPullRange)
-        if (Physics.Raycast(origin, direction, out RaycastHit propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore))
+        // Priority 1: Interactive Prop / Crate Snatch (within maxPullRange = 45m)
+        // Primary probe: Sharp raycast
+        bool propFound = Physics.Raycast(origin, direction, out RaycastHit propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
+        // Fallback probe: Generous spherecast (radius 0.85m) for effortless mid-air crate snatching
+        if (!propFound)
+        {
+            propFound = Physics.SphereCast(origin, 0.85f, direction, out propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
+        }
+
+        if (propFound)
         {
             if (playerMovement == null || playerMovement.GroundedObject != propHit.transform)
             {
@@ -416,14 +425,39 @@ public class PullAbility : MonoBehaviour
             return;
         }
 
-        // 2. Smooth Half-Life 2 Spring Pull
+        // 2. Weight-Class Responsive Spring Reel Dynamics:
+        // Light (~1kg): rapid 32 m/s snap (instant mid-air ammo snatch)
+        // Medium (~5kg): agile 24 m/s reel
+        // Heavy (~25kg): 12 m/s ground drag (heavier resistance)
         Vector3 toTarget = hoverTarget - heldRigidbody.position;
         float distance = toTarget.magnitude;
 
+        float classReelSpeed = maxReelSpeed;
+        float pullAccel = 50.0f;
+
+        if (heldProp != null)
+        {
+            switch (heldProp.Class)
+            {
+                case WeightClass.Light:
+                    classReelSpeed = 32.0f;
+                    pullAccel = 65.0f;
+                    break;
+                case WeightClass.Medium:
+                    classReelSpeed = 24.0f;
+                    pullAccel = 50.0f;
+                    break;
+                case WeightClass.Heavy:
+                    classReelSpeed = 12.0f;
+                    pullAccel = 25.0f;
+                    break;
+            }
+        }
+
         if (distance > 0.1f)
         {
-            float speed = Mathf.Min(distance * 10.0f, maxReelSpeed);
-            heldRigidbody.linearVelocity = Vector3.MoveTowards(heldRigidbody.linearVelocity, toTarget.normalized * speed, 40f * Time.fixedDeltaTime);
+            float speed = Mathf.Min(distance * 12.0f, classReelSpeed);
+            heldRigidbody.linearVelocity = Vector3.MoveTowards(heldRigidbody.linearVelocity, toTarget.normalized * speed, pullAccel * Time.fixedDeltaTime);
         }
         else
         {

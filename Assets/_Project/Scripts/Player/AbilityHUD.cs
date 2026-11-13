@@ -118,11 +118,17 @@ public class AbilityHUD : MonoBehaviour
         {
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-            // Priority 1: Check for Grab Targets (Props, Crates, TargetButtons) within 16m
+            // Priority 1: Check for Grab Targets (Props, Crates, TargetButtons) within 45m
             LayerMask targetMask = LayerMask.GetMask("Interactables", "Enemies", "Projectiles");
             if (targetMask.value == 0) targetMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
 
-            if (Physics.Raycast(ray, out RaycastHit propHit, 16f, targetMask, QueryTriggerInteraction.Ignore))
+            bool hasPropTarget = Physics.Raycast(ray, out RaycastHit propHit, 45f, targetMask, QueryTriggerInteraction.Ignore);
+            if (!hasPropTarget)
+            {
+                hasPropTarget = Physics.SphereCast(ray, 0.75f, out propHit, 45f, targetMask, QueryTriggerInteraction.Ignore);
+            }
+
+            if (hasPropTarget)
             {
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target != null)

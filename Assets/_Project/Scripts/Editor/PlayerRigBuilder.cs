@@ -14,35 +14,17 @@ using UnityEngine.UI;
 /// </summary>
 public static class PlayerRigBuilder
 {
-    [MenuItem("Tools/REBOUND/Snap Player to Safe Spawn", false, 0)]
-    public static void SnapPlayerToSafeSpawn()
+    [MenuItem("Tools/REBOUND/1. Setup Complete Game (Arena + Player)", false, 0)]
+    public static void SetupCompleteGame()
     {
-        GameObject playerObj = GameObject.Find("Player_Rig");
-        if (playerObj == null)
-        {
-            Debug.LogWarning("REBOUND: No Player_Rig found in current scene!");
-            return;
-        }
-
-        Vector3 safePos = GetSafeSpawnPosition();
-
-        Undo.RecordObject(playerObj.transform, "Snap Player to Safe Spawn");
-        playerObj.transform.position = safePos;
-        playerObj.transform.rotation = Quaternion.identity;
-
-        PlayerMovement pMove = playerObj.GetComponent<PlayerMovement>();
-        if (pMove != null)
-        {
-            Undo.RecordObject(pMove, "Update Safe Checkpoint");
-            pMove.SetCheckpoint(safePos);
-        }
-
-        Selection.activeGameObject = playerObj;
-        Debug.Log($"REBOUND: Player_Rig successfully relocated to safe platform surface: {safePos}");
+        CreateRedlinerGrappleArena();
+        CreatePlayerRig();
+        SnapPlayerToSafeSpawn();
+        Debug.Log("REBOUND: Setup Complete! 200m Redliner Grapple Arena & Player Rig are fully generated and ready to play!");
     }
 
     [InitializeOnLoadMethod]
-    [MenuItem("Tools/REBOUND/Run Movement Unit Tests", false, 3)]
+    [MenuItem("Tools/REBOUND/2. Run Movement Unit Tests", false, 1)]
     public static void RunMovementUnitTests()
     {
         Debug.Log("==================================================");
@@ -75,10 +57,38 @@ public static class PlayerRigBuilder
         ExecuteTest("Slope Surfing Downhill/Uphill Dynamics", tests.Test_SlopeSurfing_DownhillAcceleratesUphillDecelerates);
         ExecuteTest("Grapple Tangential Velocity 100% Preservation", tests.Test_GrappleDecomposition_Preserves100PercentTangentialVelocity);
         ExecuteTest("Surface Proximity Recoil Inverse Scaling", tests.Test_SurfaceProximityRecoil_ZeroBeyondThresholdMaxAtPointBlank);
+        ExecuteTest("Weight-Class Responsive Prop Reel Dynamics", tests.Test_WeightClassReelDynamics_ScalesPullSpeedByMass);
 
         Debug.Log("==================================================");
         Debug.Log($"REBOUND: TEST SUITE COMPLETE. Passed: {passed}, Failed: {failed}");
         Debug.Log("==================================================");
+    }
+
+    [MenuItem("Tools/REBOUND/Advanced/Snap Player to Safe Spawn", false, 20)]
+    public static void SnapPlayerToSafeSpawn()
+    {
+        GameObject playerObj = GameObject.Find("Player_Rig");
+        if (playerObj == null)
+        {
+            Debug.LogWarning("REBOUND: No Player_Rig found in current scene!");
+            return;
+        }
+
+        Vector3 safePos = GetSafeSpawnPosition();
+
+        Undo.RecordObject(playerObj.transform, "Snap Player to Safe Spawn");
+        playerObj.transform.position = safePos;
+        playerObj.transform.rotation = Quaternion.identity;
+
+        PlayerMovement pMove = playerObj.GetComponent<PlayerMovement>();
+        if (pMove != null)
+        {
+            Undo.RecordObject(pMove, "Update Safe Checkpoint");
+            pMove.SetCheckpoint(safePos);
+        }
+
+        Selection.activeGameObject = playerObj;
+        Debug.Log($"REBOUND: Player_Rig successfully relocated to safe platform surface: {safePos}");
     }
 
     public static Vector3 GetSafeSpawnPosition()
@@ -104,7 +114,7 @@ public static class PlayerRigBuilder
         return new Vector3(0f, 7.6f, -2.5f);
     }
 
-    [MenuItem("Tools/REBOUND/Setup Complete Player Rig", false, 1)]
+    [MenuItem("Tools/REBOUND/Advanced/Create Player Rig Only", false, 21)]
     [MenuItem("GameObject/REBOUND/Setup Complete Player Rig", false, 10)]
     public static GameObject CreatePlayerRig()
     {
@@ -122,11 +132,11 @@ public static class PlayerRigBuilder
         Vector3 initialSpawn = GetSafeSpawnPosition();
         root.transform.position = initialSpawn;
 
-        // Rigidbody: Freeze X and Z only to allow free, uninhibited mouse turning
+        // Rigidbody: Freeze all rotations so PhysX never applies torque fighting mouse look
         Rigidbody rb = root.AddComponent<Rigidbody>();
         rb.mass = 75f;
         rb.linearDamping = 0.05f;
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
@@ -412,7 +422,7 @@ public static class PlayerRigBuilder
         return img;
     }
 
-    [MenuItem("Tools/REBOUND/Create Redliner Grapple Arena (200m)", false, 1)]
+    [MenuItem("Tools/REBOUND/Advanced/Create Arena Only (200m)", false, 22)]
     [MenuItem("GameObject/REBOUND/Create Redliner Grapple Arena (200m)", false, 10)]
     public static void CreateRedlinerGrappleArena()
     {
@@ -551,7 +561,7 @@ public static class PlayerRigBuilder
         Debug.Log("REBOUND: Redliner Grapple Arena (200m x 200m x 35m) created! 36m Central Spire, 4 High Towers, Gantries, Mega Ramps & Bowling Alley!");
     }
 
-    [MenuItem("Tools/REBOUND/Create Test Physics Room", false, 2)]
+    [MenuItem("Tools/REBOUND/Advanced/Create Test Physics Room", false, 23)]
     [MenuItem("GameObject/REBOUND/Create Test Physics Room", false, 11)]
     public static void CreateTestRoom()
     {

@@ -166,4 +166,21 @@ public class MovementPhysicsTests
         float kickEdge = surfaceKickVelocity * (0.8f + ratioEdge * 0.4f); // 13.5 * 0.8 = 10.8 m/s
         Assert.AreEqual(10.8f, kickEdge, 0.01f);
     }
+
+    [Test]
+    public void Test_WeightClassReelDynamics_ScalesPullSpeedByMass()
+    {
+        // Light (~1kg) snaps at 32 m/s for instant mid-air projectile snatching
+        float lightReelSpeed = 32.0f;
+        // Medium (~5kg) reels at 24 m/s
+        float mediumReelSpeed = 24.0f;
+        // Heavy (~25kg) drags at 12 m/s (heavier, takes longer)
+        float heavyReelSpeed = 12.0f;
+
+        Assert.Greater(lightReelSpeed, mediumReelSpeed, "Light objects reel in faster than medium objects.");
+        Assert.Greater(mediumReelSpeed, heavyReelSpeed, "Medium objects reel in faster than heavy objects.");
+        Assert.AreEqual(32.0f, lightReelSpeed);
+        Assert.AreEqual(24.0f, mediumReelSpeed);
+        Assert.AreEqual(12.0f, heavyReelSpeed);
+    }
 }

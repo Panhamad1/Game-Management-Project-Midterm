@@ -34,6 +34,7 @@ public class MouseLook : MonoBehaviour
     private Camera cam;
     private SlowMotionAbility slowMotionAbility;
     private float pitchAngle = 0f;
+    private float yawAngle = 0f;
     private float currentRollAngle = 0f;
     private Vector2 currentLookDelta = Vector2.zero;
     private Vector3 initialLocalPos;
@@ -42,6 +43,7 @@ public class MouseLook : MonoBehaviour
     private float targetEyeLocalY = 0.65f;
     private float currentEyeLocalY = 0.65f;
     private bool isSliding = false;
+    private Rigidbody bodyRb;
 
     private float shakeTrauma = 0f;
     private Vector3 shakeDirection = Vector3.zero;
@@ -63,6 +65,12 @@ public class MouseLook : MonoBehaviour
         if (playerBody == null && transform.parent != null)
         {
             playerBody = transform.parent;
+        }
+
+        if (playerBody != null)
+        {
+            yawAngle = playerBody.eulerAngles.y;
+            bodyRb = playerBody.GetComponent<Rigidbody>();
         }
 
         initialLocalPos = transform.localPosition;
@@ -122,10 +130,15 @@ public class MouseLook : MonoBehaviour
         pitchAngle = Mathf.Clamp(pitchAngle, -85f, 85f);
 
         // Horizontal Yaw (Left / Right) directly on player body
-        if (playerBody != null && Mathf.Abs(mouseX) > 0.0001f)
+        // Maintain an authoritative yaw angle so we NEVER read back from the physics-interpolated transform!
+        yawAngle += mouseX;
+        if (playerBody != null)
         {
-            float newYaw = playerBody.eulerAngles.y + mouseX;
-            playerBody.rotation = Quaternion.Euler(0f, newYaw, 0f);
+            playerBody.rotation = Quaternion.Euler(0f, yawAngle, 0f);
+            if (bodyRb != null)
+            {
+                bodyRb.angularVelocity = Vector3.zero;
+            }
         }
 
         // 2. Camera Shake Decay
