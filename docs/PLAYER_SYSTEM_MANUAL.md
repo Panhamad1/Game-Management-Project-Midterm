@@ -92,33 +92,37 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
   - **Walk Speed**: `6.5 m/s` (normal WASD movement).
   - **Sprint Speed**: `11.5 m/s` (holding `Left Shift`).
   - **Crouch Speed**: `3.5 m/s` (holding `C` or `Ctrl` while walking).
-- **Strict Slide vs. Crouch Rule**:
+- **Authoritative Ground Momentum Model**:
+  - Landing on the ground at high speeds (from a grapple fling, rocket jump, or slide exit) does **NOT** snap down to 6.5 m/s walk speed.
+  - The game preserves your speed runway, applying gentle aerodynamic decay (`3.5 m/s²`) if steering forward, and braking (`45 m/s²`) only if opposing input is held or released.
+- **Strict Slide vs. Crouch Rule & 360° Carving**:
   - Walking forward + pressing Crouch does **NOT** slide. It smoothly ducks into a quiet crouch-walk at 3.5 m/s.
-  - To enter a **Power Slide**, you must be sprinting forward (`Shift + W`) with high speed (`>= 6.0 m/s`). Pressing `C` then launches you into an explosive slide at **14.0 to 22.0 m/s**!
+  - To enter a **Power Slide**, sprint forward (`Shift + W`) with high speed (`>= 6.0 m/s`) and press `C`. This launches you into an explosive slide at **14.0 to 22.0 m/s**!
+  - While sliding, pressing `WASD` actively steers and carves your direction in full 360 degrees, allowing sharp slide redirects.
 - **Downhill Slope Surfing**:
   - Sliding down an angled hill or ramp converts gravity into forward acceleration (`slopeAcceleration = 28 m/s²`). You can reach speeds up to the **35 m/s maximum speed cap**!
-- **Hold-Space Auto-Bunny-Hop**:
-  - You do not need to time your jump keys manually. Simply **hold down Space**!
-  - Every single time your feet touch the ground, the script immediately executes a frame-perfect bunny-hop jump with zero friction loss.
-  - Each hop out of a sprint or slide injects a bonus speed kick (`bHopBoost = +2.5 m/s`).
+- **Reconciled 1.6m Jump & Hold-Space Auto-Hop**:
+  - Upward takeoff velocity is calibrated to **8.7 m/s**, precisely delivering the target **1.6-meter vertical jump clearance** under 2.4x world gravity.
+  - Simply **hold down Space**! Every single time your feet touch the ground, the script immediately executes a frame-perfect bunny-hop jump with zero friction loss, adding `bHopBoost = +2.5 m/s` per hop up to 35 m/s.
+- **Ledge Mantling**:
+  - Touching a wall or platform edge at chest height while moving forward automatically hoists your character up onto the top surface.
 - **Redliner / Source Air-Strafing**:
-  - While in mid-air, hold `A` or `D` and smoothly turn your mouse in that direction.
-  - The script uses vector projection math (`airAcceleration = 26f`) to steer your velocity vector while adding +1.5 to +3.5 m/s of speed per turn!
+  - While in mid-air, hold `A` or `D` and smoothly turn your mouse in that direction to curve your trajectory and build speed up to 35 m/s.
 - **Slide Bowling Ram**:
-  - When sliding faster than `7.5 m/s`, your body acts as a battering ram. Smashing into crates, barricades, or enemies knocks them away like bowling pins.
-- **Safe Platform Raycast Spawning**:
-  - At the start of the game or upon respawning (`R`), the script raycasts down from the sky to find the highest platform surface and safely places your feet on top of it. You will never fall through the floor.
+  - When sliding faster than `7.5 m/s`, your body acts as a battering ram, knocking crates, barricades, and enemies away.
 
 ---
 
-### 3.2 MouseLook.cs — Smooth Aiming, Camera Banking & Landing Dips
+### 3.2 MouseLook.cs — Smooth Aiming, Zero Resistance & Landing Dips
 - **File Location**: `Assets/_Project/Scripts/Player/MouseLook.cs`
 - **What it does**: Turns your mouse movements into first-person camera rotation and adds tactile camera motion.
+- **Zero-Resistance Turning**:
+  - Uses an internal authoritative `yawAngle` that never reads back from physics interpolation.
+  - `RigidbodyConstraints.FreezeRotation` locks all rotation axes against PhysX torque, ensuring mouse aiming is 100% free, responsive, and has zero backward pulling resistance when moving or sliding.
 - **Vertical Pitch Clamping**: Clamped strictly between **-85° and +85°** so your view never flips upside down.
-- **Dynamic Speed FOV**: Camera Field of View widens from **85° to 105°** as your speed climbs from 0 to 30 m/s, creating a sensation of high velocity.
+- **Dynamic Speed FOV**: Camera Field of View widens from **85° to 105°** as your speed climbs from 0 to 30 m/s.
 - **Speed Banking (Roll Tilt)**: Tilts the camera slightly (-2.5° to +2.5°) when turning sharply at high speeds.
-- **Landing Dip**: When falling from high platforms, the camera compresses down slightly on impact and springs back up, making landings feel weighty.
-- **Screen Shake System**: Adds directional screen shakes during rocket jumps, grapple flings, and crate explosions.
+- **Landing Dip**: When falling from high platforms, the camera compresses down slightly on impact and springs back up.
 
 ---
 
@@ -131,8 +135,9 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
   - `C` or `Left Ctrl`: Crouch (when walking) or Power Slide (when sprinting).
   - `Space (Hold)`: Jump and continuous Auto-Bunny-Hop.
   - `Left Click (LMB)`: Fire Push (Wind Cannon) OR fire Crate Cannon (if carrying a crate).
-  - `Right Click (RMB Hold)`: Pull crate to hands OR grapple static geometry.
+  - `Right Click (RMB Hold)`: Pull crate to hands (45m) OR grapple static geometry (75m).
   - `Q` or `F`: Toggle Slow Motion (Focus) on and off.
+  - `F3`: Toggle diagnostic real-time telemetry HUD overlay.
   - `R`: Instant reset back to the safe platform checkpoint.
   - `Escape`: Unlocks the mouse cursor.
 
@@ -142,7 +147,7 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 - **File Location**: `Assets/_Project/Scripts/Abilities/PushAbility.cs`
 - **What it does**: Fires compressed air bursts forward to push objects, launch rocket jumps, and kick off walls.
 - **Surface Proximity Rule**:
-  - Firing in **open air (> 3.8m away from walls/floors)** causes **zero recoil** to the player. You will not accidentally drift backward when pushing distant objects.
+  - Firing in **open air (> 3.8m away from walls/floors)** causes **zero recoil** to the player.
   - Firing within **3.8m of the floor** launches you into a **Rocket Jump** (4.5m to 6.0m high).
   - Firing within **3.8m of a wall** launches you into an explosive **Wall Kick / Redirection Dash** away from the wall.
   - Firing while **sliding** converts the recoil into an instant forward **Slide Boost (+10 m/s)**.
@@ -153,16 +158,19 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 ### 3.5 PullAbility.cs — Dual-Mode Grapple Hook & Crate Snatching
 - **File Location**: `Assets/_Project/Scripts/Abilities/PullAbility.cs`
 - **What it does**: Dual-mode ability that either pulls physics crates to your hands or shoots a long-range grapple hook cable to pull your body across the arena.
-- **Priority 1: Crate Snatch (Within 16 Meters)**:
-  - If aiming at a movable crate, barrel, or debris, it reels the object to hover 2.5 meters in front of your hands.
+- **Priority 1: Crate Snatch (Within 45.0 Meters)**:
+  - Snatch reach extended to **45.0 meters** with a **0.85m SphereCast fallback** for effortless mid-air magnetic targeting.
+  - **Weight-Class Reel Dynamics**:
+    - **Light Crates (~1.0 kg)**: Snap to hands at **32.0 m/s** (instant ammo for mid-air shots).
+    - **Medium Crates (~5.0 kg)**: Reel in at **24.0 m/s** (agile missile).
+    - **Heavy Blocks (~25.0 kg)**: Drag along the floor at **12.0 m/s** (heavy resistance).
   - The held crate physically blocks incoming laser fire like a riot shield.
   - Left-clicking while holding the crate launches it forward at **35.0 m/s** (`launchSpeed`).
 - **Priority 2: Redliner Grapple Hook (Up to 75 Meters)**:
   - If aiming at static geometry (walls, towers, ceiling, floor), it shoots an electric cyan cable up to **75.0 meters away**.
-  - Uses camera-center raycasting with a generous **0.55m SphereCast fallback**, so you can easily hook thin pillars, cable beams, and distant ledges.
-  - **Elastic Winch Pull**: Pulls your body toward the anchor with strong 55 m/s² spring acceleration while preserving your sideways swing momentum.
+  - **Elastic Winch Pull**: Pulls your body toward the anchor at 55 m/s² while preserving 100% of sideways swing momentum.
   - **Ground Grapple Auto-Slide**: Hooking the ground or a downward ramp ahead pulls you directly into an explosive **24 to 34 m/s power slide**.
-  - **Slingshot Fling**: Releasing `RMB` or tapping `Space` mid-grapple snaps the cable and flings you forward with an extra **+6.5 m/s boost** directly into bunny hops or slides.
+  - **Slingshot Fling**: Releasing `RMB` or tapping `Space` mid-grapple snaps the cable and flings you forward with an extra **+6.5 m/s boost**.
 
 ---
 
@@ -241,12 +249,38 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 
 ---
 
-### 3.12 PlayerRigBuilder.cs — 1-Click Unity Setup & Arena Generator
+### 3.12 PlayerRigBuilder.cs — Consolidated 1-Click Game Setup
 - **File Location**: `Assets/_Project/Scripts/Editor/PlayerRigBuilder.cs`
-- **What it does**: An editor tool that sets up the player and builds the testing arena with one click from Unity's top menu bar:
-  - **`Tools > REBOUND > Setup Complete Player Rig`**: Spawns and configures the player, hands, HUD, and audio.
-  - **`Tools > REBOUND > Create Redliner Grapple Arena (200m)`**: Spawns the massive 200m x 200m arena with the 36m Spire, 4 Towers, Gantries, Mega Ramps, and 6 Target Buttons.
-  - **`Tools > REBOUND > Snap Player to Safe Spawn`**: Instantly snaps the player to the safe central platform deck.
+- **What it does**: Provides a streamlined two-option menu in Unity under `Tools > REBOUND`:
+  - **`Tools > REBOUND > 1. Setup Complete Game (Arena + Player)`**: One single click creates the entire 200m Redliner Grapple Arena, spawns the complete Player Rig, and safely snaps the player to the spawn platform.
+  - **`Tools > REBOUND > 2. Run Movement Unit Tests`**: Runs all 8 physics tests directly in the Editor console.
+  - Individual actions remain accessible under `Tools > REBOUND > Advanced/`.
+
+---
+
+### 3.13 PlayerMovementTelemetry.cs — Real-Time Diagnostic HUD Overlay
+- **File Location**: `Assets/_Project/Scripts/Player/PlayerMovementTelemetry.cs`
+- **What it does**: Renders an on-screen engineering HUD when pressing **`F3`**:
+  - Velocity vector decomposition: $(v_x, v_y, v_z)$, horizontal speed, and vertical velocity.
+  - Active locomotion state (`WALKING`, `SPRINTING`, `SLIDING`, `AIRBORNE_RISING`, `AIRBORNE_FALLING`, `+ GRAPPLING`).
+  - Ground normal and slope angle.
+  - Peak speed metrics (all-time, airborne peak, slide peak).
+  - Grapple winch physics: distance to anchor, inward velocity, and tangential swing speed.
+  - Speed cap alert (flags if player approaches 35.0 m/s).
+
+---
+
+### 3.14 MovementPhysicsTests.cs — Automated Movement Physics Test Suite
+- **File Location**: `Assets/_Project/Scripts/Editor/MovementPhysicsTests.cs`
+- **What it does**: 8 automated unit tests validating all physical equations:
+  1. Reconciled Jump Impulse yields 1.6m vertical clearance under 2.4x gravity.
+  2. Diagonal input normalization never exceeds unit magnitude.
+  3. Quake/Source air-strafing preserves momentum and adds speed on curves.
+  4. Slide aerodynamic drag decelerates smoothly without energy spikes.
+  5. Downhill slope surfing accelerates while uphill decelerates.
+  6. Grapple inward clamping preserves 100% of tangential swing velocity.
+  7. Surface proximity recoil scales inversely within 3.8m and gives zero recoil in open air.
+  8. Weight-class responsive prop reel speeds (Light 32 m/s, Medium 24 m/s, Heavy 12 m/s).
 
 ---
 
@@ -256,6 +290,7 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 - **Walking**: Press `W, A, S, D` to move at `6.5 m/s`.
 - **Crouching**: Press `C` or `Ctrl` while walking or standing still. The player ducks down to 1.15m height and crouch-walks quietly at `3.5 m/s`. It will **never** slide by accident.
 - **Power Sliding**: Sprint forward (`Shift + W`) to reach at least 6.0 m/s, then press `C`. Your player drops into an explosive power slide at **14.0 to 22.0 m/s**!
+- **360° Slide Steering**: Pressing `WASD` while sliding carves your trajectory in any direction, allowing complete slide redirects.
 - **Overhead Clearance**: If sliding under a low duct or platform (e.g. 1.3m clearance), releasing crouch will keep you safely ducked until you reach open space.
 
 ### 4.2 Downhill Slope Surfing
@@ -270,6 +305,9 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 ### 4.4 Source / Redliner Air-Strafing
 - While airborne, hold `A` (to turn left) or `D` (to turn right) and smoothly swing your mouse in that same direction.
 - The game accelerates your horizontal velocity into the turn, adding **+1.5 to +3.5 m/s** on every curve. Skilled players can chain turns to maintain maximum speed across the entire arena!
+
+### 4.5 Ledge Mantling
+- Moving forward towards a waist- or chest-height wall or platform edge automatically hoists your character up on top of the surface without halting momentum.
 
 ### 4.5 Slide Bowling Ram
 - Sliding faster than `7.5 m/s` turns your body into a wrecking ball.
@@ -326,23 +364,26 @@ The arena is built specifically for testing high-speed parkour, long-range grapp
 
 ## 7. How to Test in Unity (Step-by-Step)
 
-1. Open your Unity project.
+1. Open your Unity project and navigate to `Assets/Scenes/SampleScene.unity`.
 2. In the top menu bar, click:
-   - **`Tools > REBOUND > Create Redliner Grapple Arena (200m)`** (or simply press Play; legacy test rooms auto-upgrade automatically).
-3. Press **Play** (`Ctrl + P`).
-4. **Test Movements**:
+   - **`Tools > REBOUND > 1. Setup Complete Game (Arena + Player)`** (Sets up the 200m arena, creates the complete player rig, and snaps to spawn in 1 click).
+3. To run the automated physics tests, click:
+   - **`Tools > REBOUND > 2. Run Movement Unit Tests`** (validates 8 physics tests in Console).
+4. Press **Play** (`Ctrl + P`).
+5. **Test Movements**:
    - Walk with `W`: verify you walk at 6.5 m/s.
    - Walk + `C`: verify you crouch-walk at 3.5 m/s without sliding.
-   - Sprint (`Shift + W`) + `C`: verify you enter an explosive power slide (14–22 m/s).
+   - Sprint (`Shift + W`) + `C`: verify you enter an explosive power slide (14–22 m/s); steer 360° with WASD.
    - Hold `Space`: verify your player automatically chains continuous bunny-hops upon touching the ground.
-   - Turn with mouse while holding `A` or `D` in air: verify your speed increases on turns.
-5. **Test Grapple & Crate Cannon**:
+   - Turn with mouse while holding `A` or `D` in air: verify your speed increases on turns with zero camera resistance.
+   - Press `F3`: verify real-time diagnostic telemetry HUD overlay opens.
+6. **Test Grapple & Crate Cannon**:
    - Point at the 36m Central Spire: verify crosshair turns **Electric Cyan diamond** and badge reads `[RMB] GRAPPLE`.
    - Hold `RMB`: verify you get pulled toward the spire with elastic swing momentum.
    - Release `RMB` or press `Space` mid-grapple: verify you get flung forward with +6.5 m/s boost.
-   - Point at a crate: verify crosshair turns **Amber/Yellow box** and badge reads `[RMB] GRAB`.
+   - Point at a crate up to 45m away: verify crosshair turns **Amber/Yellow box** and badge reads `[RMB] GRAB`.
    - Hold `RMB` to lift the crate: verify crosshair turns **Neon Green**. Aim at a red Target Button on a tower and click `LMB`: verify the crate launches at 35 m/s and activates the button into glowing Neon Green with an audio chime!
-6. **Test Infinite Slow-Mo**:
+7. **Test Infinite Slow-Mo**:
    - Press `Q` or `F`: verify world slows to 25% speed with zero cooldown. Press again to exit.
 
 ---
@@ -357,11 +398,12 @@ If you want to tune numbers in the Unity Inspector, select `Player_Rig` in your 
 | `PlayerMovement` | `sprintSpeed` | `11.5` | Sprinting speed when holding Left Shift. |
 | `PlayerMovement` | `crouchSpeed` | `3.5` | Stealth walking speed when crouching without sprinting. |
 | `PlayerMovement` | `airAcceleration` | `26.0` | How strongly air-strafing accelerates your speed when turning. |
-| `PlayerMovement` | `jumpImpulse` | `6.6` | Upward vertical launch speed on jump (gives 1.6m height). |
+| `PlayerMovement` | `jumpImpulse` | `8.7` | Upward takeoff speed on jump (precisely yields 1.6m height under 2.4x gravity). |
 | `PlayerMovement` | `bHopBoost` | `2.5` | Bonus speed added every time you bunny-hop out of a sprint or slide. |
-| `PlayerMovement` | `runThreshold` | `7.5` | Minimum speed needed to trigger a power slide (prevents slide on walk). |
+| `PlayerMovement` | `runThreshold` | `7.5` | Minimum speed needed to shatter barricades with Slide Bowling Ram. |
 | `PlayerMovement` | `slideBoost` | `4.5` | Initial speed punch added when entering a power slide. |
 | `PlayerMovement` | `maxSpeed` | `35.0` | Maximum speed cap for physics and parkour momentum. |
+| `PullAbility` | `maxPullRange` | `45.0` | Maximum distance in meters to snatch crates and props (magnetic aim). |
 | `PullAbility` | `maxGrappleRange` | `75.0` | Maximum distance in meters to attach a grapple hook cable. |
 | `PullAbility` | `grappleFlingBoost`| `6.5` | Forward launch speed added when releasing a grapple tether. |
 | `PullAbility` | `launchSpeed` | `35.0` | Speed in meters per second of crates fired with Crate Cannon. |
@@ -386,3 +428,9 @@ If you want to tune numbers in the Unity Inspector, select `Player_Rig` in your 
   - **Hold-Space Auto-Bunny-Hop**: Players can hold Space to continuously chain frame-perfect bunny hops upon every ground contact.
   - **Smart 4-State Crosshair**: Amber/Yellow square for grabbing crates, Electric Cyan diamond for grappling walls, Neon Green for armed Crate Cannon, White for open air.
   - **Interactive Target Buttons (`TargetButton.cs`)**: Mounted 6 switches across the arena that depress, turn Neon Green, chime, and reward Focus when hit by crates or slide rams.
+- **v5.0 (Redliner Kinetic Polish, Frictionless Mouse Look & 45m Prop Snatching)**:
+  - **Frictionless Mouse Look**: Fixed view drag by accumulating yaw in an internal variable and locking `RigidbodyConstraints.FreezeRotation`.
+  - **Authoritative Ground Momentum**: Landing at high speed preserves velocity with aerodynamic decay rather than abruptly snapping to walk speed.
+  - **45m Crate Snatch Reach**: Increased prop reach to 45m with 0.85m SphereCast fallback and weight-class reel dynamics (Light 32 m/s, Medium 24 m/s, Heavy 12 m/s).
+  - **1-Click Game Setup**: Streamlined top menu down to 2 clear options: `1. Setup Complete Game (Arena + Player)` and `2. Run Movement Unit Tests`.
+  - **Real-Time Telemetry Overlay (`F3`)**: Added `PlayerMovementTelemetry.cs` for on-screen velocity decomposition and live physics metrics.

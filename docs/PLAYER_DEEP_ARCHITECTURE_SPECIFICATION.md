@@ -267,8 +267,8 @@ When `isSliding == true` and `CurrentSpeed >= 7.5 m/s`:
 
 #### Jump Calculation:
 Jumping applies an instantaneous vertical velocity:
-$$\vec{v}_y = \text{jumpImpulse} = 6.6 \text{ m/s}$$
-Using the kinematic formula $h = \frac{v_y^2}{2g}$, this produces a clean **1.6-meter jump** (matching standard curb and platform clearances).
+$$\vec{v}_y = \text{jumpImpulse} = 8.7 \text{ m/s}$$
+Under $2.4\times$ world gravity ($g_{\text{eff}} = 9.81 \times 2.4 = 23.54\text{ m/s}^2$), using the kinematic formula $h = \frac{v_y^2}{2g_{\text{eff}}} = \frac{75.69}{47.08}$, this produces precisely a **1.6-meter vertical jump clearance** (matching platform ledges and obstacles).
 
 #### Asymmetric Gravity Scaling:
 To eliminate floaty, unnatural physics, REBOUND uses a dual gravity scale:
@@ -626,19 +626,19 @@ public interface IKineticTarget
 | `sprintSpeed` | PlayerMovement | `11.5 m/s` | Sprint speed holding Shift |
 | `crouchSpeed` | PlayerMovement | `3.5 m/s` | Quiet stealth crouch-walk speed |
 | `airAcceleration` | PlayerMovement | `26.0` | Air-strafe turn acceleration factor |
-| `jumpImpulse` | PlayerMovement | `6.6 m/s` | Vertical jump launch speed (1.6m height) |
+| `jumpImpulse` | PlayerMovement | `8.7 m/s` | Takeoff speed yielding 1.6m vertical clearance under 2.4x gravity |
 | `bHopBoost` | PlayerMovement | `+2.5 m/s` | Speed injected on every bunny-hop |
-| `runThreshold` | PlayerMovement | `7.5 m/s` | Minimum speed needed to trigger a slide |
+| `runThreshold` | PlayerMovement | `7.5 m/s` | Minimum speed to shatter barricades with Slide Bowling Ram |
 | `slideBoost` | PlayerMovement | `+4.5 m/s` | Initial speed punch added on slide entry |
 | `minSlideEntrySpeed`| PlayerMovement | `14.0 m/s` | Minimum speed when slide begins |
 | `minSlideSpeed` | PlayerMovement | `3.5 m/s` | Speed where slide drops to crouch-walk |
 | `slideFriction` | PlayerMovement | `2.2 m/s²` | Flat ground friction deceleration |
-| `slideDrag` | PlayerMovement | `0.035` | Quadratic aerodynamic drag coefficient |
+| `slideDrag` | PlayerMovement | `0.035 s⁻¹` | Aerodynamic linear drag coefficient |
 | `slopeAcceleration` | PlayerMovement | `28.0 m/s²`| Downhill gravity slide acceleration |
 | `maxSpeed` | PlayerMovement | `35.0 m/s` | Hard soft-cap for all momentum chaining |
 | `surfaceProximityDistance` | PushAbility | `3.8 m` | Max surface distance for rocket recoil |
 | `surfaceKickVelocity` | PushAbility | `13.5 m/s` | Base rocket jump velocity |
-| `maxPullRange` | PullAbility | `16.0 m` | Max range to snatch crates |
+| `maxPullRange` | PullAbility | `45.0 m` | Max range to snatch crates (with 0.85m SphereCast fallback) |
 | `maxGrappleRange`| PullAbility | `75.0 m` | Max reach of grapple hook cable |
 | `grappleFlingBoost` | PullAbility | `+6.5 m/s` | Launch speed added on grapple release |
 | `launchSpeed` | PullAbility | `35.0 m/s` | Projectile speed of Crate Cannon |

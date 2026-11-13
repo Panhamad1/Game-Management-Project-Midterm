@@ -34,9 +34,10 @@ The player possesses pneumatic air-pressure abilities and sensory awareness:
 | **Space (Hold)**          | **Auto-Bunny-Hop**             | Holding Space chains frame-perfect hops on every floor contact (+2.5 m/s per hop!) |
 | **A / D + Mouse (Air)**   | **Air-Strafing**               | Turning camera into air-strafe adds +1.5 to +3.5 m/s speed per turn up to 35 m/s |
 | **Left Click (LMB)**      | **Push (Wind Blast / Boost)**  | Pushes objects forward; Rocket Jump against floor, Wall Kick against wall, Slide Boost in slide |
-| **Right Click (RMB)**     | **Pull (Grapple / Grab)**      | 75m Grapple Hook to walls/towers OR pulls highlighted crate to hands       |
+| **Right Click (RMB)**     | **Pull (Grapple / Grab)**      | 75m Grapple Hook to walls/towers OR pulls highlighted crate up to 45m to hands |
 | **LMB while holding RMB** | **Crate Cannon**               | Launches the held object forward at 35.0 m/s as a high-speed kinetic projectile |
 | **Q / F**                 | **Infinite Slow Motion**       | Slows world to 25% speed; zero cooldown and infinite duration, toggle on/off anytime |
+| **F3**                    | **Telemetry HUD**              | Toggles real-time diagnostic physics overlay (speeds, angles, timers, forces) |
 | **Automatic Visual**      | **Spider Sense**               | Directional HUD flash warning of incoming sniper rounds or leap slams       |
 | **R**                     | **Quick Checkpoint Reset**     | Instantly resets player onto the safe elevated platform                    |
 | **Escape**                | Pause                          | Opens pause menu / unlocks cursor                                           |
@@ -54,9 +55,9 @@ The player possesses pneumatic air-pressure abilities and sensory awareness:
 - **Slide Bowling Ram**: When sliding faster than 7.5 m/s, your body physically smashes through wooden barricades and sends physics crates flying like bowling pins.
 - **Recoil-Convert Boost**: Blasting Push (`LMB`) while sliding redirects the explosion force into forward linear slide acceleration (+10 m/s).
 
-#### 2. Dual-Mode Pull (75m Grapple Hook vs Object Snatching)
+#### 2. Dual-Mode Pull (75m Grapple Hook vs 45m Object Snatching)
 - **Target Priority**:
-  - Aiming at a movable crate, barrel, or debris within 16m: Pull reels that target to hover 2.5m in front of your hands (Gravity Gun style).
+  - Aiming at a movable crate, barrel, or debris within **45.0m**: Pull reels that target to hover 2.5m in front of your hands (Gravity Gun style). Uses magnetic 0.85m SphereCast fallback and weight-class reel dynamics (Light 32 m/s, Medium 24 m/s, Heavy 12 m/s).
   - Aiming at static walls, floors, towers, spires, or ceilings: Pull shoots an electric cyan cable up to **75.0 meters away**!
 - **Elastic Winch Pull**: Pulls the player body toward the anchor with strong 55 m/s² spring tension while preserving tangential swinging velocity.
 - **Ground Grapple Auto-Slide**: Hooking the ground or downward ramps ahead pulls you straight into a 24–34 m/s power slide.
@@ -74,7 +75,7 @@ The player possesses pneumatic air-pressure abilities and sensory awareness:
 - **Zero Cooldown / Infinite Duration**: Players can toggle Slow-Mo on and off freely with `Q` or `F` without an energy depletion penalty or cooldown timer.
 
 #### 5. Smart Crosshair HUD Feedback
-- **Amber / Yellow Square (`[ · ]`)**: Locks onto movable crates, blocks, and buttons within 16m (`[RMB] GRAB`).
+- **Amber / Yellow Square (`[ · ]`)**: Locks onto movable crates, blocks, and buttons within 45m (`[RMB] GRAB`).
 - **Electric Cyan Diamond (`+`)**: Locks onto static walls, towers, and floors within 75m (`[RMB] GRAPPLE`).
 - **Neon Green Reticle**: Activates while holding a crate (`[LMB] FIRE CRATE CANNON`).
 - **Neutral White**: Displayed when aiming at empty air beyond 75m.
