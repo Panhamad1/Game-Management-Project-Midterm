@@ -82,7 +82,7 @@ public class PlayerMovementTelemetry : MonoBehaviour
                 peakSlideSpeed = currentSpeed;
             }
 
-            speedCapTriggered = currentSpeed >= 34.8f;
+            speedCapTriggered = currentSpeed >= 25.8f;
         }
     }
 

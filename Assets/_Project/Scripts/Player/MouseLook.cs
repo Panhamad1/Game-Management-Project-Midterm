@@ -26,9 +26,9 @@ public class MouseLook : MonoBehaviour
 
     [Header("Dynamic FOV & Speed Banking")]
     [SerializeField] private float baseFOV = 85f;
-    [SerializeField] private float maxFOV = 105f;
-    [SerializeField] private float maxFOVSpeed = 30f;
-    [SerializeField] private float maxBankAngle = 2.5f;
+    [SerializeField] private float maxFOV = 96f;
+    [SerializeField] private float maxFOVSpeed = 25f;
+    [SerializeField] private float maxBankAngle = 2.0f;
     [SerializeField] private float bankSpeed = 8.0f;
 
     private Camera cam;

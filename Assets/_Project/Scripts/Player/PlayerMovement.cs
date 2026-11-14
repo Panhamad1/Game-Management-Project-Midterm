@@ -42,8 +42,8 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Vertical impulse force on Space. 8.7m/s gives precisely 1.6m vertical clearance under 2.4x gravity.")]
     [SerializeField] private float jumpImpulse = 8.7f;
 
-    [Tooltip("Bunny-hop velocity increment when jumping out of a slide or chaining hops.")]
-    [SerializeField] private float bHopBoost = 2.5f;
+    [Tooltip("Optional subtle velocity increment on bunny-hop landing (0 for pure momentum preservation).")]
+    [SerializeField] private float bHopBoost = 0f;
 
     [Header("Slide Dynamics Tuning")]
     [Tooltip("Minimum horizontal speed required to initiate a slide (requires sprint).")]
@@ -74,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float slideRecoilBoost = 10.0f;
 
     [Tooltip("Maximum allowed speed (soft cap).")]
-    [SerializeField] private float maxSpeed = 35.0f;
+    [SerializeField] private float maxSpeed = 26.0f;
 
     [Tooltip("Minimum guaranteed slide duration upon triggering (seconds).")]
     [SerializeField] private float minSlideDuration = 0.35f;
@@ -639,35 +639,54 @@ public class PlayerMovement : MonoBehaviour
                 airborneRunPreserved = true;
             }
 
-            if (wasSlidingBeforeJump || isSprinting || hSpeed >= runThreshold)
+            Vector3 camFwd = GetCameraFlatForward();
+            Vector3 camRight = GetCameraFlatRight();
+            Vector3 wishDir = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
+
+            if (wasSlidingBeforeJump)
             {
-                // SLIDE -> JUMP CHAIN & SPRINT JUMP (REDLINER BUNNY-HOP SPEED STACKING)
-                // Preserves 100% of horizontal speed PLUS injects bHopBoost (+2.5 m/s)!
-                float baseSpeed = Mathf.Max(hSpeed, currentSlideSpeed);
-                float boostedSpeed = Mathf.Min(baseSpeed + bHopBoost, maxSpeed);
-
-                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : transform.forward;
-
-                // Subtle steering influence toward movement input
-                Vector3 wishDir = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
+                // JUMPING OUT OF A SLIDE (Slide-Hop):
+                // Cleanly transfers 100% of slide velocity into the air without losing speed
+                float exitSpeed = Mathf.Min(Mathf.Max(hSpeed, currentSlideSpeed), maxSpeed);
+                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd;
                 if (wishDir.sqrMagnitude > 0.1f)
                 {
                     hopDir = Vector3.RotateTowards(hopDir, wishDir, 35f * Mathf.Deg2Rad, 0f);
                 }
 
-                Vector3 newHVel = hopDir * boostedSpeed;
+                Vector3 newHVel = hopDir * exitSpeed;
                 rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
 
                 isSliding = false;
                 airborneSlideBufferTimer = 0f;
 
                 if (audioEffects != null) audioEffects.PlaySlideBoost();
-                if (mouseLook != null) mouseLook.AddScreenShake(0.1f, Vector3.up);
+                if (mouseLook != null) mouseLook.AddScreenShake(0.08f, Vector3.up);
+            }
+            else if (hSpeed > sprintSpeed + 0.5f)
+            {
+                // HIGH-MOMENTUM PRESERVATION (Bunny-Hop from Grapple Slingshot / Downhill Surf / Rocket Jump):
+                // Preserves 100% of accumulated momentum through repeated hops without artificial runaway acceleration
+                float preservedSpeed = Mathf.Min(hSpeed + bHopBoost, maxSpeed);
+                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd;
+                if (wishDir.sqrMagnitude > 0.1f)
+                {
+                    hopDir = Vector3.RotateTowards(hopDir, wishDir, 25f * Mathf.Deg2Rad, 0f);
+                }
+
+                Vector3 newHVel = hopDir * preservedSpeed;
+                rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
+
+                if (audioEffects != null) audioEffects.PlayFootstep();
             }
             else
             {
-                currentVel.y = jumpImpulse;
-                rb.linearVelocity = currentVel;
+                // STANDARD JUMP / SPRINT JUMP:
+                // Normal sprint jump stays at sprint speed (11.5 m/s); walk jump moves at walk speed (6.5 m/s)
+                float targetTakeoffSpeed = isSprinting && moveInput.y > 0.1f ? sprintSpeed : (moveInput.sqrMagnitude > 0.1f ? walkSpeed : 0f);
+                Vector3 jumpDir = wishDir.sqrMagnitude > 0.1f ? wishDir : (horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd);
+                Vector3 newHVel = jumpDir * Mathf.Max(hSpeed, targetTakeoffSpeed);
+                rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
 
                 if (audioEffects != null) audioEffects.PlayFootstep();
             }
@@ -958,12 +977,12 @@ public class PlayerMovement : MonoBehaviour
         isGrappling = true;
         grappleAnchorPoint = anchor;
 
-        float targetSpeed = Mathf.Lerp(24.0f, 35.0f, Mathf.Clamp01(distance / 35.0f));
+        float targetSpeed = Mathf.Lerp(18.0f, 25.0f, Mathf.Clamp01(distance / 35.0f));
 
         // If pulling toward ground or downward ramp while moving, enter power slide!
         if (isGrounded && pullDir.y <= 0.25f && !isSliding)
         {
-            StartSlide(Mathf.Max(CurrentSpeed + 4.0f, targetSpeed));
+            StartSlide(Mathf.Max(CurrentSpeed + 3.0f, targetSpeed));
         }
 
         Vector3 currentVel = rb.linearVelocity;
@@ -1003,8 +1022,8 @@ public class PlayerMovement : MonoBehaviour
         Vector3 currentVel = rb.linearVelocity;
         float currentSpeed = currentVel.magnitude;
 
-        // Slingshot fling: injects boost on top of existing speed, minimum 16 m/s
-        float boostedSpeed = Mathf.Min(Mathf.Max(currentSpeed, 16.0f) + flingBoost, maxSpeed);
+        // Slingshot fling: injects boost on top of existing speed, minimum 14 m/s
+        float boostedSpeed = Mathf.Min(Mathf.Max(currentSpeed, 14.0f) + flingBoost, maxSpeed);
 
         // Blend look direction with current momentum direction for natural physics handoff
         Vector3 momentumDir = currentSpeed > 2.0f ? currentVel.normalized : transform.forward;
