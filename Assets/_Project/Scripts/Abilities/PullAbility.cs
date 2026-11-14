@@ -50,6 +50,7 @@ public class PullAbility : MonoBehaviour
 
     private Rigidbody heldRigidbody;
     private InteractableProp heldProp;
+    private IKineticCarryTarget heldCarryTarget;
     private bool isPulling = false;
     private Vector3 initialHandLocalPos;
     private float vortexAngle = 0f;
@@ -215,9 +216,13 @@ public class PullAbility : MonoBehaviour
                     Rigidbody targetRb = propHit.collider.attachedRigidbody;
                     if (targetRb != null && !targetRb.isKinematic)
                     {
+                        IKineticCarryTarget carryTarget = target as IKineticCarryTarget;
+                        if (carryTarget != null && !carryTarget.TryBeginCarry()) return;
+
                         heldRigidbody = targetRb;
                         heldProp = propHit.collider.GetComponentInParent<InteractableProp>();
                         if (heldProp != null) heldProp.SetCarriedState(true);
+                        heldCarryTarget = carryTarget;
                         heldRigidbody.angularDamping = 6.0f;
                         isGrappling = false;
                         if (grappleCable != null) grappleCable.enabled = false;
@@ -317,12 +322,13 @@ public class PullAbility : MonoBehaviour
         if (heldRigidbody == null) return false;
 
         Rigidbody launchedRb = heldRigidbody;
-        InteractableProp prop = heldProp;
+        IKineticCarryTarget launchedTarget = heldCarryTarget;
 
         ReleaseHeldObject();
 
         Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
         launchedRb.linearVelocity = launchDir * launchSpeed;
+        launchedTarget?.OnLaunched();
 
         // Apply recoil to player
         if (playerMovement != null)
@@ -478,9 +484,20 @@ public class PullAbility : MonoBehaviour
             heldRigidbody = null;
             heldProp = null;
         }
+        if (heldCarryTarget is UnityEngine.Object carryObject && carryObject != null)
+        {
+            heldCarryTarget.EndCarry();
+        }
+        heldCarryTarget = null;
 
         if (vortexRings != null) vortexRings.enabled = false;
         if (trajectoryLine != null) trajectoryLine.enabled = false;
+    }
+
+    private void OnDisable()
+    {
+        ReleaseHeldObject();
+        StopGrapple(true);
     }
 
     private void UpdateGrappleVisual()

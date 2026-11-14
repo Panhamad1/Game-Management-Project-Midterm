@@ -683,6 +683,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void ApplyEnemyKnockback(Vector3 launchVelocity)
+    {
+        isSliding = false;
+        rb.linearVelocity = launchVelocity;
+    }
+
     public void ApplyRecoil(Vector3 recoilVelocity)
     {
         if (isSliding)

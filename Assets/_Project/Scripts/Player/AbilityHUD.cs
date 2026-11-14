@@ -133,24 +133,19 @@ public class AbilityHUD : MonoBehaviour
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target != null)
                 {
-                    propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
                     TargetButton button = propHit.collider.GetComponentInParent<TargetButton>();
+                    Rigidbody body = propHit.collider.attachedRigidbody;
+                    bool canGrab = target.CanBePulled && body != null && !body.isKinematic;
+                    if (canGrab || button != null)
+                    {
+                        propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
 
-                    showBadge = true;
-                    activeColor = grabObjectColor; // Vibrant Amber / Yellow
-                    bracketDistance = 20f; // Expand into open box
-
-                    if (propUnderCrosshair != null)
-                    {
-                        badgeInfo = $"[RMB] GRAB · {propUnderCrosshair.name.ToUpper()} · {propHit.distance:F1}m";
-                    }
-                    else if (button != null)
-                    {
-                        badgeInfo = $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {propHit.distance:F1}m";
-                    }
-                    else
-                    {
-                        badgeInfo = $"[RMB] GRAB · {propHit.collider.gameObject.name.ToUpper()} · {propHit.distance:F1}m";
+                        showBadge = true;
+                        activeColor = grabObjectColor;
+                        bracketDistance = 20f;
+                        badgeInfo = button != null
+                            ? $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {propHit.distance:F1}m"
+                            : $"[RMB] GRAB · {(propUnderCrosshair != null ? propUnderCrosshair.name : propHit.collider.gameObject.name).ToUpper()} · {propHit.distance:F1}m";
                     }
                 }
             }

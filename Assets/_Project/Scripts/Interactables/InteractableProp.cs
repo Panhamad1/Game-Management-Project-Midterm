@@ -145,8 +145,8 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
         float relativeSpeed = collision.relativeVelocity.magnitude;
         if (relativeSpeed >= crushSpeedThreshold)
         {
-            IKineticTarget target = collision.gameObject.GetComponent<IKineticTarget>();
-            if (target != null && collision.gameObject != gameObject)
+            IKineticTarget target = collision.collider.GetComponentInParent<IKineticTarget>();
+            if (target != null && collision.rigidbody != rb)
             {
                 target.OnPhysicsCrush(relativeSpeed, gameObject);
             }
