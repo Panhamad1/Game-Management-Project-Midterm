@@ -50,6 +50,7 @@ public class PullAbility : MonoBehaviour
 
     private Rigidbody heldRigidbody;
     private InteractableProp heldProp;
+    private Collider heldCollider;
     private bool isPulling = false;
     private Vector3 initialHandLocalPos;
     private float vortexAngle = 0f;
@@ -208,7 +209,11 @@ public class PullAbility : MonoBehaviour
 
         if (propFound && propHit.collider != null)
         {
-            if (playerMovement == null || playerMovement.GroundedObject != propHit.transform)
+            // Anti-box-riding: Reject pulling/holding an object the player is standing on
+            bool isStandingOnProp = playerMovement != null && playerMovement.GroundedObject != null &&
+                (playerMovement.GroundedObject == propHit.transform || playerMovement.GroundedObject.IsChildOf(propHit.transform));
+
+            if (!isStandingOnProp)
             {
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target == null || target.CanBePulled)
@@ -220,6 +225,15 @@ public class PullAbility : MonoBehaviour
                         heldProp = propHit.collider.GetComponentInParent<InteractableProp>();
                         if (heldProp != null) heldProp.SetCarriedState(true);
                         heldRigidbody.angularDamping = 6.0f;
+
+                        // Ignore collision between held prop and player to eliminate jitter / self-propulsion
+                        Collider playerCol = playerMovement != null ? playerMovement.GetComponent<Collider>() : null;
+                        if (playerCol != null && propHit.collider != null)
+                        {
+                            heldCollider = propHit.collider;
+                            Physics.IgnoreCollision(heldCollider, playerCol, true);
+                        }
+
                         isGrappling = false;
                         if (grappleCable != null) grappleCable.enabled = false;
                         return;
@@ -321,6 +335,7 @@ public class PullAbility : MonoBehaviour
     public bool TryLaunchHeldObject()
     {
         if (heldRigidbody == null) return false;
+        if (heldProp != null && !heldProp.CanBeLaunched) return false;
 
         Rigidbody launchedRb = heldRigidbody;
         InteractableProp prop = heldProp;
@@ -328,9 +343,14 @@ public class PullAbility : MonoBehaviour
         ReleaseHeldObject();
 
         Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-        launchedRb.linearVelocity = launchDir * launchSpeed;
+        Vector3 playerVel = playerMovement != null ? playerMovement.Velocity : Vector3.zero;
 
-        // Apply recoil to player
+        // Crate Cannon Velocity Inheritance: 100% of launch speed + 45% of player forward velocity
+        Vector3 launchVelocity = launchDir * launchSpeed + playerVel * 0.45f;
+        launchedRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        launchedRb.linearVelocity = launchVelocity;
+
+        // Apply recoil to player through authoritative movement controller API
         if (playerMovement != null)
         {
             playerMovement.ApplyRecoil(-launchDir * 6.5f);
@@ -415,9 +435,16 @@ public class PullAbility : MonoBehaviour
 
         Vector3 camPos = playerCamera != null ? playerCamera.transform.position : transform.position;
         Vector3 camForward = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-        Vector3 hoverTarget = camPos + camForward * hoverDistance;
 
-        // Heavy crate ground drag rule
+        // Obstruction retraction: clamp hold distance when walls or obstacles intervene
+        float targetDistance = hoverDistance;
+        if (Physics.SphereCast(camPos, 0.25f, camForward, out RaycastHit obsHit, hoverDistance, obstructionLayers, QueryTriggerInteraction.Ignore))
+        {
+            targetDistance = Mathf.Max(obsHit.distance - 0.25f, 1.2f);
+        }
+        Vector3 hoverTarget = camPos + camForward * targetDistance;
+
+        // Heavy crate ground drag rule: heavy objects cannot hover or fly; clamped to ground plane
         if (heldProp != null && heldProp.Class == WeightClass.Heavy)
         {
             hoverTarget.y = heldRigidbody.position.y;
@@ -481,6 +508,18 @@ public class PullAbility : MonoBehaviour
         {
             heldRigidbody.angularDamping = 0.05f;
             if (heldProp != null) heldProp.SetCarriedState(false);
+
+            // Restore collision between player and released prop
+            if (heldCollider != null && playerMovement != null)
+            {
+                Collider playerCol = playerMovement.GetComponent<Collider>();
+                if (playerCol != null)
+                {
+                    Physics.IgnoreCollision(heldCollider, playerCol, false);
+                }
+                heldCollider = null;
+            }
+
             heldRigidbody = null;
             heldProp = null;
         }
@@ -551,12 +590,16 @@ public class PullAbility : MonoBehaviour
     {
         if (trajectoryLine == null) return;
 
-        if (heldRigidbody != null)
+        // Only draw trajectory line if holding a launchable prop (Heavy objects are ground-dragged, not launched)
+        if (heldRigidbody != null && heldProp != null && heldProp.CanBeLaunched && heldProp.Class != WeightClass.Heavy)
         {
             trajectoryLine.enabled = true;
             Vector3 startPos = heldRigidbody.position;
             Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-            Vector3 currentVel = launchDir * launchSpeed;
+            Vector3 playerVel = playerMovement != null ? playerMovement.Velocity : Vector3.zero;
+
+            // Include velocity inheritance in prediction
+            Vector3 currentVel = launchDir * launchSpeed + playerVel * 0.45f;
             Vector3 gravity = Physics.gravity;
 
             int count = trajectoryLine.positionCount;

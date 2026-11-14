@@ -155,6 +155,14 @@ public class TargetButton : MonoBehaviour, IKineticTarget
         }
     }
 
+    public void OnKineticImpact(in KineticImpactContext context)
+    {
+        if (context.RelativeImpactSpeed >= 3.5f || context.ImpactEnergy >= 15.0f)
+        {
+            Activate();
+        }
+    }
+
     public void OnPlayerSlideRam(float slideSpeed)
     {
         // Player slid into button at high speed

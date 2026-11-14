@@ -297,10 +297,10 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 - When sliding down an inclined ramp or hill, gravity adds continuous forward acceleration (`28 m/s²`).
 - On flat ground, slight friction slows you down gradually. On downward slopes, you accelerate continuously all the way to **35.0 m/s**!
 
-### 4.3 Holding Space for Auto-Bunny-Hop
-- In traditional movement games, bunny-hopping requires precise keyboard timing. In REBOUND, simply **hold down Space**!
-- Every time your feet touch the floor, the game automatically executes a frame-perfect hop.
-- Each hop preserves 100% of your horizontal speed and adds `+2.5 m/s` of bonus velocity!
+### 4.3 Space Bunny-Hopping
+- In REBOUND, simply **hold down Space** or tap upon landing to maintain momentum.
+- Every time your feet touch the floor, the game preserves 100% of your horizontal momentum without ground friction deceleration.
+- Speed is comfortably capped at `26.0 m/s` so you stay in complete control of your turns and jumps.
 
 ### 4.4 Source / Redliner Air-Strafing
 - While airborne, hold `A` (to turn left) or `D` (to turn right) and smoothly swing your mouse in that same direction.
@@ -309,26 +309,47 @@ Player_Rig (Layer 8: Player, Rigidbody, CapsuleCollider, PlayerMovement, AudioEf
 ### 4.5 Ledge Mantling
 - Moving forward towards a waist- or chest-height wall or platform edge automatically hoists your character up on top of the surface without halting momentum.
 
-### 4.5 Slide Bowling Ram
+### 4.6 Slide Bowling Ram
 - Sliding faster than `7.5 m/s` turns your body into a wrecking ball.
 - Ramming into wooden barricades shatters them instantly. Ramming into physics crates sends them scattering like bowling pins.
 
-### 4.6 Dual-Mode Grapple & Slingshot Fling
+### 4.7 Dual-Mode Grapple & Slingshot Fling
 - Hold `RMB` while aiming at any wall, tower, or ceiling up to 75 meters away.
 - An electric cyan cable connects and pulls you toward the point with 55 m/s² spring tension.
 - **Swing Physics**: You can swing in wide circular arcs around pillars without losing speed.
-- **Ground Slingshot**: Hooking the floor in front of you pulls you straight into a 24–34 m/s power slide.
+- **Ground Slingshot**: Hooking the floor in front of you pulls you straight into a high-speed power slide.
 - **Slingshot Fling**: Releasing `RMB` or pressing `Space` while grappling releases the cable with a **+6.5 m/s forward launch**, flinging you into high-altitude bunny hops.
 
-### 4.7 Crate Cannon Ballistics
-- Hold `RMB` on a crate to lift it into your hands.
-- Aim at a distant wall, enemy, or button. A cyan dotted line shows the flight trajectory.
-- Click `LMB` to fire the crate at **35.0 m/s**. Upon impact, the crate deals heavy crush damage and shatters targets.
+### 4.8 Dual-Mode Object Manipulation & 3-Class System
+- Hold `RMB` while aiming at interactive crates, props, or targets within 45 meters:
+  - **Light Objects (~1kg)**: Snaps to your hands at rapid `32 m/s` for instant aerial snatching.
+  - **Medium Objects (~5kg)**: Agile `24 m/s` reel, held comfortably in front for riot shielding.
+  - **Heavy Objects (~25kg)**: Ground-drag only at `12 m/s` — heavy crates cannot fly or hover.
+- **Obstruction Retraction**: If a wall or obstacle intervenes, held objects retract smoothly down to a safe 1.2m distance.
+- **Anti-Box-Riding & Collision Isolation**: Standing on a crate disables pulling, and collision between the held object and player is ignored while carried to prevent physics jitter.
 
-### 4.8 Infinite Slow Motion (Focus)
+### 4.9 Crate Cannon Ballistics & Recoil
+- Hold `RMB` on a launchable crate to lift it into your hands.
+- Aim at a distant wall, enemy, or button. A dynamic 20-segment cyan dotted line shows the ballistic flight trajectory.
+- Click `LMB` to fire the Crate Cannon:
+  - **Velocity Inheritance**: Launches at `35.0 m/s` + 45% of player forward/slide velocity (sprinting boosts launch to 44+ m/s).
+  - **Authoritative Recoil**: Kicks the player backward with 6.5 m/s impulse, seamlessly converted into slide speed if sliding.
+  - **Continuous Collision Detection**: ContinuousDynamic ensures crates never clip through thin walls or doors.
+
+### 4.10 Push / Wind Cannon & Projectile Deflection
+- Click `LMB` with empty hands to fire a compressed air shockwave up to 12 meters:
+  - **Surface Proximity Kick**: Blasting within 3.8m of a floor or wall delivers explosive rocket kicks or wall bounces.
+  - **Timed Projectile Deflection**: Blasting during an incoming projectile's approach parries it forward and awards **+15 Focus**.
+  - **Input Suppression**: If carrying a launchable crate, `LMB` fires the Crate Cannon instead of activating Push, preventing double activation.
+
+### 4.11 Tactical Focus (Rechargeable Slow Motion)
 - Press `Q` or `F` at any time to enter Slow Motion.
-- World physics slows down to 25% speed, giving you time to plan swings and line up shots.
-- It has **zero cooldown and infinite duration**. Press `Q` or `F` again to turn it off whenever you choose.
+- World physics slows down to 25% speed, giving you time to plan swings, deflect projectiles, and line up shots while camera aiming stays fast.
+- **Fair Resource Pool**:
+  - 100 max energy with 25/s drain (4.0 seconds continuous use).
+  - 0.75-second recovery delay before passive recharge begins at 15/s.
+  - **Action Rewards**: Projectile Deflection (+15), Weak Point Hit (+10), Target Switch (+15).
+  - **Kinetic Siphon**: Moving faster than 6.0 m/s accelerates focus recharge.
 
 ---
 
@@ -338,9 +359,11 @@ The crosshair automatically changes color and shape so you always know what your
 
 | State | Crosshair Look | Meaning | Action When Clicking |
 |---|---|---|---|
-| **Grab Object** | **Amber / Yellow Box `[ · ]`** | Aiming at a movable crate, block, or button within 16m. | `RMB`: Snatch crate to your hands. |
+| **Deflect Parry** | **Electric Cyan Wide Ring `[  ·  ]`** | Incoming deflectable projectile detected in parry cone. | `LMB`: Deflect projectile & gain +15 Focus. |
+| **Grab Object** | **Amber / Yellow Box `[ · ]`** | Aiming at a Light or Medium movable crate/prop within 45m. | `RMB`: Snatch crate to your hands. |
+| **Drag Heavy** | **Amber / Yellow Box `[ · ]`** | Aiming at a Heavy (25kg) physics object within 45m. | `RMB`: Ground-drag heavy object. |
 | **Grapple Anchor** | **Electric Cyan Diamond `+`** | Aiming at a wall, tower, ceiling, or floor within 75m. | `RMB`: Shoot grapple cable to swing. |
-| **Armed Missile** | **Neon Green Wide Reticle** | You are currently holding a crate in your hands. | `LMB`: Fire Crate Cannon (35 m/s). |
+| **Armed Missile** | **Neon Green Wide Reticle** | You are currently holding a launchable crate in your hands. | `LMB`: Fire Crate Cannon (35 m/s + 45% player vel). |
 | **Neutral** | **Translucent White Cross** | Aiming at open air beyond 75m. | No target in range. |
 
 ---

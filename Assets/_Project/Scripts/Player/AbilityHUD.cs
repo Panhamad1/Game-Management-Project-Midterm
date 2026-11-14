@@ -106,19 +106,30 @@ public class AbilityHUD : MonoBehaviour
         Color activeColor = defaultCrosshairColor;
         float bracketDistance = 14f;
 
-        // Mode 1: Carrying an object (Armed Crate Cannon)
-        if (pullAbility != null && pullAbility.IsCarrying)
+        // Priority 0: Deflectable Projectile in parry range
+        if (pushAbility != null && pushAbility.HasDeflectableTargetInSight(out _))
+        {
+            showBadge = true;
+            activeColor = targetAcquiredColor; // Electric Cyan
+            bracketDistance = 24f;
+            badgeInfo = "[LMB] DEFLECT PROJECTILE";
+        }
+        // Priority 1: Carrying an object (Armed Crate Cannon)
+        else if (pullAbility != null && pullAbility.IsCarrying)
         {
             showBadge = true;
             activeColor = crateCannonColor;
             bracketDistance = 22f;
-            badgeInfo = "[LMB] FIRE CRATE CANNON (35 m/s)";
+            string objClass = pullAbility.HeldProp != null ? pullAbility.HeldProp.Class.ToString().ToUpper() : "OBJECT";
+            badgeInfo = pullAbility.HeldProp != null && pullAbility.HeldProp.CanBeLaunched
+                ? $"[LMB] FIRE CRATE CANNON ({objClass})"
+                : $"CARRYING {objClass}";
         }
         else if (playerCamera != null)
         {
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-            // Priority 1: Check for Grab Targets (Props, Crates, TargetButtons) within 45m
+            // Priority 2: Check for Grab Targets (Props, Crates, TargetButtons) within 45m
             LayerMask targetMask = LayerMask.GetMask("Interactables", "Enemies", "Projectiles");
             if (targetMask.value == 0) targetMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
 
@@ -144,7 +155,8 @@ public class AbilityHUD : MonoBehaviour
 
                     if (propUnderCrosshair != null)
                     {
-                        badgeInfo = $"[RMB] GRAB · {propUnderCrosshair.name.ToUpper()} · {dist:F1}m";
+                        string verb = propUnderCrosshair.Class == WeightClass.Heavy ? "DRAG" : "GRAB";
+                        badgeInfo = $"[RMB] {verb} · {propUnderCrosshair.name.ToUpper()} ({propUnderCrosshair.Class.ToString().ToUpper()}) · {dist:F1}m";
                     }
                     else if (button != null)
                     {
@@ -157,7 +169,7 @@ public class AbilityHUD : MonoBehaviour
                 }
             }
 
-            // Priority 2: If no grab object, check for Grapple Anchors (Walls, Floor, Towers, Ceiling) within 75m
+            // Priority 3: If no grab object, check for Grapple Anchors (Walls, Floor, Towers, Ceiling) within 75m
             if (!showBadge)
             {
                 LayerMask grappleMask = LayerMask.GetMask("Environment", "Default", "GrappleAnchors");

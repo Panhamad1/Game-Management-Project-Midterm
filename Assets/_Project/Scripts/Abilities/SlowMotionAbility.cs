@@ -15,24 +15,30 @@ public class SlowMotionAbility : MonoBehaviour
     [Header("Perspective & Sensory Tuning")]
     [SerializeField] private float fovExpansion = 8.0f;
 
-    [Header("Energy Meter (Seconds)")]
+    [Header("Energy Meter (Focus Resource)")]
     [Tooltip("If true, Slow Motion has zero cooldown and can be used indefinitely.")]
-    [SerializeField] private bool infiniteSlowMo = true;
-    [SerializeField] private float maxDuration = 4.0f;
-    [SerializeField] private float rechargeDuration = 6.0f;
+    [SerializeField] private bool infiniteSlowMo = false;
+    [SerializeField] private float maxEnergy = 100.0f;
+    [SerializeField] private float drainRate = 25.0f; // 100 / 25 = 4 seconds duration
+    [SerializeField] private float recoveryDelay = 0.75f; // Wait before recharging
+    [SerializeField] private float recoveryRate = 15.0f; // Recharges full in ~6.6s
+    [SerializeField] private float minActivationEnergy = 5.0f;
 
     private PlayerMovement playerMovement;
     private Camera playerCamera;
     private PlayerAudioEffects audioEffects;
 
     private float currentEnergy;
+    private float recoveryTimer = 0f;
     private bool isActive = false;
     private float defaultFixedDeltaTime;
 
     // Public API Contracts
     public bool IsActive => isActive;
     public float FovExpansion => fovExpansion;
-    public float EnergyPercent => infiniteSlowMo ? 1.0f : Mathf.Clamp01(currentEnergy / maxDuration);
+    public float CurrentEnergy => currentEnergy;
+    public float MaxEnergy => maxEnergy;
+    public float EnergyPercent => infiniteSlowMo ? 1.0f : Mathf.Clamp01(currentEnergy / maxEnergy);
 
     private void Awake()
     {
@@ -42,7 +48,7 @@ public class SlowMotionAbility : MonoBehaviour
 
         if (playerCamera == null) playerCamera = Camera.main;
 
-        currentEnergy = maxDuration;
+        currentEnergy = maxEnergy;
         defaultFixedDeltaTime = Time.fixedDeltaTime;
     }
 
@@ -52,11 +58,11 @@ public class SlowMotionAbility : MonoBehaviour
 
         if (infiniteSlowMo)
         {
-            currentEnergy = maxDuration;
+            currentEnergy = maxEnergy;
         }
         else if (isActive)
         {
-            currentEnergy -= dt;
+            currentEnergy -= drainRate * dt;
             if (currentEnergy <= 0f)
             {
                 currentEnergy = 0f;
@@ -65,19 +71,23 @@ public class SlowMotionAbility : MonoBehaviour
         }
         else
         {
-            // Kinetic Siphon Recharge (TEAM_DEVELOPMENT_HANDBOOK.md:71)
-            // Focus primarily recharges while moving fast; slow baseline trickle while walking
-            float playerSpeed = playerMovement != null ? playerMovement.CurrentSpeed : 0f;
-            if (playerSpeed > 4.5f && currentEnergy < maxDuration)
+            if (recoveryTimer > 0f)
             {
-                float speedRatio = Mathf.Clamp01((playerSpeed - 4.5f) / 15.0f);
-                float rechargeRate = Mathf.Lerp(0.4f, 2.2f, speedRatio);
-                currentEnergy = Mathf.Min(currentEnergy + rechargeRate * dt, maxDuration);
+                recoveryTimer -= dt;
             }
-            else if (rechargeDuration > 0f && currentEnergy < maxDuration)
+            else if (currentEnergy < maxEnergy)
             {
-                // Slow ambient passive recovery
-                currentEnergy = Mathf.Min(currentEnergy + (maxDuration / rechargeDuration) * 0.15f * dt, maxDuration);
+                // Kinetic Siphon Recharge (TEAM_DEVELOPMENT_HANDBOOK.md:71)
+                // Focus recharges faster when moving fast
+                float rate = recoveryRate;
+                float playerSpeed = playerMovement != null ? playerMovement.CurrentSpeed : 0f;
+                if (playerSpeed > 6.0f)
+                {
+                    float speedRatio = Mathf.Clamp01((playerSpeed - 6.0f) / 14.0f);
+                    rate += 12.0f * speedRatio;
+                }
+
+                currentEnergy = Mathf.Min(currentEnergy + rate * dt, maxEnergy);
             }
         }
 
@@ -89,12 +99,12 @@ public class SlowMotionAbility : MonoBehaviour
     /// </summary>
     public void SiphonEnergy(float bonus)
     {
-        currentEnergy = Mathf.Min(currentEnergy + bonus, maxDuration);
+        currentEnergy = Mathf.Min(currentEnergy + bonus, maxEnergy);
     }
 
     public void ActivateSlowMotion()
     {
-        if (isActive || (!infiniteSlowMo && currentEnergy <= 0.5f)) return;
+        if (isActive || (!infiniteSlowMo && currentEnergy < minActivationEnergy)) return;
 
         isActive = true;
         Time.timeScale = slowMoTimeScale;
@@ -116,6 +126,7 @@ public class SlowMotionAbility : MonoBehaviour
         if (!isActive) return;
 
         isActive = false;
+        recoveryTimer = recoveryDelay;
         Time.timeScale = 1.0f;
         Time.fixedDeltaTime = defaultFixedDeltaTime;
 

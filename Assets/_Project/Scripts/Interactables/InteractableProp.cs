@@ -31,12 +31,18 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
     public WeightClass Class => weightClass;
     public bool CanPush => canPush;
     public bool CanPull => canPull;
+    public bool CanBeHeld => weightClass != WeightClass.Heavy;
+    public bool CanBeLaunched => weightClass != WeightClass.Heavy;
+    public bool CanBlockProjectiles => weightClass != WeightClass.Light;
 
     // IKineticTarget implementation
     public bool CanBePulled => canPull;
     public bool CanBePushed => canPush;
     public Rigidbody Rb => rb;
     public bool IsCarried => isCarried;
+
+    private int lastImpactTargetId = 0;
+    private float lastImpactTime = -10f;
 
     private void Awake()
     {
@@ -104,6 +110,15 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
         }
     }
 
+    public void OnKineticImpact(in KineticImpactContext context)
+    {
+        if (context.RelativeImpactSpeed >= crushSpeedThreshold && rb != null)
+        {
+            Vector3 pushDir = context.Direction.sqrMagnitude > 0.01f ? context.Direction : -context.Normal;
+            rb.AddForceAtPosition(pushDir * Mathf.Min(context.ImpactEnergy * 0.5f, 50f), context.Point, ForceMode.Impulse);
+        }
+    }
+
     public void OnPlayerSlideRam(float slideSpeed)
     {
         if (rb != null)
@@ -141,13 +156,35 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
 
     private void OnCollisionEnter(Collision collision)
     {
-        // If this crate was thrown as a missile and hits an enemy
+        if (collision.gameObject == gameObject) return;
+
         float relativeSpeed = collision.relativeVelocity.magnitude;
         if (relativeSpeed >= crushSpeedThreshold)
         {
-            IKineticTarget target = collision.gameObject.GetComponent<IKineticTarget>();
-            if (target != null && collision.gameObject != gameObject)
+            int targetId = collision.gameObject.GetInstanceID();
+            if (targetId == lastImpactTargetId && (Time.time - lastImpactTime) < 0.2f) return;
+            lastImpactTargetId = targetId;
+            lastImpactTime = Time.time;
+
+            IKineticTarget target = collision.gameObject.GetComponentInParent<IKineticTarget>();
+            if (target != null)
             {
+                ContactPoint contact = collision.GetContact(0);
+                float mass = rb != null ? rb.mass : 5.0f;
+                float energy = 0.5f * mass * relativeSpeed * relativeSpeed;
+                bool isWeakPoint = collision.collider.CompareTag("WeakPoint") || collision.collider.gameObject.name.ToLower().Contains("weakpoint");
+
+                KineticImpactContext context = new KineticImpactContext(
+                    gameObject,
+                    contact.point,
+                    contact.normal,
+                    -collision.relativeVelocity.normalized,
+                    relativeSpeed,
+                    energy,
+                    isWeakPoint
+                );
+
+                target.OnKineticImpact(context);
                 target.OnPhysicsCrush(relativeSpeed, gameObject);
             }
         }

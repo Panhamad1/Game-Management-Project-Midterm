@@ -148,6 +148,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsGrounded => isGrounded || (Time.time - lastGroundedTime <= coyoteTime);
     public Transform GroundedObject => groundedObject;
     public Rigidbody Rb => rb;
+    public Vector3 Velocity => rb != null ? rb.linearVelocity : Vector3.zero;
     public Vector2 CurrentMoveInput => moveInput;
     public float CurrentSpeed => new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z).magnitude;
     public bool IsSliding => isSliding;

@@ -36,6 +36,10 @@ public class PushAbility : MonoBehaviour
     [SerializeField] private float handRecoilDistance = 0.18f;
     [SerializeField] private float handRecoverySpeed = 10.0f;
 
+    [Header("System References")]
+    [SerializeField] private PullAbility pullAbility;
+    [SerializeField] private SlowMotionAbility slowMotionAbility;
+
     private PlayerMovement playerMovement;
     private Camera playerCamera;
     private MouseLook mouseLook;
@@ -63,6 +67,8 @@ public class PushAbility : MonoBehaviour
         audioEffects = GetComponentInParent<PlayerAudioEffects>();
 
         if (playerCamera == null) playerCamera = Camera.main;
+        if (pullAbility == null) pullAbility = GetComponentInParent<PullAbility>() ?? FindAnyObjectByType<PullAbility>();
+        if (slowMotionAbility == null) slowMotionAbility = GetComponentInParent<SlowMotionAbility>() ?? FindAnyObjectByType<SlowMotionAbility>();
 
         initialHandLocalPos = transform.localPosition;
 
@@ -106,10 +112,35 @@ public class PushAbility : MonoBehaviour
     {
         if (IsOnCooldown) return false;
 
+        // Suppress Push if currently carrying a launchable object (Crate Cannon fires instead)
+        if (pullAbility != null && pullAbility.IsCarrying && pullAbility.HeldProp != null && pullAbility.HeldProp.CanBeLaunched)
+        {
+            return false;
+        }
+
         lastPushTime = Time.time;
 
         Vector3 rayOrigin = abilityRayOrigin != null ? abilityRayOrigin.position : playerCamera.transform.position;
         Vector3 rayDirection = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+
+        // 0. Projectile Deflection: Check for incoming deflectable projectiles in a forward parry cone
+        bool deflectedAny = false;
+        Collider[] deflectCandidates = Physics.OverlapSphere(rayOrigin + rayDirection * 2.0f, 2.6f, hitLayers, QueryTriggerInteraction.Collide);
+        foreach (var col in deflectCandidates)
+        {
+            IDeflectableProjectile deflectable = col.GetComponentInParent<IDeflectableProjectile>();
+            if (deflectable != null && deflectable.CanBeDeflected)
+            {
+                if (deflectable.TryDeflect(rayDirection, playerMovement != null ? playerMovement.gameObject : gameObject))
+                {
+                    deflectedAny = true;
+                    if (slowMotionAbility != null)
+                    {
+                        slowMotionAbility.SiphonEnergy(15.0f); // Deflection action reward (+15 energy)
+                    }
+                }
+            }
+        }
 
         bool hitSurface = false;
         float hitDistance = maxRange;
@@ -124,7 +155,24 @@ public class PushAbility : MonoBehaviour
             IKineticTarget target = hit.collider.GetComponentInParent<IKineticTarget>();
             if (target != null && target.CanBePushed)
             {
+                // Deliver rich kinetic impact context
+                KineticImpactContext ctx = new KineticImpactContext(
+                    gameObject,
+                    hit.point,
+                    hit.normal,
+                    rayDirection,
+                    targetPushImpulse,
+                    0.5f * 5.0f * targetPushImpulse * targetPushImpulse,
+                    false
+                );
+                target.OnKineticImpact(ctx);
                 target.OnPushed(rayDirection, targetPushImpulse, hit.point);
+
+                // Action reward: Target switch triggers grant Focus boost
+                if (slowMotionAbility != null && hit.collider.GetComponentInParent<TargetButton>() != null)
+                {
+                    slowMotionAbility.SiphonEnergy(15.0f);
+                }
             }
             else
             {
@@ -180,9 +228,10 @@ public class PushAbility : MonoBehaviour
         // 4. Procedural Hand Recoil & Camera Shake
         currentHandRecoil = handRecoilDistance;
         Vector3 shakeDir = isSliding ? transform.forward : (-rayDirection);
+        float shakeIntensity = deflectedAny ? 0.45f : (hasSurfaceKick ? 0.35f : 0.15f);
         if (mouseLook != null)
         {
-            mouseLook.AddScreenShake(hasSurfaceKick ? 0.35f : 0.15f, shakeDir);
+            mouseLook.AddScreenShake(shakeIntensity, shakeDir);
         }
 
         // 5. Sound
@@ -239,5 +288,26 @@ public class PushAbility : MonoBehaviour
             currentHandRecoil = Mathf.MoveTowards(currentHandRecoil, 0f, handRecoverySpeed * Time.deltaTime);
         }
         transform.localPosition = initialHandLocalPos - Vector3.forward * currentHandRecoil;
+    }
+
+    /// <summary>
+    /// Checks if an incoming deflectable projectile is currently within the player's parry cone.
+    /// </summary>
+    public bool HasDeflectableTargetInSight(out IDeflectableProjectile projectile)
+    {
+        projectile = null;
+        Vector3 origin = abilityRayOrigin != null ? abilityRayOrigin.position : (playerCamera != null ? playerCamera.transform.position : transform.position);
+        Vector3 forward = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+        Collider[] hits = Physics.OverlapSphere(origin + forward * 2.2f, 2.6f, hitLayers, QueryTriggerInteraction.Collide);
+        foreach (var col in hits)
+        {
+            IDeflectableProjectile proj = col.GetComponentInParent<IDeflectableProjectile>();
+            if (proj != null && proj.CanBeDeflected)
+            {
+                projectile = proj;
+                return true;
+            }
+        }
+        return false;
     }
 }
