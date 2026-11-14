@@ -24,6 +24,14 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
     private int shotsRemaining;
     private float nextShot;
     private float readyAt;
+    private float recoil;
+    private EnemyVisualPart[] turretParts;
+    private Renderer statusCore;
+    private MaterialPropertyBlock statusAppearance;
+    private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+    private static readonly Color ReadyColor = new Color(0.06f, 0.72f, 0.56f);
+    private static readonly Color PauseColor = new Color(1f, 0.28f, 0.045f);
+    private static readonly Color ShotColor = new Color(2f, 1.1f, 0.32f);
 
     public bool CanBePulled => false;
     public bool CanBePushed => health > 0f;
@@ -31,6 +39,18 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
     private void Awake()
     {
         health = maxHealth;
+        turretParts = new[]
+        {
+            new EnemyVisualPart(head, "Turret"),
+            new EnemyVisualPart(head, "Cannon housing"),
+            new EnemyVisualPart(head, "Stepped armor"),
+            new EnemyVisualPart(head, "Cannon barrel"),
+            new EnemyVisualPart(head, "Rear armor"),
+            new EnemyVisualPart(head, "Barrel collar"),
+            new EnemyVisualPart(head, "Status core")
+        };
+        statusCore = head != null ? head.Find("Status core")?.GetComponent<Renderer>() : null;
+        if (statusCore != null) statusAppearance = new MaterialPropertyBlock();
         if (player == null) player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (sightMask.value == 0) sightMask = LayerMask.GetMask("Environment", "Default");
         if (projectileMask.value == 0)
@@ -72,8 +92,27 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
         Quaternion shotRotation = head.rotation * Quaternion.Euler(0f, sweep, 0f);
         EnemyProjectile bolt = Instantiate(boltPrefab, muzzle.position, shotRotation);
         bolt.Launch(transform, projectileSpeed, projectileDamage, projectileMask);
+        recoil = 0.16f;
         shotsRemaining--;
         if (shotsRemaining == 0) EndBurst();
+    }
+
+    private void LateUpdate()
+    {
+        foreach (EnemyVisualPart part in turretParts)
+        {
+            part.Pose(Vector3.back * recoil, Quaternion.identity);
+        }
+
+        if (statusCore != null)
+        {
+            float remainingPause = Mathf.Clamp01((readyAt - Time.time) / Mathf.Max(0.01f, burstPause));
+            Color status = Color.Lerp(ReadyColor, PauseColor, Mathf.SmoothStep(0f, 1f, remainingPause));
+            statusAppearance.SetColor(BaseColor, Color.Lerp(status, ShotColor, Mathf.Clamp01(recoil / 0.16f)));
+            statusCore.SetPropertyBlock(statusAppearance);
+        }
+
+        recoil = Mathf.MoveTowards(recoil, 0f, Time.deltaTime * 1.1f);
     }
 
     private void EndBurst()

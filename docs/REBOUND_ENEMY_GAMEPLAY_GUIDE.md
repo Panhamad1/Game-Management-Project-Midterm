@@ -21,8 +21,8 @@ This guide describes the four playable enemy encounters and the default values i
 ### How it attacks
 
 1. It spots you within **25 m** if it can see you, then flies toward you at up to **10 m/s**. It can follow you upward, so staying above the ground alone won't keep you safe.
-2. Inside **5 m**, it turns **yellow** and pauses for about **0.35 seconds**. Move sideways during this warning. The Swarmer cancels the wind-up if it loses sight of you or you leave attack range before the launch.
-3. It turns red-orange and lunges in the direction it aimed at launch, at **11 m/s**. Contact during the lunge deals **15 damage** once. It recovers for about **1 second** before starting another attack.
+2. Inside **5 m**, its body and crest turn **bright red** for a **0.5-second** wind-up. Move sideways during this warning. The Swarmer cancels the wind-up if it loses sight of you or you leave attack range before the launch.
+3. It returns to **sandstone brown** and lunges in the direction it aimed at launch, at **11 m/s**. Contact during the lunge deals **15 damage** once. It recovers for about **1 second** before starting another attack.
 
 ### How to fight it
 

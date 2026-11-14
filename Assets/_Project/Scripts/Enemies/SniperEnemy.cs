@@ -28,6 +28,15 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
     private Vector3 beamAim;
     private float lockStartedAt;
     private MaterialPropertyBlock beamProperties;
+    private EnemyVisualPart lens;
+    private EnemyVisualPart lensRim;
+    private EnemyVisualPart lensRecess;
+    private EnemyVisualPart rifle;
+    private EnemyVisualPart barrel;
+    private EnemyVisualPart leftGlove;
+    private EnemyVisualPart rightGlove;
+    private float chargePose;
+    private float recoil;
 
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
@@ -38,6 +47,13 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
     private void Awake()
     {
         health = maxHealth;
+        lens = new EnemyVisualPart(transform, "Lens");
+        lensRim = new EnemyVisualPart(transform, "Lens rim");
+        lensRecess = new EnemyVisualPart(transform, "Lens recess");
+        rifle = new EnemyVisualPart(transform, "Relic rifle stock");
+        barrel = new EnemyVisualPart(transform, "Relic rifle barrel");
+        leftGlove = new EnemyVisualPart(transform, "Left glove");
+        rightGlove = new EnemyVisualPart(transform, "Right glove");
         if (player == null) player = FindFirstObjectByType<PlayerMovement>()?.transform;
         if (player != null)
         {
@@ -96,10 +112,22 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
         EnemyProjectile shot = Instantiate(roundPrefab, muzzle.position, Quaternion.LookRotation(offset));
         shot.Launch(transform, roundSpeed, roundDamage, hitMask);
         shot.EnableReflection(this, focus);
+        recoil = 0.17f;
     }
 
     private void LateUpdate()
     {
+        chargePose = Mathf.MoveTowards(chargePose, locking ? 1f : 0f, Time.deltaTime * 4f);
+        Vector3 weaponOffset = Vector3.down * (0.065f * (1f - chargePose)) + Vector3.back * recoil;
+        lens.Pose(weaponOffset, Quaternion.identity);
+        lensRim.Pose(weaponOffset, Quaternion.identity);
+        lensRecess.Pose(weaponOffset, Quaternion.identity);
+        rifle.Pose(weaponOffset, Quaternion.identity);
+        barrel.Pose(weaponOffset, Quaternion.identity);
+        leftGlove.Pose(weaponOffset, Quaternion.identity);
+        rightGlove.Pose(weaponOffset, Quaternion.identity);
+        recoil = Mathf.MoveTowards(recoil, 0f, Time.deltaTime * 0.9f);
+
         if (!locking || player == null || muzzle == null || laser == null || health <= 0f)
         {
             if (laser != null) laser.enabled = false;

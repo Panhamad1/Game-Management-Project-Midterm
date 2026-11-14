@@ -34,6 +34,18 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
     private float nextSlam;
     private float nextMelee;
     private Vector3 landingTarget;
+    private EnemyVisualPart[] torso;
+    private EnemyVisualPart leftArm;
+    private EnemyVisualPart rightArm;
+    private EnemyVisualPart leftLeg;
+    private EnemyVisualPart rightLeg;
+    private float gait;
+    private float gaitWeight;
+    private float brace;
+    private float lift;
+    private float meleeSwingAge = 1f;
+    private Renderer coreRenderer;
+    private MaterialPropertyBlock coreAppearance;
 
     public bool CanBePulled => false;
     public bool CanBePushed => false;
@@ -45,9 +57,59 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
         health = maxHealth;
         floorMask = LayerMask.GetMask("Environment", "Default");
         appearance = new MaterialPropertyBlock();
+        if (weakPoint != null)
+        {
+            coreRenderer = weakPoint.GetComponent<Renderer>();
+            coreAppearance = new MaterialPropertyBlock();
+        }
+        torso = new[]
+        {
+            new EnemyVisualPart(transform, "Armor"), new EnemyVisualPart(transform, "Sandstone collar"),
+            new EnemyVisualPart(transform, "Collar inlay"), new EnemyVisualPart(transform, "Royal crown"),
+            new EnemyVisualPart(transform, "Crown band"), new EnemyVisualPart(transform, "Visor"),
+            new EnemyVisualPart(transform, "Chest seal"), new EnemyVisualPart(transform, "Belt"),
+            new EnemyVisualPart(transform, "Shoulder L"), new EnemyVisualPart(transform, "Shoulder R")
+        };
+        leftArm = new EnemyVisualPart(transform, "Gauntlet L");
+        rightArm = new EnemyVisualPart(transform, "Gauntlet R");
+        leftLeg = new EnemyVisualPart(transform, "Greave L");
+        rightLeg = new EnemyVisualPart(transform, "Greave R");
         if (player == null) player = FindFirstObjectByType<PlayerMovement>();
         if (weakPoint != null) weakPoint.SetActive(false);
         SetArmorColor(new Color(0.24f, 0.28f, 0.33f));
+    }
+
+    private void LateUpdate()
+    {
+        if (state == State.Stunned && coreRenderer != null)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 9f);
+            coreAppearance.SetColor("_BaseColor", Color.Lerp(new Color(1f, 0.24f, 0.035f),
+                new Color(2f, 1.15f, 0.34f), pulse));
+            coreRenderer.SetPropertyBlock(coreAppearance);
+        }
+
+        float speed = state == State.Chase ? Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up).magnitude : 0f;
+        float blend = 1f - Mathf.Exp(-12f * Time.deltaTime);
+        gait += speed * 4f * Time.deltaTime;
+        gaitWeight = Mathf.Lerp(gaitWeight, Mathf.Clamp01(speed / Mathf.Max(walkSpeed, 0.01f)), blend);
+        float braceTarget = state == State.Windup ? 1f : (state == State.Stunned ? 0.6f : 0f);
+        brace = Mathf.Lerp(brace, braceTarget, blend);
+        lift = Mathf.Lerp(lift, state == State.Airborne ? 1f : 0f, blend);
+        float stride = Mathf.Sin(gait) * gaitWeight;
+        Vector3 upperOffset = Vector3.up * (Mathf.Abs(stride) * 0.075f - brace * 0.24f + lift * 0.08f);
+        foreach (EnemyVisualPart part in torso) part.Pose(upperOffset, Quaternion.identity);
+
+        meleeSwingAge += Time.deltaTime;
+        float swing = meleeSwingAge < 0.09f
+            ? Mathf.SmoothStep(0f, 1f, meleeSwingAge / 0.09f)
+            : 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.18f, 0.53f, meleeSwingAge));
+        float armRaise = Mathf.Lerp(-55f * lift - 24f * brace, -145f, swing);
+        float armStride = stride * 25f * (1f - swing);
+        leftArm.Swing(upperOffset, new Vector3(-0.76f, 2.08f, 0.04f), armRaise + armStride);
+        rightArm.Swing(upperOffset, new Vector3(0.76f, 2.08f, 0.04f), armRaise - armStride);
+        leftLeg.Pose(new Vector3(0f, Mathf.Max(0f, stride) * 0.15f + lift * 0.17f, stride * 0.23f), Quaternion.Euler(-stride * 20f, 0f, 0f));
+        rightLeg.Pose(new Vector3(0f, Mathf.Max(0f, -stride) * 0.15f + lift * 0.17f, -stride * 0.23f), Quaternion.Euler(stride * 20f, 0f, 0f));
     }
 
     private void FixedUpdate()
@@ -112,6 +174,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
         if (visible && offset.magnitude <= meleeRange && Time.time >= nextMelee)
         {
             nextMelee = Time.time + meleeCooldown;
+            meleeSwingAge = 0f;
             Vector3 outward = flat.sqrMagnitude > 0.001f ? flat.normalized : transform.forward;
             player.ApplyEnemyKnockback(outward * meleeKnockbackSpeed + Vector3.up * meleeLiftSpeed);
             player.GetComponent<SwarmerTestHealth>()?.TakeDamage(meleeDamage);

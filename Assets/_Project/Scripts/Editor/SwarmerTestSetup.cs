@@ -46,15 +46,27 @@ public static class SwarmerTestSetup
         }
 
         GameObject pack = new GameObject("Swarmer_Test_Pack");
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(pack, player.gameObject.scene);
+        pack.transform.position = (positions[0] + positions[positions.Length - 1]) * 0.5f;
         Undo.RegisterCreatedObjectUndo(pack, "Create Swarmer Pack");
-        foreach (Vector3 position in positions)
+        Object[] spawned = new Object[positions.Length];
+        Bounds packBounds = new Bounds(positions[0], Vector3.one);
+        for (int i = 0; i < positions.Length; i++)
         {
             GameObject enemy = (GameObject)PrefabUtility.InstantiatePrefab(prefab, pack.transform);
-            enemy.transform.position = position;
+            enemy.name = $"Swarmer {i + 1}";
+            enemy.transform.position = positions[i];
             Undo.RegisterCreatedObjectUndo(enemy, "Spawn Swarmer");
+            spawned[i] = enemy;
+            foreach (Renderer renderer in enemy.GetComponentsInChildren<Renderer>())
+            {
+                packBounds.Encapsulate(renderer.bounds);
+            }
         }
         Undo.CollapseUndoOperations(undoGroup);
-        Selection.activeGameObject = pack;
+        Selection.objects = spawned;
+        SceneView.lastActiveSceneView?.Frame(packBounds, false);
+        Debug.Log($"Spawned {spawned.Length} Swarmers near {pack.transform.position}.", pack);
     }
 
     private static GameObject CreatePrefab(int enemyLayer)

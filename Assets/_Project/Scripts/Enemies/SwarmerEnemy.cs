@@ -14,7 +14,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     [SerializeField, Min(0f)] private float roamSpeed = 2f;
     [SerializeField, Min(0f)] private float roamRadius = 5f;
     [SerializeField, Min(0f)] private float attackRange = 5f;
-    [SerializeField, Min(0f)] private float windupTime = 0.35f;
+    [SerializeField, Min(0f)] private float windupTime = 0.5f;
     [SerializeField, Min(0f)] private float leapSpeed = 11f;
     [SerializeField, Min(0f)] private float attackCooldown = 1f;
     [SerializeField, Min(0f)] private float damage = 15f;
@@ -25,6 +25,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     private Rigidbody body;
     private SphereCollider bodyCollider;
     private Renderer visual;
+    private Renderer warningCrest;
     private MaterialPropertyBlock appearance;
     private int environmentMask;
     private float health;
@@ -41,6 +42,14 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     private bool carried;
     private bool launched;
     private bool dead;
+    private EnemyVisualPart[] shellParts;
+    private EnemyVisualPart leftWing;
+    private EnemyVisualPart rightWing;
+    private Quaternion visualFacing = Quaternion.identity;
+    private float visualYaw;
+    private float wingAmplitude;
+    private float hoverAmplitude;
+    private Vector3 visualTravel;
 
     public bool CanBePulled => canBePulled && !dead && !launched;
     public bool CanBePushed => canBePushed && !dead;
@@ -55,6 +64,17 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
             if (!sphere.isTrigger) bodyCollider = sphere;
         }
         visual = GetComponentInChildren<Renderer>();
+        warningCrest = transform.Find("Crown diamond")?.GetComponent<Renderer>();
+        shellParts = new[]
+        {
+            new EnemyVisualPart(transform, "Split carapace L"),
+            new EnemyVisualPart(transform, "Split carapace R"),
+            new EnemyVisualPart(transform, "Crown diamond"),
+            new EnemyVisualPart(transform, "Mandible L"),
+            new EnemyVisualPart(transform, "Mandible R")
+        };
+        leftWing = new EnemyVisualPart(transform, "Wing blade L");
+        rightWing = new EnemyVisualPart(transform, "Wing blade R");
         appearance = new MaterialPropertyBlock();
         environmentMask = LayerMask.GetMask("Environment", "Default");
         health = maxHealth;
@@ -70,6 +90,48 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
         SetWarning(false);
     }
 
+    private void LateUpdate()
+    {
+        float blend = 1f - Mathf.Exp(-9f * Time.deltaTime);
+        bool freeFlight = !carried && !launched;
+        Vector3 travel = freeFlight ? transform.InverseTransformDirection(body.linearVelocity) : Vector3.zero;
+        visualTravel = Vector3.Lerp(visualTravel, travel, blend);
+        Vector3 horizontal = Vector3.ProjectOnPlane(visualTravel, Vector3.up);
+        float yaw = visualYaw;
+        if (!freeFlight)
+        {
+            yaw = 0f;
+        }
+        else if (windingUp && player != null)
+        {
+            Vector3 aim = transform.InverseTransformDirection(player.position - transform.position);
+            if (aim.x * aim.x + aim.z * aim.z > 0.25f) yaw = Mathf.Atan2(aim.x, aim.z) * Mathf.Rad2Deg;
+        }
+        else if (horizontal.sqrMagnitude > 1f)
+        {
+            yaw = Mathf.Atan2(horizontal.x, horizontal.z) * Mathf.Rad2Deg;
+        }
+        float turn = Mathf.DeltaAngle(visualYaw, yaw);
+        visualYaw = Mathf.MoveTowardsAngle(visualYaw, yaw, 280f * Time.deltaTime);
+        float pitch = leaping ? 20f : (windingUp ? -12f : Mathf.Clamp(-visualTravel.y * 2f, -16f, 16f));
+        float bank = Mathf.Clamp(-turn * 0.22f, -15f, 15f);
+        Quaternion target = freeFlight ? Quaternion.Euler(pitch, visualYaw, bank) : Quaternion.Euler(0f, visualYaw, 0f);
+        visualFacing = Quaternion.Slerp(visualFacing, target, blend);
+
+        hoverAmplitude = Mathf.Lerp(hoverAmplitude, freeFlight ? 0.035f : 0f, blend);
+        float hover = Mathf.Sin(Time.time * 6f) * hoverAmplitude;
+        Vector3 offset = Vector3.up * hover;
+        foreach (EnemyVisualPart shell in shellParts)
+        {
+            shell.Orbit(visualFacing, offset, Quaternion.identity);
+        }
+
+        wingAmplitude = Mathf.Lerp(wingAmplitude, freeFlight ? (windingUp ? 19f : 13f) : 0f, blend);
+        float flap = Mathf.Sin(Time.time * 19f) * wingAmplitude;
+        leftWing.Orbit(visualFacing, offset, Quaternion.Euler(0f, 0f, flap));
+        rightWing.Orbit(visualFacing, offset, Quaternion.Euler(0f, 0f, -flap));
+    }
+
     private void FixedUpdate()
     {
         if (dead || carried) return;
@@ -79,11 +141,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
             return;
         }
 
-        if (leaping && Time.time >= leapEndsAt)
-        {
-            body.linearVelocity = Vector3.zero;
-            Interrupt();
-        }
+        if (leaping && Time.time >= leapEndsAt) EndLunge();
         if (leaping || Time.time < resumeAt) return;
 
         Vector3 offset = player != null ? player.position - body.position : Vector3.zero;
@@ -101,7 +159,8 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
                 SetWarning(false);
                 leaping = true;
                 attackHit = false;
-                leapEndsAt = Time.time + 0.9f;
+                // Stop near the aim point instead of flying past it at full speed.
+                leapEndsAt = Time.time + Mathf.Min(0.9f, (distance + 0.65f) / Mathf.Max(leapSpeed, 0.1f));
                 body.linearVelocity = offset.normalized * leapSpeed;
             }
             return;
@@ -141,11 +200,11 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     private void SetWarning(bool warning)
     {
         windingUp = warning;
-        if (visual == null) return;
-        Color color = warning ? Color.yellow : new Color(0.75f, 0.19f, 0.1f);
+        Color color = warning ? new Color(1f, 0.055f, 0.035f) : new Color(0.6f, 0.4f, 0.22f);
         appearance.SetColor("_BaseColor", color);
         appearance.SetColor("_Color", color);
-        visual.SetPropertyBlock(appearance);
+        if (visual != null) visual.SetPropertyBlock(appearance);
+        if (warningCrest != null) warningCrest.SetPropertyBlock(appearance);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -189,9 +248,21 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
             return;
         }
 
-        if (!leaping || attackHit || movement == null) return;
+        if (!leaping || attackHit) return;
+        if (movement == null)
+        {
+            if ((environmentMask & (1 << collision.gameObject.layer)) != 0) EndLunge();
+            return;
+        }
         attackHit = true;
+        EndLunge();
         movement.GetComponent<SwarmerTestHealth>()?.TakeDamage(damage);
+    }
+
+    private void EndLunge()
+    {
+        body.linearVelocity = Vector3.zero;
+        Interrupt();
     }
 
     public void OnPushed(Vector3 direction, float force, Vector3 point)
