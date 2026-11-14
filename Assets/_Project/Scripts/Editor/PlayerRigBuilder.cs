@@ -253,6 +253,10 @@ public static class PlayerRigBuilder
         pullSO.FindProperty("handTetherOrigin").objectReferenceValue = rightHand.transform;
         pullSO.ApplyModifiedProperties();
 
+        SerializedObject teleSO = new SerializedObject(telemetry);
+        teleSO.FindProperty("showOverlay").boolValue = false;
+        teleSO.ApplyModifiedProperties();
+
         Selection.activeGameObject = root;
         Undo.RegisterCreatedObjectUndo(root, "Create Upgraded Player Rig");
 

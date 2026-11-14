@@ -28,11 +28,10 @@ public class SlowMotionAbility : MonoBehaviour
     private float currentEnergy;
     private bool isActive = false;
     private float defaultFixedDeltaTime;
-    private float baseFOV = 60f;
-    private float targetFOV;
 
     // Public API Contracts
     public bool IsActive => isActive;
+    public float FovExpansion => fovExpansion;
     public float EnergyPercent => infiniteSlowMo ? 1.0f : Mathf.Clamp01(currentEnergy / maxDuration);
 
     private void Awake()
@@ -43,12 +42,6 @@ public class SlowMotionAbility : MonoBehaviour
 
         if (playerCamera == null) playerCamera = Camera.main;
 
-        if (playerCamera != null)
-        {
-            baseFOV = playerCamera.fieldOfView;
-        }
-
-        targetFOV = baseFOV;
         currentEnergy = maxDuration;
         defaultFixedDeltaTime = Time.fixedDeltaTime;
     }
@@ -88,12 +81,7 @@ public class SlowMotionAbility : MonoBehaviour
             }
         }
 
-        // Smooth camera FOV transition during Slow Motion
-        if (playerCamera != null)
-        {
-            targetFOV = baseFOV + (isActive ? fovExpansion : 0f);
-            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, dt * 10f);
-        }
+        // Camera FOV during Slow Motion is authoritatively handled by MouseLook.cs to avoid frame-by-frame FOV fighting.
     }
 
     /// <summary>

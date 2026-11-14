@@ -434,3 +434,8 @@ If you want to tune numbers in the Unity Inspector, select `Player_Rig` in your 
   - **45m Crate Snatch Reach**: Increased prop reach to 45m with 0.85m SphereCast fallback and weight-class reel dynamics (Light 32 m/s, Medium 24 m/s, Heavy 12 m/s).
   - **1-Click Game Setup**: Streamlined top menu down to 2 clear options: `1. Setup Complete Game (Arena + Player)` and `2. Run Movement Unit Tests`.
   - **Real-Time Telemetry Overlay (`F3`)**: Added `PlayerMovementTelemetry.cs` for on-screen velocity decomposition and live physics metrics.
+- **v5.1 (Movement, Camera, HUD & Grapple Targeting Fixes)**:
+  - **Screen Jolt Fixed**: Eliminated camera zoom fight between `SlowMotionAbility.cs` and `MouseLook.cs`.
+  - **Telemetry HUD Hidden by Default**: Disabled the giant right-side overlay (`showOverlay = false`); toggle available via `F3`.
+  - **Camera-Aligned Movement**: Derived walking, sprinting, and sliding directions directly from camera horizontal forward (`GetCameraFlatForward()`) and accelerated ground turn rate to 8.0 rad/s so `W` always moves precisely where you face.
+  - **Pinpoint Crosshair Grappling**: Replaced wide spherecast with sharp raycast and focused 0.25m offset assist, enforcing a 4.0m minimum anchor distance so grapple never targets the ground at your feet or auto-detaches.

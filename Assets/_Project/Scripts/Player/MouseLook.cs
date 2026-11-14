@@ -134,9 +134,11 @@ public class MouseLook : MonoBehaviour
         yawAngle += mouseX;
         if (playerBody != null)
         {
-            playerBody.rotation = Quaternion.Euler(0f, yawAngle, 0f);
+            Quaternion bodyRot = Quaternion.Euler(0f, yawAngle, 0f);
+            playerBody.rotation = bodyRot;
             if (bodyRb != null)
             {
+                bodyRb.rotation = bodyRot;
                 bodyRb.angularVelocity = Vector3.zero;
             }
         }
@@ -166,7 +168,7 @@ public class MouseLook : MonoBehaviour
         {
             float targetFOV = Mathf.Lerp(baseFOV, maxFOV, Mathf.Clamp01(speed / maxFOVSpeed));
             if (isSliding) targetFOV = Mathf.Min(targetFOV + 4f, maxFOV);
-            if (slowMotionAbility != null && slowMotionAbility.IsActive) targetFOV = Mathf.Min(targetFOV + 2.5f, maxFOV);
+            if (slowMotionAbility != null && slowMotionAbility.IsActive) targetFOV = Mathf.Min(targetFOV + slowMotionAbility.FovExpansion, maxFOV);
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, 8.0f * dt);
         }
 

@@ -199,13 +199,14 @@ public class PullAbility : MonoBehaviour
         // Priority 1: Interactive Prop / Crate Snatch (within maxPullRange = 45m)
         // Primary probe: Sharp raycast
         bool propFound = Physics.Raycast(origin, direction, out RaycastHit propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
-        // Fallback probe: Generous spherecast (radius 0.85m) for effortless mid-air crate snatching
-        if (!propFound)
+        // Fallback probe: Focused forward spherecast starting 1.5m ahead of camera to prevent self-collision
+        if (!propFound && maxPullRange > 1.5f)
         {
-            propFound = Physics.SphereCast(origin, 0.85f, direction, out propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
+            Vector3 assistOrigin = origin + direction * 1.5f;
+            propFound = Physics.SphereCast(assistOrigin, 0.35f, direction, out propHit, maxPullRange - 1.5f, interactableLayers, QueryTriggerInteraction.Ignore);
         }
 
-        if (propFound)
+        if (propFound && propHit.collider != null)
         {
             if (playerMovement == null || playerMovement.GroundedObject != propHit.transform)
             {
@@ -232,13 +233,15 @@ public class PullAbility : MonoBehaviour
         RaycastHit grappleHit;
         bool hitFound = Physics.Raycast(origin, direction, out grappleHit, maxGrappleRange, grappleLayers, QueryTriggerInteraction.Ignore);
 
-        // Fallback probe: Generous spherecast (radius 0.55m) to catch distant pillars, thin beams, edges effortlessly
-        if (!hitFound)
+        // Fallback probe: Tight spherecast (radius 0.25m) starting 2.0m ahead to catch distant pillars without hitting ground at feet
+        if (!hitFound && maxGrappleRange > 2.0f)
         {
-            hitFound = Physics.SphereCast(origin, 0.55f, direction, out grappleHit, maxGrappleRange, grappleLayers, QueryTriggerInteraction.Ignore);
+            Vector3 assistOrigin = origin + direction * 2.0f;
+            hitFound = Physics.SphereCast(assistOrigin, 0.25f, direction, out grappleHit, maxGrappleRange - 2.0f, grappleLayers, QueryTriggerInteraction.Ignore);
         }
 
-        if (hitFound)
+        // Must hit valid surface at least 4.0m away from the player (prevents hooking floor at feet or instant auto-detach)
+        if (hitFound && grappleHit.collider != null && Vector3.Distance(origin, grappleHit.point) >= 4.0f)
         {
             StartGrapple(grappleHit.point, grappleHit.normal, grappleHit.collider);
         }
@@ -246,6 +249,9 @@ public class PullAbility : MonoBehaviour
 
     private void StartGrapple(Vector3 point, Vector3 normal, Collider hookedCollider)
     {
+        Vector3 origin = playerCamera != null ? playerCamera.transform.position : transform.position;
+        if (Vector3.Distance(origin, point) < 4.0f) return;
+
         isGrappling = true;
         grapplePoint = point;
         grappleNormal = normal;

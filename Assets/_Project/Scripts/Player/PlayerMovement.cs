@@ -311,6 +311,26 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public Vector3 GetCameraFlatForward()
+    {
+        Transform camT = mouseLook != null ? mouseLook.transform : null;
+        Vector3 forward = camT != null ? camT.forward : transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.001f) forward = transform.forward;
+        forward.y = 0f;
+        return forward.normalized;
+    }
+
+    public Vector3 GetCameraFlatRight()
+    {
+        Transform camT = mouseLook != null ? mouseLook.transform : null;
+        Vector3 right = camT != null ? camT.right : transform.right;
+        right.y = 0f;
+        if (right.sqrMagnitude < 0.001f) right = transform.right;
+        right.y = 0f;
+        return right.normalized;
+    }
+
     public void SetMoveInput(Vector2 dir)
     {
         moveInput = Vector2.ClampMagnitude(dir, 1f);
@@ -512,9 +532,11 @@ public class PlayerMovement : MonoBehaviour
             }
 
             // Player can steer and carve slide direction with mouse aim and full WASD redirection (Redliner Slide Carving)
+            Vector3 camFwd = GetCameraFlatForward();
+            Vector3 camRight = GetCameraFlatRight();
             Vector3 aimDir = moveInput.sqrMagnitude > 0.05f 
-                ? (transform.forward * moveInput.y + transform.right * moveInput.x).normalized 
-                : transform.forward;
+                ? (camFwd * moveInput.y + camRight * moveInput.x).normalized 
+                : camFwd;
             if (aimDir.sqrMagnitude > 0.05f)
             {
                 Vector3 projectedAim = Vector3.ProjectOnPlane(aimDir, groundNormal).normalized;
@@ -539,17 +561,20 @@ public class PlayerMovement : MonoBehaviour
         airborneSlideBufferTimer = 0f;
 
         Vector3 horizontalVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        if (horizontalVel.sqrMagnitude > 0.5f)
+        Vector3 camFwd = GetCameraFlatForward();
+        Vector3 camRight = GetCameraFlatRight();
+
+        if (horizontalVel.sqrMagnitude > 0.5f && Vector3.Dot(horizontalVel.normalized, camFwd) > 0.3f)
         {
             slideDirection = horizontalVel.normalized;
         }
         else if (moveInput.sqrMagnitude > 0.1f)
         {
-            slideDirection = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
+            slideDirection = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
         }
         else
         {
-            slideDirection = transform.forward;
+            slideDirection = camFwd;
         }
 
         currentSlideSpeed = Mathf.Clamp(Mathf.Max(targetSpeed, minSlideEntrySpeed), minSlideEntrySpeed, maxSpeed);
@@ -807,7 +832,9 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        Vector3 targetDirection = (transform.forward * moveInput.y + transform.right * moveInput.x);
+        Vector3 camFwd = GetCameraFlatForward();
+        Vector3 camRight = GetCameraFlatRight();
+        Vector3 targetDirection = (camFwd * moveInput.y + camRight * moveInput.x);
         Vector3 currentVel = rb.linearVelocity;
         Vector3 horizontalVel = new Vector3(currentVel.x, 0f, currentVel.z);
         float currentHorizontalSpeed = horizontalVel.magnitude;
@@ -840,11 +867,13 @@ public class PlayerMovement : MonoBehaviour
                 {
                     Vector3 wishDir = targetDirection.normalized;
                     float dot = Vector3.Dot(horizontalVel.normalized, wishDir);
-                    if (dot > 0.1f)
+                    if (dot > 0.0f)
                     {
-                        // Moving along wish direction: gentle aerodynamic drag preserves speed runway
-                        newHorizontalVel = Vector3.MoveTowards(horizontalVel, targetVelocity, groundMomentumDrag * Time.fixedDeltaTime);
-                        newHorizontalVel = Vector3.RotateTowards(newHorizontalVel, wishDir, (airAcceleration * 1.2f / Mathf.Max(currentHorizontalSpeed, 6f)) * Time.fixedDeltaTime, 0f);
+                        // Moving along wish direction: smoothly carve/steer horizontal velocity toward wishDir
+                        // Responsive ground carving turns the velocity vector rapidly toward where the player points
+                        float turnRate = 8.0f * Time.fixedDeltaTime;
+                        Vector3 steeredVel = Vector3.RotateTowards(horizontalVel, wishDir * currentHorizontalSpeed, turnRate, 0f);
+                        newHorizontalVel = Vector3.MoveTowards(steeredVel, wishDir * targetSpeed, groundMomentumDrag * Time.fixedDeltaTime);
                     }
                     else
                     {
