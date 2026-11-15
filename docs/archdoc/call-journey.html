@@ -31,15 +31,15 @@
       <div class="wrap">
         <header>
           <div class="eyebrow">Runtime · Physics &amp; Ability Lifecycles</div>
-          <h1>High-Speed Locomotion &amp; Weaponless Combat Flow</h1>
-          <p class="meta prose">A visual step-by-step walkthrough of how momentum sliding, grapple slingshotting, Spider-Sense threat warnings, bullet deflections, and the 4 enemy archetypes interact in real time.</p>
+          <h1>Parkour Locomotion &amp; Kinetic Combat Journey</h1>
+          <p class="meta prose">A visual step-by-step walkthrough of how momentum sliding, wall-running, wall-hang climb vaulting, kinetic prop weaponry, bullet deflection parrying, and 4-tier enemy AI interact in real time.</p>
         </header>
 
         <!-- Sequence Diagram -->
         <section id="sequence-diagram">
-          <h2>The 5-Step Speedrun &amp; Combat Action Loop</h2>
+          <h2>The 5-Step Academy Traversal &amp; Combat Action Loop</h2>
           <p class="prose">
-            This diagram traces the full high-speed loop: accelerating down a slope, boosting forward with Push recoil, slingshotting past a Hulk slam, triggering Spider-Sense Slow-Mo to deflect a sniper bullet, and blasting through a barricade into a bunny-hop:
+            This diagram traces the complete gameplay loop: sprinting into a low-gate slide, executing a wall-run and climb vault, dilating time to deflect incoming sniper bolts, pocketing and launching kinetic props to stagger a Hulk, and triggering checkpoint advancement:
           </p>
 
           <figure class="fig" id="fig-sequence">
@@ -52,8 +52,8 @@
             </div>
             <div class="fig-scroll" tabindex="0">
               <svg class="dg" data-w="960" viewBox="0 0 960 380" role="img" aria-labelledby="seq-title seq-desc" xmlns="http://www.w3.org/2000/svg">
-                <title id="seq-title">High-Speed Locomotion &amp; Gunless Combat Loop</title>
-                <desc id="seq-desc">Five steps: slope slide boost, grapple slingshot past Hulk, spider-sense sniper deflection, crate cannon blast, and bunny-hop landing.</desc>
+                <title id="seq-title">Parkour Locomotion &amp; Kinetic Combat Loop</title>
+                <desc id="seq-desc">Five steps: low gate slide, wall-run & climb vault, chrono-dilation bullet deflection, kinetic prop cannon, and chamber checkpoint reset.</desc>
                 <defs>
                   <marker id="sq-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
                     <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
@@ -68,142 +68,137 @@
 
                 <rect class="bg" width="960" height="380" rx="8"/>
 
-                <!-- Step 1 Card: Slide & Bowling Strike -->
+                <!-- Step 1 Card: Sprint & Gate Slide -->
                 <rect class="card-bg" x="15" y="20" width="175" height="340" rx="8"/>
                 <rect class="step-pill" x="25" y="32" width="60" height="22" rx="4" style="fill:var(--high);"/>
                 <text class="step-pill-t" x="55" y="47" text-anchor="middle">STEP 1</text>
-                <text class="title-lg" x="92" y="48" style="fill:var(--high)">Slide Strike</text>
+                <text class="title-lg" x="92" y="48" style="fill:var(--high)">Gate Slide</text>
                 
-                <!-- Graphic: Slide down ramp + Bowling swarmers -->
-                <path d="M 30 140 L 95 160 L 170 160" stroke="var(--muted)" stroke-width="2" fill="none"/>
-                <rect x="75" y="142" width="30" height="16" rx="8" class="player"/>
-                <text class="player-t" x="90" y="154" text-anchor="middle" font-size="10">YOU</text>
-                <!-- Swarmers flying -->
-                <circle cx="130" cy="145" r="4" fill="var(--high)"/>
-                <circle cx="140" cy="135" r="4" fill="var(--high)"/>
-                <circle cx="150" cy="150" r="4" fill="var(--high)"/>
-                <path d="M 105 150 L 135 150" class="ln bad" stroke-width="2.5" marker-end="url(#sq-arr-crit)"/>
+                <!-- Graphic: Slide under low gate -->
+                <path d="M 30 160 H 170" stroke="var(--muted)" stroke-width="2" fill="none"/>
+                <rect x="70" y="146" width="30" height="14" rx="7" class="player"/>
+                <text class="player-t" x="85" y="157" text-anchor="middle" font-size="10">YOU</text>
+                <!-- Low gate barrier -->
+                <rect x="115" y="115" width="14" height="32" rx="2" fill="var(--high)"/>
+                <path d="M 95 153 L 140 153" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
 
                 <rect class="soft" x="25" y="175" width="155" height="115" rx="6"/>
-                <text class="text-reg" x="33" y="195">Crouch + Boost</text>
-                <text class="text-sub" x="33" y="213">Slide down slope.</text>
-                <text class="text-sub" x="33" y="229">Push boosts to 22 m/s.</text>
-                <text class="text-sub" x="33" y="245">Plows straight through</text>
-                <text class="text-sub" x="33" y="261">Swarmer pack (Bowling).</text>
+                <text class="text-reg" x="33" y="195">Shift + Ctrl</text>
+                <text class="text-sub" x="33" y="213">Sprint at 5.4 m/s.</text>
+                <text class="text-sub" x="33" y="229">Press Ctrl to slide.</text>
+                <text class="text-sub" x="33" y="245">Drops height to 0.9m</text>
+                <text class="text-sub" x="33" y="261">under low stone gate.</text>
 
                 <rect class="step-pill" x="25" y="305" width="155" height="26" rx="4" style="fill:var(--high);"/>
-                <text class="step-pill-t" x="102" y="322" text-anchor="middle">SWARMERS BOWLED</text>
+                <text class="step-pill-t" x="102" y="322" text-anchor="middle">GATE CLEARED</text>
 
                 <!-- Flow arrow 1 to 2 -->
                 <path d="M 190 190 H 202" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 2 Card: Slingshot Over Hulk Slam -->
+                <!-- Step 2 Card: Wall-Run & Climb Vault -->
                 <rect class="card-bg" x="205" y="20" width="175" height="340" rx="8"/>
                 <rect class="step-pill" x="215" y="32" width="60" height="22" rx="4" style="fill:var(--accent);"/>
                 <text class="step-pill-t" x="245" y="47" text-anchor="middle">STEP 2</text>
-                <text class="title-lg" x="282" y="48" style="fill:var(--accent)">Hulk Vault</text>
+                <text class="title-lg" x="282" y="48" style="fill:var(--accent)">Climb Vault</text>
 
-                <!-- Graphic: Grapple over shockwave -->
-                <circle cx="295" cy="95" r="8" fill="var(--high)"/>
-                <line x1="295" y1="103" x2="265" y2="140" class="ln acc" stroke-width="2.5"/>
-                <circle cx="265" cy="140" r="14" class="player"/>
-                <text class="player-t" x="265" y="144" text-anchor="middle">YOU</text>
-                <!-- Hulk landing on ground -->
-                <rect x="330" y="140" width="26" height="20" rx="4" fill="var(--crit)"/>
-                <path d="M 320 160 Q 343 152 366 160" stroke="var(--crit)" stroke-width="2" fill="none"/>
+                <!-- Graphic: Wall-run and ledge climb vault -->
+                <rect x="330" y="95" width="16" height="65" rx="2" fill="var(--high)"/>
+                <circle cx="280" cy="130" r="14" class="player"/>
+                <text class="player-t" x="280" y="134" text-anchor="middle">YOU</text>
+                <!-- Vault trajectory -->
+                <path d="M 285 120 Q 320 85 360 90" class="ln acc" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
 
                 <rect class="soft" x="215" y="175" width="155" height="115" rx="6"/>
-                <text class="text-reg" x="223" y="195">Grapple Ceiling</text>
-                <text class="text-sub" x="223" y="213">Hulk leaps to slam.</text>
-                <text class="text-sub" x="223" y="229">Grapple tether lifts</text>
-                <text class="text-sub" x="223" y="245">you cleanly over the</text>
-                <text class="text-sub" x="223" y="261">ground shockwave.</text>
+                <text class="text-reg" x="223" y="195">Wall-Run &amp; Vault</text>
+                <text class="text-sub" x="223" y="213">Leap onto wall to cling.</text>
+                <text class="text-sub" x="223" y="229">Wall-hang holds 1.5s.</text>
+                <text class="text-sub" x="223" y="245">Tap Space: +9.5m</text>
+                <text class="text-sub" x="223" y="261">vault onto high ledge.</text>
 
                 <rect class="step-pill" x="215" y="305" width="155" height="26" rx="4" style="fill:var(--accent);"/>
-                <text class="step-pill-t" x="292" y="322" text-anchor="middle">SHOCKWAVE CLEARED</text>
+                <text class="step-pill-t" x="292" y="322" text-anchor="middle">LEDGE SCALED</text>
 
                 <!-- Flow arrow 2 to 3 -->
                 <path d="M 380 190 H 392" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 3 Card: Spider Sense & Bullet Deflection -->
+                <!-- Step 3 Card: Chrono-Dilation & Bullet Deflection -->
                 <rect class="card-bg" x="395" y="20" width="175" height="340" rx="8"/>
                 <rect class="step-pill" x="405" y="32" width="60" height="22" rx="4" style="fill:var(--crit);"/>
                 <text class="step-pill-t" x="435" y="47" text-anchor="middle">STEP 3</text>
                 <text class="title-lg" x="472" y="48" style="fill:var(--crit)">Deflection</text>
 
-                <!-- Graphic: Spider Sense Arc + Reflected Bullet -->
+                <!-- Graphic: SlowMo & Deflected Bolt -->
                 <circle cx="450" cy="125" r="14" class="player"/>
                 <text class="player-t" x="450" y="129" text-anchor="middle">YOU</text>
-                <!-- Spider sense arc -->
-                <path d="M 466 112 A 20 20 0 0 1 472 138" stroke="var(--crit)" stroke-width="3" fill="none"/>
-                <!-- Bullet reflected -->
+                <!-- Parry cone -->
+                <path d="M 466 112 A 20 20 0 0 1 472 138" stroke="var(--accent)" stroke-width="3" fill="none"/>
+                <!-- Bolt reflected -->
                 <line x1="535" y1="125" x2="480" y2="125" stroke="var(--high)" stroke-width="2" stroke-dasharray="3 2"/>
                 <line x1="475" y1="125" x2="540" y2="115" class="ln bad" stroke-width="2.5" marker-end="url(#sq-arr-crit)"/>
 
                 <rect class="soft" x="405" y="175" width="155" height="115" rx="6"/>
-                <text class="text-reg" x="413" y="195">Sense + Push</text>
-                <text class="text-sub" x="413" y="213">Spider Sense flashes.</text>
-                <text class="text-sub" x="413" y="229">Tap Shift (SlowMo).</text>
-                <text class="text-sub" x="413" y="245">Push (`LMB`) reflects</text>
-                <text class="text-sub" x="413" y="261">bullet back to sniper!</text>
+                <text class="text-reg" x="413" y="195">Z Key + Push</text>
+                <text class="text-sub" x="413" y="213">Press Z: 25% physics.</text>
+                <text class="text-sub" x="413" y="229">Aim at incoming bolt.</text>
+                <text class="text-sub" x="413" y="245">LMB parries at 35 m/s.</text>
+                <text class="text-sub" x="413" y="261">+20 Focus energy.</text>
 
                 <rect class="step-pill" x="405" y="305" width="155" height="26" rx="4" style="fill:var(--crit);"/>
-                <text class="step-pill-t" x="482" y="322" text-anchor="middle">SNIPER ONE-SHOTTED</text>
+                <text class="step-pill-t" x="482" y="322" text-anchor="middle">BOLT DEFLECTED</text>
 
                 <!-- Flow arrow 3 to 4 -->
                 <path d="M 570 190 H 582" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 4 Card: Crate Shield & Cannon Blast -->
+                <!-- Step 4 Card: Pocket Carry & Prop Launch -->
                 <rect class="card-bg" x="585" y="20" width="175" height="340" rx="8"/>
                 <rect class="step-pill" x="595" y="32" width="60" height="22" rx="4" style="fill:var(--ok);"/>
                 <text class="step-pill-t" x="625" y="47" text-anchor="middle">STEP 4</text>
-                <text class="title-lg" x="662" y="48" style="fill:var(--ok)">Riot Cannon</text>
+                <text class="title-lg" x="662" y="48" style="fill:var(--ok)">Prop Cannon</text>
 
-                <!-- Graphic: Held crate shielding then launching -->
+                <!-- Graphic: Held prop in pocket launching -->
                 <circle cx="630" cy="125" r="14" class="player"/>
                 <text class="player-t" x="630" y="129" text-anchor="middle">YOU</text>
-                <rect x="660" y="113" width="22" height="24" rx="4" class="crate" style="stroke:var(--ok); stroke-width:2;"/>
-                <text class="crate-t" x="671" y="129" text-anchor="middle" font-size="10">BOX</text>
-                <path d="M 685 125 L 740 125" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
+                <circle cx="654" cy="138" r="8" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>
+                <path d="M 664 135 L 735 120" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
 
                 <rect class="soft" x="595" y="175" width="155" height="115" rx="6"/>
-                <text class="text-reg" x="603" y="195">Shield &amp; Launch</text>
-                <text class="text-sub" x="603" y="213">Crate blocks rapid lasers.</text>
-                <text class="text-sub" x="603" y="229">Tap Push to fire crate</text>
-                <text class="text-sub" x="603" y="245">directly into stunned</text>
-                <text class="text-sub" x="603" y="261">Hulk's exposed back!</text>
+                <text class="text-reg" x="603" y="195">RMB Pocket + LMB</text>
+                <text class="text-sub" x="603" y="213">RMB pulls prop into pocket.</text>
+                <text class="text-sub" x="603" y="229">Zero view obstruction.</text>
+                <text class="text-sub" x="603" y="245">LMB fires at 32 m/s.</text>
+                <text class="text-sub" x="603" y="261">Staggers Hulk &amp; foes.</text>
 
                 <rect class="step-pill" x="595" y="305" width="155" height="26" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="672" y="322" text-anchor="middle">HULK DESTROYED</text>
+                <text class="step-pill-t" x="672" y="322" text-anchor="middle">TARGET STRUCK</text>
 
                 <!-- Flow arrow 4 to 5 -->
                 <path d="M 760 190 H 772" class="ln acc" stroke-width="2" marker-end="url(#sq-arr)"/>
 
-                <!-- Step 5 Card: Bunny-Hop & Medal Gate -->
+                <!-- Step 5 Card: Checkpoint Archway -->
                 <rect class="card-bg" x="775" y="20" width="170" height="340" rx="8"/>
                 <rect class="step-pill" x="785" y="32" width="60" height="22" rx="4" style="fill:var(--ok);"/>
                 <text class="step-pill-t" x="815" y="47" text-anchor="middle">STEP 5</text>
-                <text class="title-lg" x="852" y="48" style="fill:var(--ok)">Bunny-Hop</text>
+                <text class="title-lg" x="852" y="48" style="fill:var(--ok)">Checkpoint</text>
 
-                <!-- Graphic: Jump through gate -->
-                <rect class="door" x="860" y="100" width="45" height="50" rx="4"/>
-                <text class="title-lg" x="882" y="130" text-anchor="middle" style="fill:var(--ok)">SPLIT</text>
+                <!-- Graphic: Walk through archway -->
+                <rect class="door" x="850" y="95" width="55" height="60" rx="4"/>
+                <text class="title-lg" x="877" y="130" text-anchor="middle" style="fill:var(--ok)">ARCH</text>
                 <circle cx="820" cy="135" r="14" class="player"/>
                 <text class="player-t" x="820" y="139" text-anchor="middle">YOU</text>
-                <path d="M 835 135 L 855 135" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
+                <path d="M 835 135 L 850 135" class="ln ok" stroke-width="2.5" marker-end="url(#sq-arr-ok)"/>
 
                 <rect class="soft" x="785" y="175" width="150" height="115" rx="6"/>
-                <text class="text-reg" x="793" y="195">Touchdown Jump</text>
-                <text class="text-sub" x="793" y="213">Preserves 100% velocity</text>
-                <text class="text-sub" x="793" y="229">into the next section.</text>
-                <text class="text-sub" x="793" y="245">Gold Medal split</text>
-                <text class="text-sub" x="793" y="261">checkpoint logged.</text>
+                <text class="text-reg" x="793" y="195">Auto Checkpoint</text>
+                <text class="text-sub" x="793" y="213">Steps through arch.</text>
+                <text class="text-sub" x="793" y="229">Instant spawn update.</text>
+                <text class="text-sub" x="793" y="245">Falling into void</text>
+                <text class="text-sub" x="793" y="261">resets here in 0.05s.</text>
 
                 <rect class="step-pill" x="785" y="305" width="150" height="26" rx="4" style="fill:var(--ok);"/>
-                <text class="step-pill-t" x="860" y="322" text-anchor="middle">GOLD PACE MAINTAINED</text>
+                <text class="step-pill-t" x="860" y="322" text-anchor="middle">CHAMBER SECURED</text>
               </svg>
             </div>
-            <figcaption>The 5-step Redliner combat & locomotion cycle: Slide bowling strike -> Hulk shockwave vault -> Spider-Sense bullet deflection -> Crate shield & back crush -> Bunny-hop split.</figcaption>
+            <figcaption>The 5-step Egyptian Academy progression loop: Gate slide -> Wall-run & climb vault -> Chrono-dilation bullet deflection -> Pocket carry & prop launch -> Checkpoint archway.</figcaption>
           </figure>
         </section>
 
@@ -211,7 +206,7 @@
         <section id="mechanics-math">
           <h2>Physics Calculations Explained in Direct Plain English</h2>
           <p class="prose">
-            Here is how forces, Spider-Sense angles, and combat vector math are computed under the hood:
+            Here is how deflection parries, carry pocket offsets, and wall-climb vaults are computed in code:
           </p>
 
           <figure class="fig" id="fig-physics-vectors" style="margin-top: 18px; margin-bottom: 24px;">
@@ -224,8 +219,8 @@
             </div>
             <div class="fig-scroll" tabindex="0">
               <svg class="dg" data-w="960" viewBox="0 0 960 360" role="img" aria-labelledby="pv-title pv-desc" xmlns="http://www.w3.org/2000/svg">
-                <title id="pv-title">REBOUND High-Speed Force Vectors &amp; Threat Detection</title>
-                <desc id="pv-desc">Diagram showing the Spider-Sense angle calculation, sniper bullet reflection vector, and Hulk shockwave vertical clearance.</desc>
+                <title id="pv-title">REBOUND Deflection Parry &amp; Wall-Climb Physics</title>
+                <desc id="pv-desc">Diagram showing the 3.8m parry cone sweep formula and the wall-climb vault vector impulse.</desc>
                 <defs>
                   <marker id="pv-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
                     <polygon points="0 0, 8 3, 0 6" style="fill:var(--accent)"/>
@@ -240,63 +235,53 @@
 
                 <rect class="bg" width="960" height="360" rx="8"/>
 
-                <!-- Left Panel: SPIDER-SENSE & DEFLECTION MATH -->
+                <!-- Left Panel: BULLET DEFLECTION PARRY FORMULA -->
                 <rect class="panel" x="30" y="20" width="435" height="320" rx="8"/>
                 <rect class="focal" x="45" y="35" width="405" height="34" rx="4"/>
-                <text class="nm big" x="247" y="58" text-anchor="middle">SPIDER-SENSE &amp; BULLET DEFLECTION</text>
+                <text class="nm big" x="247" y="58" text-anchor="middle">PARRY CONE &amp; DEFLECTION FORMULA</text>
 
-                <!-- Visual: Player in center with threat ray -->
+                <!-- Visual: Player in center with parry cone -->
                 <circle cx="100" cy="140" r="16" class="player"/>
                 <text class="player-t" x="100" y="144" text-anchor="middle">YOU</text>
-                <!-- Threat ray from sniper at top right -->
-                <line x1="380" y1="90" x2="130" y2="135" stroke="var(--crit)" stroke-width="2" stroke-dasharray="4 2"/>
-                <circle cx="380" cy="90" r="8" fill="var(--crit)"/>
-                <text class="tag" x="380" y="75" text-anchor="middle" style="fill:var(--crit)">SNIPER (1.5s LOCK)</text>
+                <!-- Incoming bolt -->
+                <line x1="380" y1="140" x2="135" y2="140" stroke="var(--high)" stroke-width="2" stroke-dasharray="4 2"/>
+                <circle cx="260" cy="140" r="6" fill="#f59e0b"/>
+                <text class="tag" x="260" y="125" text-anchor="middle" style="fill:var(--high)">INCOMING BOLT</text>
 
-                <!-- Spider sense HUD curved arc on right of player -->
-                <path d="M 122 125 A 25 25 0 0 1 126 155" stroke="var(--crit)" stroke-width="4" fill="none"/>
-                <text class="tag" x="155" y="145" style="fill:var(--crit)">HUD CHEVRON</text>
+                <!-- Parry cone arc -->
+                <path d="M 125 115 A 30 30 0 0 1 125 165" stroke="var(--accent)" stroke-width="4" fill="none"/>
+                <text class="tag" x="175" y="145" style="fill:var(--accent)">3.8m PARRY CONE</text>
 
                 <!-- Deflection formula callout -->
                 <rect class="soft" x="45" y="195" width="405" height="130" rx="6"/>
-                <text class="tag" x="60" y="215">DEFLECTION &amp; ANGLE FORMULA</text>
-                <text class="nm" x="60" y="235">ThreatAngle = Vector3.SignedAngle(Camera.forward, toThreat, Up)</text>
-                <text class="nm" x="60" y="255">DeflectVelocity = -bullet.velocity.normalized * 45f</text>
-                <text class="sub" x="60" y="275">1. HUD arc points towards threat off-screen angle.</text>
-                <text class="sub" x="60" y="293">2. Push blast during Slow-Mo reflects round directly back at sniper.</text>
+                <text class="tag" x="60" y="215">DEFLECTION CODE CONTRACT (PushAbility.cs)</text>
+                <text class="nm" x="60" y="235">Collider[] hits = Physics.OverlapSphere(origin, 3.8f, ~0)</text>
+                <text class="nm" x="60" y="255">proj.Deflect(playerCam.forward, 35f, 2.0f)</text>
+                <text class="sub" x="60" y="275">1. Reverses projectile velocity toward aim direction at 35 m/s.</text>
+                <text class="sub" x="60" y="293">2. Triples bolt scale, adds cyan trail, and restores +20 Focus energy.</text>
 
-                <!-- Right Panel: HULK SHOCKWAVE & CRATE RIOT SHIELD -->
+                <!-- Right Panel: WALL-CLIMB VAULT & HULK SHAKE -->
                 <rect class="panel" x="495" y="20" width="435" height="320" rx="8"/>
                 <rect class="box" x="510" y="35" width="405" height="34" rx="4"/>
-                <text class="nm big" x="712" y="58" text-anchor="middle">HULK SHOCKWAVE &amp; CRATE RIOT SHIELD</text>
+                <text class="nm big" x="712" y="58" text-anchor="middle">WALL-CLIMB VAULT &amp; HULK SHAKE</text>
 
-                <!-- Visual: Hulk landing with expanding ring -->
-                <rect x="540" y="130" width="30" height="24" rx="4" fill="var(--crit)"/>
-                <text class="crate-t" x="555" y="146" text-anchor="middle" font-size="10">HULK</text>
-                <ellipse cx="555" cy="155" rx="55" ry="12" stroke="var(--crit)" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
-                <text class="tag" x="635" y="152" style="fill:var(--crit)">SHOCKWAVE (H=1.5m)</text>
-
-                <!-- Player jumping over wave -->
-                <circle cx="750" cy="115" r="16" class="player"/>
-                <text class="player-t" x="750" y="119" text-anchor="middle">YOU</text>
-                <rect x="780" y="103" width="20" height="24" rx="4" class="crate"/>
-                <text class="crate-t" x="790" y="119" text-anchor="middle" font-size="9">SHIELD</text>
-
-                <!-- Rapid laser bolts absorbed -->
-                <line x1="880" y1="110" x2="805" y2="110" stroke="var(--high)" stroke-width="2.5"/>
-                <line x1="880" y1="118" x2="805" y2="118" stroke="var(--high)" stroke-width="2.5"/>
-                <text class="tag" x="845" y="98" text-anchor="middle" style="fill:var(--high)">BLOCKED</text>
+                <!-- Visual: Wall with player clinging and vaulting -->
+                <rect x="660" y="90" width="16" height="75" rx="2" fill="var(--high)"/>
+                <circle cx="640" cy="130" r="14" class="player"/>
+                <text class="player-t" x="640" y="134" text-anchor="middle">YOU</text>
+                <path d="M 640 120 Q 660 70 700 85" class="ln ok" stroke-width="2.5" marker-end="url(#pv-arr-ok)"/>
+                <text class="tag" x="690" y="70" style="fill:var(--ok)">+9.5m UPWARD VAULT</text>
 
                 <!-- Formula Callout -->
                 <rect class="soft" x="510" y="195" width="405" height="130" rx="6"/>
-                <text class="tag" x="525" y="215">SHOCKWAVE &amp; SHIELDING RULES</text>
-                <text class="nm" x="525" y="235">ShockwaveClearance = PlayerPosition.y &gt; GroundY + 1.5f</text>
-                <text class="nm" x="525" y="255">CrateShieldAngle = Vector3.Dot(Camera.forward, -laserDir) &gt; 0.6f</text>
-                <text class="sub" x="525" y="275">1. Jumping or grappling higher than 1.5m avoids ground wave.</text>
-                <text class="sub" x="525" y="293">2. Held crate absorbs all forward incoming rapid plasma bolts.</text>
+                <text class="tag" x="525" y="215">WALL-CLIMB VAULT (PlayerMovement.cs)</text>
+                <text class="nm" x="525" y="235">velocity = Vector3.up * 9.5f + camForward * 3.8f</text>
+                <text class="nm" x="525" y="255">HulkShake: dist &lt; 20m -&gt; intensity = 1.0f - (dist / 20f)</text>
+                <text class="sub" x="525" y="275">1. Wall-hang clings for 1.5s with gentle downward slide (0.35 m/s).</text>
+                <text class="sub" x="525" y="293">2. Tapping Space executes a powerful vertical vault over wall ledges.</text>
               </svg>
             </div>
-            <figcaption>Combat math: Spider-Sense tracks off-screen threat angles; Push reflects bullets; held crates provide 120-degree forward riot shielding against rapid plasma.</figcaption>
+            <figcaption>Runtime math: PushAbility sweeps a 3.8m cone to deflect bolts and recharge focus; PlayerMovement executes +9.5m vertical climb vaults when Space is pressed during a wall-hang.</figcaption>
           </figure>
         </section>
 
@@ -314,44 +299,39 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Spider-Sense Threat Stacking</strong></td>
-                  <td>Multiple snipers or Hulk slams happen at the same time, confusing HUD chevrons.</td>
-                  <td><strong>Priority &amp; Multi-Arc Clamping:</strong> The closest immediate lethal attack flashes with highest opacity; secondary threats display smaller faint chevrons.</td>
+                  <td><strong>Prop Screen Obstruction</strong></td>
+                  <td>Carried large sandstone boulders or slabs block forward vision and crosshair.</td>
+                  <td><strong>Bottom-Right Carry Pocket:</strong> Props snap to offset <code>(0.42m, -0.32m, 1.35m)</code> relative to the camera, guaranteeing the crosshair remains 100% unobstructed.</td>
                 </tr>
                 <tr>
-                  <td><strong>Sniper Reflection Alignment</strong></td>
-                  <td>Player Push deflection fires in a random direction and misses the sniper.</td>
-                  <td><strong>Laser-Trace Reversal:</strong> The deflected bullet calculates its return trajectory along the sniper's own targeting ray, guaranteeing a direct hit if deflected cleanly.</td>
+                  <td><strong>Infinite Wall Climbing</strong></td>
+                  <td>Player holds Space while looking at a wall to climb infinitely into the sky.</td>
+                  <td><strong>State-Gated Wall Cling:</strong> Wall-hang lasts a strict 1.5 seconds with downward slide (0.35 m/s). Vaulting (+9.5m) consumes the hang state and cannot re-latch without touching ground or entering a new wall run.</td>
                 </tr>
                 <tr>
-                  <td><strong>Hulk Ground Slam Jitter</strong></td>
-                  <td>Player is near the slam edge and gets stuck in physics jitter between capsule and wave.</td>
-                  <td><strong>Trigger Volume Sphere-Cast:</strong> Shockwave is evaluated as an expanding radial trigger volume with clear 1.5m height check (jump/grapple clears).</td>
+                  <td><strong>Fast Projectile Tunneling During Parry</strong></td>
+                  <td>High-speed sniper bolts pass through the player between frames before Push can register.</td>
+                  <td><strong>Hemispherical Overlap Sweep:</strong> <code>TryDeflect()</code> sweeps all layers within 3.8m radius plus a 6.5m forward cone, detecting fast bolts before they reach player collision.</td>
                 </tr>
                 <tr>
-                  <td><strong>Swarmer Ramming at Low Speed</strong></td>
-                  <td>Player walks into a Swarmer pack at 3 m/s expecting a bowling strike.</td>
-                  <td><strong>Speed Threshold (12 m/s):</strong> Bowling strike only triggers at slide/grapple speed (&gt;=12 m/s). Low-speed collisions deal contact damage to player.</td>
+                  <td><strong>Swarmer Block Crush Fling</strong></td>
+                  <td>Swarmers stay stationary after being crushed by a thrown 45kg obsidian slab.</td>
+                  <td><strong>Physical Impulse Displacement:</strong> <code>OnPhysicsCrush</code> flings the Swarmer rigidbody along the impact vector at high velocity (<code>linearVelocity = knockbackDir * (speed * 1.6f) + Vector3.up * 4.2f</code>).</td>
                 </tr>
                 <tr>
-                  <td><strong>Carrying Props in Tight Corridors</strong></td>
-                  <td>A crate held 2.5m ahead jams into doorframes or wedges player against corners.</td>
-                  <td><strong>Elastic Retraction:</strong> Proximity sensors retract the hover anchor from 2.5m to 1.2m when walls are detected, smoothing narrow corridor navigation.</td>
+                  <td><strong>Hulk Ground Smash Screen Shake Distance</strong></td>
+                  <td>Hulk smashes the floor 100 meters away and the player screen shakes violently.</td>
+                  <td><strong>20m Distance Attenuation:</strong> Camera shake only fires if <code>Vector3.Distance(playerPos, smashPos) &lt; 20f</code>, scaling down cleanly to 0 at the 20m perimeter.</td>
                 </tr>
                 <tr>
-                  <td><strong>Wall Collision at 35 m/s</strong></td>
-                  <td>Player or thrown crate tunnels through thin walls or floor meshes.</td>
-                  <td><strong>ContinuousDynamic CCD:</strong> Rigidbodies evaluate sweep volumes every sub-step; static level walls are modeled with minimum 0.5m thickness.</td>
+                  <td><strong>Slow Motion Visual Clarity</strong></td>
+                  <td>Full-screen grey filters make dark chambers impossible to navigate.</td>
+                  <td><strong>12px Edge Accent Framing:</strong> Slow motion keeps center viewport 100% crisp and uncolored, framed only by subtle electric cyan/gold border accents and time scale indicators.</td>
                 </tr>
                 <tr>
                   <td><strong>Un-Crouch Under Low Obstacles</strong></td>
-                  <td>Player releases Crouch inside a low vent, clipping head into geometry.</td>
+                  <td>Player releases Crouch inside a low stone gate, clipping head into geometry.</td>
                   <td><strong>Overhead Clearance Raycast:</strong> Checks <code>Physics.Raycast(head, Vector3.up, 1.0m)</code>. If blocked, crouch height remains locked at 0.9m until fully clear.</td>
-                </tr>
-                <tr>
-                  <td><strong>Target Ambiguity (Wall vs Crate)</strong></td>
-                  <td>Player wants to grapple a wall behind an object, or grab a crate in front of a wall.</td>
-                  <td><strong>Target-Priority Hierarchy:</strong> Layer 10 (Interactables) and Layer 12 (Light Enemies) take precedence if directly under the crosshair; otherwise falls back to Layer 9/14 (Grapple).</td>
                 </tr>
               </tbody>
             </table>

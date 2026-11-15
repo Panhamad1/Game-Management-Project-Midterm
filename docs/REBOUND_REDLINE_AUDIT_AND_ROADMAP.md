@@ -1,5 +1,7 @@
 # REBOUND — Movement Repository Audit & Redliner Upgrade Roadmap
 
+> **Current Implementation Note:** Traversal has officially moved to pure parkour locomotion (Wall-Running, 1.5s Wall-Hang Cling, +9.5m Wall-Climb Vault, and Zig-Zag Wall-Jumps in the 180m Egyptian Academy). Grapple winch traversal has been superseded; Pull is strictly focused on kinetic prop manipulation into the bottom-right carry pocket.
+
 This document satisfies the **Section C Repository Audit** mandated by `01_MASTER_AGENT_PROMPT.md` and establishes the authoritative architecture roadmap for upgrading REBOUND's movement system to capture the kinetic feel of REDLINER.
 
 ---

@@ -1,69 +1,74 @@
-# REBOUND — First-Person High-Speed Physics Action & Movement Game
+# REBOUND — First-Person Physics Action & Parkour Game
 
-Welcome to the **REBOUND** game repository! Built in Unity for our Year 3 Game Development Midterm.
+Welcome to the **REBOUND** repository. Built in Unity for our Game Development Midterm.
 
 ---
 
 ## Quick Setup (1 Click)
 
-1. Open `Assets/Scenes/SampleScene.unity`.
-2. In the top Unity menu, click: **`Tools > REBOUND > 1. Setup Complete Game (Arena + Player)`**.
-3. Press **Play (`Ctrl + P`)**.
-4. To verify movement physics, click: **`Tools > REBOUND > 2. Run Movement Unit Tests`**.
+1. Open `Assets/monirath-game.unity` (or `Assets/Scenes/SampleScene.unity`).
+2. In the top Unity menu, click: **`Tools > REBOUND > Clean Scene (Delete All Arenas & Test Rooms)`**.
+3. Next, click: **`Tools > REBOUND > Build 6-Chamber Tutorial Academy (Complete)`**.
+4. Press **Play (`Ctrl + P`)**.
 
 ---
 
-## Quick Navigation
+## Controls Summary
 
-* **Master Player System & Gameplay Manual**: [`docs/PLAYER_SYSTEM_MANUAL.md`](docs/PLAYER_SYSTEM_MANUAL.md)
-  * Complete plain-English manual explaining every script, calculation, control, and mechanic.
-* **Master Deep Architecture Specification**: [`docs/PLAYER_DEEP_ARCHITECTURE_SPECIFICATION.md`](docs/PLAYER_DEEP_ARCHITECTURE_SPECIFICATION.md)
-  * Exhaustive reference with mathematical formulas, state machine tables, and technical defense Q&A.
-* **Audit & Redliner Upgrade Roadmap**: [`docs/REBOUND_REDLINE_AUDIT_AND_ROADMAP.md`](docs/REBOUND_REDLINE_AUDIT_AND_ROADMAP.md)
-  * Audit findings, reconciled parameters, and test verification suite.
-* **Team Development Handbook & Code Contracts**: [`docs/TEAM_DEVELOPMENT_HANDBOOK.md`](docs/TEAM_DEVELOPMENT_HANDBOOK.md)
-  * Read this if you are building Enemy AI or Level Puzzles (`IKineticTarget.cs` and `TargetButton.cs`).
-
----
-
-## Core Mechanics Summary
-
-| Action | Control | Physical Effect |
+| Action | Key / Input | What It Does |
 |---|---|---|
-| **Walk & Crouch** | `WASD` / `C` | Walk at 6.5 m/s; pressing `C` while walking crouch-walks at 3.5 m/s without accidental slides. |
-| **Power Slide & Carving** | `Shift + W + C` | Sprint + Crouch slides at 14–22 m/s; WASD allows full 360-degree slide steering and carving! Downhill slopes accelerate up to 35 m/s. |
-| **Hold-Space Auto-Hop** | `Space (Hold)` | Automatically chains frame-perfect bunny hops upon touching the ground; adds +2.5 m/s boost per hop! |
-| **Air-Strafing** | `A / D + Mouse` | Turning camera into an air-strafe adds +1.5 to +3.5 m/s speed per turn up to 35 m/s soft cap. |
-| **Ledge Mantling** | `W into ledge` | Touching a wall or platform edge at chest height automatically climbs you up onto the top surface. |
-| **Push (Wind Cannon)** | `Left Mouse Button` | Blasts objects away within 12m; Rocket Jump against floors, Wall Kick against walls, Slide Boost (+10 m/s) during slide. |
-| **Pull (Grapple Hook)** | `Right Mouse Button (Hold)` | 75m elastic grapple hook to swing around towers or slingshot into slides (+6.5 m/s fling boost on release). |
-| **Crate Snatch & Shield** | `RMB on Crate` | 45m range with magnetic aim; Light crates snap at 32 m/s, Medium at 24 m/s, Heavy drag at 12 m/s. Acts as riot shield. |
-| **Crate Cannon** | `LMB while holding Crate` | Launches carried block at 35 m/s projectile speed to smash doors, hit buttons, and crush enemies. |
-| **Infinite Slow Motion** | `Q` or `F` | World slows to 25% speed; zero cooldown and infinite duration, toggle on or off anytime. |
-| **Target Buttons** | *Shoot or Slide* | Glowing wall/tower switches that turn Neon Green, chime, and reward Focus when hit by crates or slide rams. |
-| **Telemetry Overlay** | `F3 Key` | Real-time diagnostic on-screen overlay showing velocity vectors, ground normal, slope angle, and peak speeds. |
-| **Instant Safe Reset** | `R Key` | Instantly respawns on top of the safe elevated arena platform. |
+| **Walk** | `WASD` | Normal ground movement at `3.2 m/s`. |
+| **Run / Sprint** | `Left Shift + WASD` | Sprint forward at `5.4 m/s`. |
+| **Crouch** | `Ctrl` or `C` | Crouch-walk under low obstacles at `2.0 m/s`. |
+| **Power Slide** | `Left Shift + Ctrl` | Slide at `4.8 m/s` with full 360-degree steering and carving. |
+| **Dash** | `Q` | Instant burst of directional speed. Resets when touching the ground or walls. |
+| **Jump & Hop** | `Space` | Jump up with a `1.6m` arc. Hold Space to bunny-hop continuously. |
+| **Wall-Run** | Jump along a wall | Run horizontally along walls with slow, floaty gravity. |
+| **Zig-Zag Wall-Jump** | `Space` while wall-running | Kick off the wall with `10.5 m/s` outward push and `8.0 m/s` lift. Steer with `A` or `D`. |
+| **Wall-Hang** | Hold `W` into a wall in mid-air | Cling to the wall for up to 1.5 seconds. |
+| **Wall-Climb Vault** | `Space` while wall-hanging | Hoist yourself `+9.5m` up and forward over the ledge. |
+| **Push (Air Cannon)** | `Left Mouse Button (LMB)` | Blasts objects away within 12m. Rocket jump off floors and walls. |
+| **Deflect Bullets** | `LMB` when a bullet approaches | Deflects enemy laser bolts back at enemies with double speed (`35 m/s`) and double damage. |
+| **Pull & Carry** | `Hold Right Mouse Button (RMB)` | Pulls objects into your bottom-right pocket so your view stays clear. Bullets cannot be pulled. |
+| **Throw / Launch Prop** | `LMB while holding prop` | Fires the held object at `32 m/s` as a heavy kinetic projectile. |
+| **Slow Motion (Focus)** | `Z` | Slows the world to 25% speed. The screen stays clear with an electric edge border. |
 
 ---
 
-## The 4 Enemy Archetypes
+## Egyptian Props & Mass Glow
 
-1. **Small Fast Swarmer**: 4-8 pack rushers destroyed by high-speed slide ramming (bowling strike).
-2. **Heavy Hulk Leaper**: High leap slam with ground shockwave; vulnerable back core exposed during 2.5s stun.
-3. **Slow Deadly Sniper**: 1.5s red laser tracking with lethal sonic round; deflectable back at sniper with Slow-Mo Push.
-4. **Fast Rapid-Laser Sentry**: 3-second sweeping plasma spray; physically absorbed by holding a crate as a riot shield.
+Throwable objects in the game have a soft ambient glow around them so you can see their mass from across the room:
+
+- **Light Props (Scarab Urns)**: Mint Green aura (`1.5 kg`). Quick to pull and launch.
+- **Medium Props (Sandstone Boulders & Relics)**: Amber Gold aura (`12 kg`). Great for smashing doors and barricades.
+- **Heavy Props (Obsidian Slabs)**: Molten Ruby aura (`45 kg`). Acts as a heavy shield against enemy fire.
 
 ---
 
-## Unity Project Guidelines
+## Enemies
 
-* **Unity Version**: Unity 6000.3.8f1 (or agreed team LTS).
-* **Physics Layers**:
-  * Layer 8: `Player`
-  * Layer 9: `Environment`
-  * Layer 10: `Interactables`
-  * Layer 11: `Hazards`
-  * Layer 12: `Enemies`
-  * Layer 13: `Projectiles`
-  * Layer 14: `GrappleAnchors`
-* **Version Control**: Do not commit `Library/`, `Temp/`, or `Logs/` folders (handled by `.gitignore`).
+- **Swarmer (20 HP)**: Fast flying attacker. When you grab and throw a Swarmer, it has a 65% chance to explode into a high-yield plasma blast (`6.5m` blast radius, 75 damage). Struck by props, it flies backward like a ragdoll.
+- **Rapid Laser Sentry (30 HP)**: Fires 3-round bursts of red laser bolts. Deflect the bolts back with Push (`LMB`) or block them with a prop.
+- **Hulk Leaper (90 HP)**: Heavy armored brute. Slams the ground with a shockwave that shakes the screen if you are within 20m. Throwing blocks at him deals damage, flashes red, shows damage numbers, and staggers him backward.
+- **Sniper Enemy (10 HP)**: Tracks you with a red laser sight and fires a lethal bolt. Deflect his bolt back at him to defeat him instantly.
+
+---
+
+## 6-Chamber Egyptian Academy Tutorial
+
+The game features a linear 180-meter training academy:
+- **Chamber 1**: Movement basics (Walking, Sprinting, Crouching, Sliding under gates).
+- **Chamber 2**: Wall-running across open chasms.
+- **Chamber 3**: Wall-hanging on cliffs and using Wall-Climb to scale terraces.
+- **Chamber 4**: Kinetic props (pulling urns and boulders into your pocket, smashing breakable barricades and Ankh target buttons).
+- **Chamber 5**: Slow Motion and Bullet Deflection against a laser sentry.
+- **Chamber 6**: The Combat Sanctum (defeating Swarmers, Sentries, and the Hulk Leaper).
+
+---
+
+## Documentation Index
+
+- **Gameplay & Player Manual**: [`docs/PLAYER_SYSTEM_MANUAL.md`](docs/PLAYER_SYSTEM_MANUAL.md)
+- **Enemy Combat Guide**: [`docs/REBOUND_ENEMY_GAMEPLAY_GUIDE.md`](docs/REBOUND_ENEMY_GAMEPLAY_GUIDE.md)
+- **Interactive Web Documentation**: [`docs/archdoc/index.html`](docs/archdoc/index.html) (open in any web browser)
+- **Single-File Offline Export**: [`docs/rebound-docs.html`](docs/rebound-docs.html)

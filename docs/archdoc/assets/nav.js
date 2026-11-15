@@ -14,7 +14,7 @@ window.DOCS_NAV = [
   {
     group: 'Design & Structure',
     items: [
-      { title: 'Level Progression & Rooms', path: 'level-design.html' },
+      { title: 'Level Progression & Egyptian Academy', path: 'level-design.html' },
       { title: 'Unity Project Structure', path: 'project-structure.html' }
     ]
   },

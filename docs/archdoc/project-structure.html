@@ -49,29 +49,25 @@
             <pre class="tree" style="margin: 0; padding: 12px; font-size: 0.88rem; line-height: 1.6;"><code><span class="t-dir">Assets/</span>
 ├── <span class="t-dir">_Project/</span>                          <span class="sub">// Team-created game content ONLY</span>
 │   ├── <span class="t-dir">Art/</span>                           <span class="sub">// Materials, textures, shaders, VFX</span>
-│   │   ├── <span class="t-dir">Materials/</span>                 <span class="sub">// MAT_Interactable_Glow, MAT_FloorTile</span>
-│   │   ├── <span class="t-dir">Models/</span>                    <span class="sub">// Modular wall sections, door meshes</span>
-│   │   └── <span class="t-dir">VFX/</span>                       <span class="sub">// Pull beam LineRenderer, push blast particles</span>
+│   │   ├── <span class="t-dir">Materials/</span>                 <span class="sub">// MAT_Sandstone, MAT_Brass, MAT_Obsidian, MAT_Lapis</span>
+│   │   └── <span class="t-dir">VFX/</span>                       <span class="sub">// Prop glow auras (Jade, Amber, Ruby), parry cone VFX</span>
 │   ├── <span class="t-dir">Audio/</span>                         <span class="sub">// Sound clips and audio mixer assets</span>
-│   │   ├── <span class="t-dir">SFX/</span>                       <span class="sub">// SND_Push_Blast, SND_Pull_Hum, SND_Reset</span>
-│   │   └── <span class="t-dir">Music/</span>                     <span class="sub">// Ambient background tracks</span>
+│   │   └── <span class="t-dir">SFX/</span>                       <span class="sub">// Air blast, pull hum, parry deflection chime, impacts</span>
 │   ├── <span class="t-dir">Prefabs/</span>                       <span class="sub">// Reusable GameObject blueprints</span>
-│   │   ├── <span class="t-dir">Player/</span>                    <span class="sub">// PF_PlayerRoot (Rigidbody + Camera)</span>
-│   │   ├── <span class="t-dir">Interactables/</span>             <span class="sub">// PF_Crate_Light, PF_Crate_Medium, PF_Block_Heavy</span>
-│   │   ├── <span class="t-dir">Environment/</span>               <span class="sub">// PF_FloorTile_4x4, PF_WallSection, PF_Ramp</span>
-│   │   └── <span class="t-dir">System/</span>                    <span class="sub">// PF_ExitDoor, PF_PressurePlate, PF_HazardPit</span>
-│   ├── <span class="t-dir">Scenes/</span>                        <span class="sub">// Game levels and testing sandboxes</span>
-│   │   ├── <span class="t-dir">00_Boot/</span>                   <span class="sub">// MainMenu.unity</span>
-│   │   ├── <span class="t-dir">01_Prototype/</span>              <span class="sub">// PrototypeLab.unity (Physics testing playground)</span>
-│   │   └── <span class="t-dir">02_Levels/</span>                 <span class="sub">// Level_01.unity through Level_07.unity</span>
-│   ├── <span class="t-dir">Scripts/</span>                       <span class="sub">// C# modular subsystem code</span>
-│   │   ├── <span class="t-dir">Player/</span>                    <span class="sub">// PlayerMovement.cs, MouseLook.cs</span>
-│   │   ├── <span class="t-dir">Abilities/</span>                 <span class="sub">// PullAbility.cs, PushAbility.cs, SlowMotionAbility.cs</span>
-│   │   ├── <span class="t-dir">Physics/</span>                   <span class="sub">// AbilityTarget.cs (Interactable tag)</span>
-│   │   ├── <span class="t-dir">Level/</span>                     <span class="sub">// LevelExit.cs, PressurePlate.cs, DoorController.cs</span>
-│   │   └── <span class="t-dir">UI/</span>                        <span class="sub">// AbilityHUD.cs, ReticleFeedback.cs</span>
-│   └── <span class="t-dir">Settings/</span>                      <span class="sub">// Unity Input Actions, URP assets, Physics settings</span>
-└── <span class="t-dir">ThirdParty/</span>                        <span class="sub">// Downloaded packages (Kenney, Quaternius) - DO NOT MODIFY</span></code></pre>
+│   │   ├── <span class="t-dir">Player/</span>                    <span class="sub">// PlayerRig (Rigidbody + CameraPivot + Hands)</span>
+│   │   ├── <span class="t-dir">Props/</span>                     <span class="sub">// Scarab Urn (1.5kg), Sandstone Boulder (12kg), Obsidian Slab (45kg)</span>
+│   │   ├── <span class="t-dir">Enemies/</span>                   <span class="sub">// Swarmer, HulkLeaper, Sentry, Sniper</span>
+│   │   └── <span class="t-dir">Environment/</span>               <span class="sub">// Archways, slide gates, wall-run panels, Ankh switches</span>
+│   ├── <span class="t-dir">Scenes/</span>                        <span class="sub">// Egyptian Academy and sandbox testing</span>
+│   │   └── <span class="t-dir">EgyptianAcademy.unity</span>      <span class="sub">// 180m linear 6-chamber tutorial environment</span>
+│   └── <span class="t-dir">Scripts/</span>                       <span class="sub">// C# modular subsystem code</span>
+│       ├── <span class="t-dir">Player/</span>                    <span class="sub">// PlayerMovement.cs, MouseLook.cs, PlayerAbilityInput.cs, PlayerHealth.cs</span>
+│       ├── <span class="t-dir">Abilities/</span>                 <span class="sub">// PushAbility.cs, PullAbility.cs, SlowMotionAbility.cs</span>
+│       ├── <span class="t-dir">Enemies/</span>                   <span class="sub">// SwarmerEnemy.cs, HulkLeaperEnemy.cs, SentryEnemy.cs, SniperEnemy.cs</span>
+│       ├── <span class="t-dir">Environment/</span>               <span class="sub">// InteractableProp.cs, ChamberCheckpoint.cs, AnkhTargetSwitch.cs</span>
+│       ├── <span class="t-dir">UI/</span>                        <span class="sub">// ReticleFeedback.cs, FloatingHealthBar.cs, DamageNumberUI.cs</span>
+│       └── <span class="t-dir">Editor/</span>                    <span class="sub Widther">EgyptianTutorialBuilder.cs, PlayerRigBuilder.cs</span>
+└── <span class="t-dir">ThirdParty/</span>                        <span class="sub">// External packages (DOTween, TextMeshPro) - DO NOT MODIFY</span></code></pre>
           </div>
         </section>
 
@@ -96,62 +92,62 @@
                 <tr>
                   <td><code>PlayerMovement.cs</code></td>
                   <td><span class="tag ok">Person 1</span></td>
-                  <td>Player Core</td>
-                  <td>Controls WASD movement, jumping, ground checks, and applies physics recoil impulses to the Rigidbody.</td>
+                  <td>Locomotion</td>
+                  <td>Controls WASD walking (3.2 m/s), sprint (5.4 m/s), sliding (4.8 m/s), 1.5s wall-hang, +9.5m climb vault, and zig-zag wall-jumping.</td>
                 </tr>
                 <tr>
                   <td><code>MouseLook.cs</code></td>
                   <td><span class="tag ok">Person 1</span></td>
-                  <td>Camera</td>
-                  <td>Rotates the body horizontally (Yaw) and the camera pivot vertically (Pitch clamped -85° to +85°).</td>
-                </tr>
-                <tr>
-                  <td><code>PullAbility.cs</code></td>
-                  <td><span class="tag high">Person 2</span></td>
-                  <td>Abilities</td>
-                  <td>Casts ray from origin, targets valid objects, and applies damped spring force towards the holding point (2.5m).</td>
+                  <td>Sensory Camera</td>
+                  <td>Controls yaw/pitch look, natural head-bob, landing compression dip, and speed FOV scaling.</td>
                 </tr>
                 <tr>
                   <td><code>PushAbility.cs</code></td>
                   <td><span class="tag high">Person 2</span></td>
                   <td>Abilities</td>
-                  <td>Fires impulse blast at target (+12 units) and immediately triggers player recoil (-5 units) even in empty air.</td>
+                  <td>Kinetic air cannon. Gives recoil kick, launches carried props at 32 m/s, and deflects plasma bolts within 3.8m parry cone back at attacker (+20 Focus).</td>
                 </tr>
                 <tr>
-                  <td><code>AbilityTarget.cs</code></td>
+                  <td><code>PullAbility.cs</code></td>
                   <td><span class="tag high">Person 2</span></td>
-                  <td>Physics Objects</td>
-                  <td>Attached to every movable crate. Defines mass multipliers, whether it can be pulled/pushed, and manages hover glow.</td>
-                </tr>
-                <tr>
-                  <td><code>PressurePlate.cs</code></td>
-                  <td><span class="tag med">Person 3</span></td>
-                  <td>Level Mechanics</td>
-                  <td>Weighted floor sensor. Detects crate overlaps and invokes UnityEvent to open linked doors.</td>
-                </tr>
-                <tr>
-                  <td><code>LevelExit.cs</code></td>
-                  <td><span class="tag med">Person 3</span></td>
-                  <td>Level Progression</td>
-                  <td>Exit door sensor volume. Notifies GameFlow to load the next room when the player steps through.</td>
+                  <td>Abilities</td>
+                  <td>18m tractor beam. Snaps Egyptian props into the bottom-right carry pocket (0.42m, -0.32m, 1.35m) so the screen stays clear. (No grapple ropes).</td>
                 </tr>
                 <tr>
                   <td><code>SlowMotionAbility.cs</code></td>
-                  <td><span class="tag low">Person 4</span></td>
-                  <td>Time & Systems</td>
-                  <td>Manages the 4-second energy meter, sets <code>Time.timeScale = 0.25f</code>, and syncs <code>Time.fixedDeltaTime = 0.005f</code>.</td>
+                  <td><span class="tag high">Person 2</span></td>
+                  <td>Abilities</td>
+                  <td>Z Key trigger. Slows world physics to 25% time scale while player speed and aim stay 100% full speed. Crisp center view with 12px edge accents.</td>
                 </tr>
                 <tr>
-                  <td><code>AbilityHUD.cs</code></td>
-                  <td><span class="tag low">Person 4</span></td>
-                  <td>UI & Presentation</td>
-                  <td>Renders crosshair reticle states, slow-motion stamina bar, and push cooldown ring using unscaled time.</td>
+                  <td><code>InteractableProp.cs</code></td>
+                  <td><span class="tag med">Person 3</span></td>
+                  <td>Physics Props</td>
+                  <td>Controls prop physics and ambient aura lights: Scarab Urns (1.5kg, jade mint), Sandstone Boulders (12kg, amber gold), Obsidian Slabs (45kg, ruby red).</td>
                 </tr>
                 <tr>
-                  <td><code>GameFlow.cs</code></td>
+                  <td><code>EgyptianTutorialBuilder.cs</code></td>
+                  <td><span class="tag med">Person 3</span></td>
+                  <td>Level Builder</td>
+                  <td>Automated procedural generation of the 180m, 6-Chamber Academy, Ankh targets, checkpoint triggers, and void kill plane.</td>
+                </tr>
+                <tr>
+                  <td><code>SwarmerEnemy.cs</code></td>
                   <td><span class="tag low">Person 4</span></td>
-                  <td>Game State</td>
-                  <td>Coordinates room loading, pause screens, player reset on pit falls, and victory completion screen.</td>
+                  <td>Enemy AI</td>
+                  <td>Swarm crawler packs. Flung flying when struck by thrown props; 65% chance of exploding into electric shockwave on death.</td>
+                </tr>
+                <tr>
+                  <td><code>HulkLeaperEnemy.cs</code></td>
+                  <td><span class="tag low">Person 4</span></td>
+                  <td>Enemy AI</td>
+                  <td>Heavy brute AI. High leap slam with &lt;20m camera shake. Takes red hit-flash, damage numbers, and physical stagger when hit by heavy props.</td>
+                </tr>
+                <tr>
+                  <td><code>SentryEnemy.cs</code> &amp; <code>SniperEnemy.cs</code></td>
+                  <td><span class="tag low">Person 4</span></td>
+                  <td>Enemy AI</td>
+                  <td>Ranged turrets and snipers with telegraph lasers. Their plasma projectiles can be parried with Push back at them.</td>
                 </tr>
               </tbody>
             </table>

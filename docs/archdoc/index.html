@@ -124,43 +124,43 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Left Click: Push (Wind Blast)</strong></td>
-                    <td><code>Click Left Mouse Button (LMB)</code></td>
+                    <td><strong>Left Click: Push & Deflect</strong></td>
+                    <td><code>Left Mouse Button (LMB)</code></td>
                     <td>
-                      Shoots a compressed air blast that shoves objects forward, and kicks the player backward with 3D rocket recoil.
+                      Shoots a kinetic air cannon blast that kicks the player backward with rocket recoil, launches carried props at 32 m/s, and deflects enemy plasma bolts within 3.8m.
                     </td>
                     <td>
-                      Pushes blocks onto buttons, launches the player across pits, and deflects incoming enemy rockets.
+                      Pushes Egyptian props onto switches, launches the player across chasms, deflects sniper/sentry bullets back at enemies (+20 Focus), and breaks barricades.
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Right Click: Pull (Vacuum Vortex)</strong></td>
+                    <td><strong>Right Click: Pull & Carry</strong></td>
                     <td><code>Hold Right Mouse Button (RMB)</code></td>
                     <td>
-                      Creates a suction vortex that reels in crates or projectiles, hovering them 2.5 meters in front of your camera.
+                      Creates a focused kinetic tractor beam (18m range) that reels in props and seats them stably in the bottom-right carry pocket (0.42m, -0.32m, 1.35m).
                     </td>
                     <td>
-                      Retrieves distant blocks, catches enemy grenades, and carries blocks to throw or stack.
+                      Picks up Scarab Urns, Sandstone Boulders, and Obsidian Slabs without blocking your forward crosshair view.
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Both Hands: Crate Cannon</strong></td>
+                    <td><strong>Both Hands: Kinetic Prop Cannon</strong></td>
                     <td><code>LMB while holding RMB</code></td>
                     <td>
-                      Instantly releases the vacuum lock and fires the carried block forward as a high-speed projectile.
+                      Instantly releases the tractor lock and fires the carried prop forward at 32 m/s as a heavy kinetic missile.
                     </td>
                     <td>
-                      Breaks barricades, crushes heavy armored enemies, and solves long-distance throwing puzzles.
+                      Activates Ankh target switches, staggers Hulk Leapers, crushes Swarmer packs with physical knockback, and breaks stone walls.
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Eyes: Slow Motion</strong></td>
-                    <td><code>Hold Left Shift</code></td>
+                    <td><strong>Key Z: Slow Motion Focus</strong></td>
+                    <td><code>Press or Hold Z Key</code></td>
                     <td>
-                      Slows down the world to 25% speed while keeping your run, look, and aim at normal full speed.
+                      Slows down world physics to 25% speed while keeping your run, look, aim, and reactions at 100% full speed. Center screen stays crisp with subtle 12px edge borders.
                     </td>
                     <td>
-                      Gives extra time to time mid-air rocket jumps, catch enemy rockets, and dodge moving hazards.
+                      Gives reaction time to line up mid-air jumps, deflect incoming sniper bolts, and dodge Hulk ground shockwaves.
                     </td>
                   </tr>
                 </tbody>
@@ -227,37 +227,37 @@
                   <!-- Card 2: PULL & CARRY (Right Click) -->
                   <rect class="card-bg" x="332" y="20" width="295" height="310" rx="10"/>
                   <rect class="card-focal" x="347" y="35" width="265" height="36" rx="6"/>
-                  <text class="title-lg" x="480" y="58" text-anchor="middle">2. PULL (Right Click - RMB)</text>
+                  <text class="title-lg" x="480" y="58" text-anchor="middle">2. PULL & CARRY (Right Click - RMB)</text>
 
                   <!-- Visual Graphic -->
                   <circle cx="395" cy="135" r="20" class="player"/>
                   <text class="player-t" x="395" y="140" text-anchor="middle">YOU</text>
 
-                  <!-- Floating hold spot -->
-                  <circle cx="485" cy="135" r="16" fill="rgba(47, 95, 208, 0.15)" stroke="var(--accent)" stroke-dasharray="3 3"/>
-                  <text class="text-sub" x="485" y="110" text-anchor="middle">Hold Point (2.5m)</text>
+                  <!-- Floating carry pocket (bottom right offset) -->
+                  <circle cx="485" cy="148" r="16" fill="rgba(47, 95, 208, 0.15)" stroke="var(--accent)" stroke-dasharray="3 3"/>
+                  <text class="text-sub" x="485" y="118" text-anchor="middle">Carry Pocket (Clear View)</text>
 
                   <!-- Crate moving in -->
-                  <rect x="545" y="117" width="36" height="36" rx="4" class="crate"/>
-                  <text class="crate-t" x="563" y="139" text-anchor="middle">BOX</text>
+                  <rect x="545" y="125" width="36" height="36" rx="4" class="crate"/>
+                  <text class="crate-t" x="563" y="147" text-anchor="middle">PROP</text>
 
                   <!-- Pull beam line -->
-                  <path d="M 545 135 L 505 135" class="ln acc" stroke-width="3" marker-end="url(#m-arr)"/>
+                  <path d="M 545 143 L 505 148" class="ln acc" stroke-width="3" marker-end="url(#m-arr)"/>
 
                   <!-- Friendly summary -->
                   <rect class="soft" x="347" y="180" width="265" height="85" rx="6"/>
                   <text class="text-reg" x="362" y="202">Hold Right Mouse Button</text>
-                  <text class="text-sub" x="362" y="222">Vacuum suction reels in crates smoothly.</text>
-                  <text class="text-sub" x="362" y="240">LMB fires Crate Cannon! Release drops.</text>
-                  <text class="text-mono" x="362" y="256">Reach: 12m · Snaps if LOS broken</text>
+                  <text class="text-sub" x="362" y="222">Reels props into bottom-right pocket.</text>
+                  <text class="text-sub" x="362" y="240">LMB launches prop at 32 m/s! No grapple.</text>
+                  <text class="text-mono" x="362" y="256">Reach: 18m · Unblocks forward crosshair</text>
 
                   <rect class="step-pill" x="347" y="278" width="265" height="28" rx="5"/>
-                  <text class="step-pill-t" x="480" y="296" text-anchor="middle">VACUUM VORTEX &amp; CRATE CARRY</text>
+                  <text class="step-pill-t" x="480" y="296" text-anchor="middle">KINETIC POCKET &amp; PROP CANNON</text>
 
-                  <!-- Card 3: SLOW MOTION (Eyes) -->
+                  <!-- Card 3: SLOW MOTION (Z Key) -->
                   <rect class="card-bg" x="640" y="20" width="295" height="310" rx="10"/>
                   <rect class="card-focal" x="655" y="35" width="265" height="36" rx="6" style="fill:rgba(61, 122, 82, 0.15); stroke:var(--ok);"/>
-                  <text class="title-lg" x="787" y="58" text-anchor="middle" style="fill:var(--ok)">3. SLOW MOTION (Left Shift)</text>
+                  <text class="title-lg" x="787" y="58" text-anchor="middle" style="fill:var(--ok)">3. SLOW MOTION (Z Key)</text>
 
                   <!-- Visual Graphic: Reticle & Clock -->
                   <circle cx="787" cy="120" r="28" stroke="var(--ok)" stroke-width="2" fill="rgba(61, 122, 82, 0.1)"/>
@@ -268,16 +268,16 @@
 
                   <!-- Friendly summary -->
                   <rect class="soft" x="655" y="180" width="265" height="85" rx="6"/>
-                  <text class="text-reg" x="670" y="202">Hold Left Shift Key</text>
-                  <text class="text-sub" x="670" y="222">Slows world physics &amp; grants floaty air-time.</text>
-                  <text class="text-sub" x="670" y="240">YOUR movement &amp; aiming stay at full speed.</text>
-                  <text class="text-mono" x="670" y="256" style="fill:var(--ok)">Meter: 4s capacity · 6s recharge</text>
+                  <text class="text-reg" x="670" y="202">Press or Hold Z Key</text>
+                  <text class="text-sub" x="670" y="222">Slows world physics while you move at full speed.</text>
+                  <text class="text-sub" x="670" y="240">Crisp view with subtle edge accents.</text>
+                  <text class="text-mono" x="670" y="256" style="fill:var(--ok)">Parry bullets with LMB · Refuels +20 Focus</text>
 
                   <rect class="step-pill" x="655" y="278" width="265" height="28" rx="5" style="fill:var(--ok);"/>
-                  <text class="step-pill-t" x="787" y="296" text-anchor="middle">TIME JUMPS, DEFLECT ROCKETS &amp; DODGE</text>
+                  <text class="step-pill-t" x="787" y="296" text-anchor="middle">TIME JUMPS, DEFLECT BULLETS &amp; DODGE</text>
                 </svg>
               </div>
-              <figcaption>How the three abilities work: Left Click blasts and rocket-jumps, Right Click vacuum-pulls and carries objects, and Slow Motion buys you reaction time.</figcaption>
+              <figcaption>How the core abilities work: Left Click blasts, rocket-jumps, and deflects enemy bullets; Right Click pulls and pockets props; Z Key activates Slow Motion focus.</figcaption>
             </figure>
           </section>
 
@@ -463,42 +463,42 @@
                   </tr>
                   <tr>
                     <td><code>ADR-06</code></td>
-                    <td><strong>Momentum Sliding &amp; Recoil-Convert Boost</strong></td>
+                    <td><strong>Calibrated Locomotion &amp; Parkour State Machine</strong></td>
                     <td>
-                      To capture fast Redliner-style flow, crouching while moving triggers a momentum slide that accelerates down slopes and preserves horizontal speed through bunny-hops. Firing Push while sliding redirects explosive recoil into forward slide velocity rather than backward kick.
+                      Walking is set to 3.2 m/s, sprint to 5.4 m/s (Left Shift), and slide to 4.8 m/s (Ctrl) to give deliberate control. Parkour integrates a 1.5s wall-hang cling with vertical vaulting (+9.5m on Space) and directional zig-zag wall-jumping (10.5 m/s normal push + 8.0 m/s lift) with a clean 9.0 m/s maximum speed cap.
                     </td>
                     <td>
-                      High velocities (up to 35 m/s) risk collision tunneling. Mitigation: ContinuousDynamic CCD on player and props, thick level colliders, overhead raycast lockouts, and gentle aerodynamic drag above 35 m/s.
+                      Tight speed caps prevent collision tunneling through thin geometry and keep the player within human reaction limits during platforming.
                     </td>
                   </tr>
                   <tr>
                     <td><code>ADR-07</code></td>
-                    <td><strong>Dual-Mode Pull (Grapple Slingshot vs Prop Snatch)</strong></td>
+                    <td><strong>Focused Kinetic Pull (Object Manipulation vs Grapple Removal)</strong></td>
                     <td>
-                      Instead of giving the player conventional guns, Pull serves as both high-speed traversal (grappling walls/anchors with slingshot release) and weaponized object snatching (grabbing outline-highlighted crates and light enemies to fire as kinetic projectiles).
+                      Grapple winch traversal was removed because pulling on walls bypassed parkour wall-running, ledge climbing, and puzzle geometry. Pull is strictly focused on picking up Egyptian props (Urns, Boulders, Slabs) into a dedicated bottom-right carry pocket (0.42m, -0.32m, 1.35m) so the forward screen view is unobstructed.
                     </td>
                     <td>
-                      Potential targeting confusion when an object sits in front of a wall. Mitigation: Target-under-crosshair priority hierarchy and elastic retraction in narrow vents to prevent prop snagging.
+                      Players cannot fly across maps on ropes, but gain dependable kinetic weaponry and clean visibility for combat.
                     </td>
                   </tr>
                   <tr>
                     <td><code>ADR-08</code></td>
-                    <td><strong>Momentum-Siphon Focus &amp; Telegraphed Combat</strong></td>
+                    <td><strong>Chrono-Dilation &amp; Bullet Deflection Parry</strong></td>
                     <td>
-                      Slow-motion cannot be spammed passively; it siphons energy exclusively from high-speed movement and target impacts. Enemies challenge fast players through 1.0s predictive telegraph lasers and tripwires rather than unfair hitscan.
+                      Pressing Z activates Slow Motion, setting physics time scale to 0.25 while keeping player aim and movement unscaled. Pushing (`LMB`) within a 3.8m parry cone deflects enemy plasma bolts back toward the attacker for 2x damage and restores +20 Focus energy.
                     </td>
                     <td>
-                      Turret AI requires velocity-lead prediction algorithms and telegraph line renderers, balancing skill-expression at top speeds.
+                      Requires precise collision sweeps in unscaled time to detect fast incoming projectiles without missing frames.
                     </td>
                   </tr>
                   <tr>
                     <td><code>ADR-09</code></td>
-                    <td><strong>4-Tier Enemy System &amp; Player Spider Sense</strong></td>
+                    <td><strong>4-Tier Enemy System &amp; Physical Reaction Feedback</strong></td>
                     <td>
-                      To balance high player mobility and gunless combat, enemies are built around 4 distinct mechanical profiles: Swarm Rushers (high-speed bowling), Hulk Leapers (leap slam + back weak-point), Snipers (1.5s lock + bullet deflection), and Rapid Sentries (suppression vs crate riot shield). A directional Spider Sense flashes on HUD right before lethal attacks, offering an instant Slow-Mo reflex window.
+                      Enemies react physically to kinetic combat: Swarmers are flung across rooms and have a 65% chance of exploding on death; Hulk Leapers shake the camera during ground slams within 20m and stumble when struck by heavy props; Snipers track with telegraph lasers; and Sentries fire deflectable plasma bursts.
                     </td>
                     <td>
-                      Requires synchronized threat tracking between enemy AI scripts and the player's HUD, plus clear visual telegraphs to prevent feeling unfair.
+                      Requires physical impulse and hit-flash integration on all enemy rigidbodies instead of static health reductions.
                     </td>
                   </tr>
                 </tbody>
@@ -520,42 +520,34 @@
                 <h3>Strictly In Scope (Must Build)</h3>
                 <ul>
                   <li>
-                    First-person movement (WASD, mouse look, jump, air control).
+                    First-person parkour movement (WASD walk 3.2 m/s, Left Shift sprint 5.4 m/s, Ctrl slide 4.8 m/s, Q dash).
                   </li>
                   <li>
-                    High-speed momentum slide, slope acceleration, bunny-hop speed preservation, and recoil-convert boost.
+                    Wall-running, 1.5s wall-hang cling, Space wall-climb vault (+9.5m), and zig-zag wall-jumping.
                   </li>
                   <li>
-                    Dual-mode Pull: Wall/anchor grapple slingshot AND illuminated object/light enemy snatching.
+                    Kinetic Push (`LMB`): Rocket recoil, 32 m/s prop launch, and 3.8m bullet deflection parry.
                   </li>
                   <li>
-                    Crate Cannon kinetic projectile launch (smashing barricades, switches, and armor-crushing enemies).
+                    Kinetic Pull (`RMB`): 18m tractor beam that seats props in the bottom-right carry pocket without blocking view.
                   </li>
                   <li>
-                    Momentum-siphon slow-motion meter with unscaled camera aim and floaty air control.
+                    Chrono-Dilation Slow Motion (`Z` Key): 25% physics time scale, crisp screen with subtle 12px edge border accents.
                   </li>
                   <li>
-                    Dynamic Speed Camera Controller (FOV 85-105, camera banking into turns, wind audio crescendo).
+                    Egyptian prop hierarchy with ambient auras: Scarab Jade Urns (1.5kg, mint), Sandstone Boulders (12kg, amber), Obsidian Slabs (45kg, ruby).
                   </li>
                   <li>
-                    Enemy AI integration via <code>IKineticTarget</code>: Swarm Crawlers (bowling ram), Hulk Leapers (shockwave slam + back core), Snipers (1.5s lock + bullet deflect), Rapid Laser Sentries (crate riot shield), and Laser Tripwires.
+                    4 enemy archetypes: Swarmers (65% explosive overload), Hulk Leapers (ground smash proximity shake), Sentries (rapid plasma), Snipers (laser lock).
                   </li>
                   <li>
-                    Player Threat Sense ("Spider Sense") directional HUD warning arc with instant Slow-Mo reflex trigger.
+                    The 180m, 6-Chamber Egyptian Parkour & Combat Tutorial Academy with checkpoint respawns and void kill plane.
                   </li>
                   <li>
-                    Continuous Dynamic CCD, overhead clearance raycast, and 35 m/s soft speed cap.
+                    Combat HUD: Dynamic reticle feedback, player and enemy health bars, floating damage numbers, and focus meter.
                   </li>
                   <li>
-                    One dedicated Prototype Lab scene for physics, movement, and combat testing.
-                  </li>
-                  <li>A progression of 5 to 7 high-speed time-trial parkour courses with split times and medal targets.</li>
-                  <li>
-                    Basic UI: Crosshair with target highlight glow, speedrun medal timer, slow-motion meter, pause menu.
-                  </li>
-                  <li>
-                    Simple audio cues: wind blast, suction hum, slow-mo chime, impact
-                    thuds.
+                    Full audio and visual feedback: Air blast, suction hum, deflection chime, and impact thuds.
                   </li>
                 </ul>
               </div>
@@ -563,11 +555,30 @@
                 <h3>Strictly Out of Scope (Forbidden / Cut)</h3>
                 <ul>
                   <li>
-                    <strong>No Complex Gun Inventories:</strong> No ammo counters, weapon wheels, or conventional firearms (air powers only).
+                    <strong>No Grapple Traversal:</strong> No rope swinging, cable zip lines, or wall-winch traversal (parkour handles all movement).
                   </li>
                   <li>
-                    <strong>No Story Cutscenes:</strong> No character dialogue,
-                    voice actors, or scripted cinematics.
+                    <strong>No Complex Gun Inventories:</strong> No ammo counters, weapon wheels, or conventional firearms (kinetic powers and props only).
+                  </li>
+                  <li>
+                    <strong>No Story Cutscenes:</strong> No character dialogue, voice actors, or scripted cinematics.
+                  </li>
+                  <li>
+                    <strong>No Open World:</strong> No sprawling terrain, outdoor hubs, or procedural infinite levels.
+                  </li>
+                  <li>
+                    <strong>No Complex Mesh Destruction:</strong> No real-time vertex fracturing or breaking glass.
+                  </li>
+                  <li>
+                    <strong>No Inventory or Crafting:</strong> No backpacks, crafting tables, or item combining.
+                  </li>
+                  <li>
+                    <strong>No Multiplayer:</strong> Single-player offline only.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
                   </li>
                   <li>
                     <strong>No Open World:</strong> No sprawling maps, terrain

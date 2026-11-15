@@ -19,7 +19,7 @@
 | ID | Enemy | Core behavior | Player's intended counter |
 |---|---|---|---|
 | E1 | **Small Fast Swarmer** | Fast small crawler; moves along floors/walls and leaps at close range | High-speed sliding impact, Crate Cannon, and (per handbook) Vacuum Grab |
-| E2 | **Heavy Hulk Leaper** | Slow, tanky ground enemy; leaps, lands, sends ground shockwave, then exposes a weak point | Jump/grapple away from shockwave; throw a medium crate into its back weak point during stun |
+| E2 | **Heavy Hulk Leaper** | Slow, tanky ground enemy; leaps, lands, sends ground shockwave, then exposes a weak point | Jump or wall-vault away from shockwave; launch a heavy prop into its back weak point during stun |
 | E3 | **Slow Deadly Sniper** | Stationary/elevated long-range shooter; shows laser lock, then fires one powerful projectile | Break line of sight; dodge or Push-deflect the projectile |
 | E4 | **Fast Rapid-Laser Sentry** | Stationary ranged turret; fires rapid shots in a burst, then pauses | Carry a crate as a shield or flank while turret pauses |
 
@@ -429,7 +429,7 @@ Create a separate `EnemyTestScene.unity` so enemy work does not break the team s
 - [ ] Confirm Slow Motion does not break cooldowns, projectiles or leaps.
 - [ ] Connect `EnemyDefeated` callback to StageManager and locked doors.
 - [ ] Place enemy prefabs in pyramid level according to designer's plan.
-- [ ] Test all enemies with slide, jump, grapple, object carry, and crate shield.
+- [ ] Test all enemies with slide, jump, wall-climb vault, object carry, and bullet deflection.
 - [ ] Remove TestPlayer from production scene, keep EnemyTestScene for debugging.
 - [ ] Commit, open PR or merge using team's Git process.
 
@@ -461,5 +461,5 @@ Your enemy work is ready for teammate integration when:
 
 - **Function first; graphics later.** A working capsule swarmer is better than a beautifully modeled enemy that doesn't attack.
 - **Damage numbers are not final.** Build flexible Inspector settings and let the team balance during playtesting.
-- **Coordinate before changing gameplay contracts.** The handbook and earlier conversation disagree on some Pull/Grapple details; do not silently decide for another developer.
+- **Authoritative Pull & Parkour Contract:** Grapple winch traversal has been removed in favor of parkour wall-running and ledge climbing. Pull is strictly focused on picking up Egyptian props (Urns, Boulders, Slabs) into a clear carry pocket to throw as kinetic weapons.
 - **MVP before advanced features.** Especially for wall crawling, physics-heavy leaps, and projectile reflection, get the simplest working version first.
