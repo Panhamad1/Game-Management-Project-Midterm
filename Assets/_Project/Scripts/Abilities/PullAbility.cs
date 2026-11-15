@@ -17,6 +17,10 @@ public class PullAbility : MonoBehaviour
     [SerializeField] private float maxReelSpeed = 24.0f;
     [SerializeField] private float leashBreakDistance = 55.0f;
 
+    [Header("Grapple Traversal Mode")]
+    [Tooltip("If false, grapple hook traversal is disabled so Pull focuses exclusively on manipulating physics props.")]
+    [SerializeField] private bool enableGrappleTraversal = false;
+
     [Header("Grapple Slingshot Tuning (World & Anchors)")]
     [Tooltip("Maximum distance to attach a grapple hook to walls, floors, or anchors.")]
     [SerializeField] private float maxGrappleRange = 75.0f;
@@ -50,6 +54,8 @@ public class PullAbility : MonoBehaviour
 
     private Rigidbody heldRigidbody;
     private InteractableProp heldProp;
+    private Collider heldCollider;
+    private IKineticCarryTarget heldCarryTarget;
     private bool isPulling = false;
     private Vector3 initialHandLocalPos;
     private float vortexAngle = 0f;
@@ -65,6 +71,7 @@ public class PullAbility : MonoBehaviour
     public bool IsCarrying => heldRigidbody != null;
     public bool IsGrappling => isGrappling;
     public bool IsPulling => isPulling;
+    public bool EnableGrappleTraversal => enableGrappleTraversal;
     public Vector3 GrapplePoint => grapplePoint;
     public Rigidbody HeldRigidbody => heldRigidbody;
     public InteractableProp HeldProp => heldProp;
@@ -185,6 +192,11 @@ public class PullAbility : MonoBehaviour
         if (audioEffects != null) audioEffects.SetSuctionLoop(false);
     }
 
+    public void ResetState()
+    {
+        StopPull();
+    }
+
     /// <summary>
     /// Dual-mode target acquisition:
     /// Priority 1: Pick up interactive props within maxPullRange.
@@ -199,26 +211,52 @@ public class PullAbility : MonoBehaviour
         // Priority 1: Interactive Prop / Crate Snatch (within maxPullRange = 45m)
         // Primary probe: Sharp raycast
         bool propFound = Physics.Raycast(origin, direction, out RaycastHit propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
-        // Fallback probe: Generous spherecast (radius 0.85m) for effortless mid-air crate snatching
-        if (!propFound)
+        // Fallback probe: Focused forward spherecast starting 1.5m ahead of camera to prevent self-collision
+        if (!propFound && maxPullRange > 1.5f)
         {
-            propFound = Physics.SphereCast(origin, 0.85f, direction, out propHit, maxPullRange, interactableLayers, QueryTriggerInteraction.Ignore);
+            Vector3 assistOrigin = origin + direction * 1.5f;
+            propFound = Physics.SphereCast(assistOrigin, 0.35f, direction, out propHit, maxPullRange - 1.5f, interactableLayers, QueryTriggerInteraction.Ignore);
         }
 
-        if (propFound)
+        if (propFound && propHit.collider != null)
         {
-            if (playerMovement == null || playerMovement.GroundedObject != propHit.transform)
+            // Anti-box-riding: Reject pulling/holding an object the player is standing on
+            bool isStandingOnProp = playerMovement != null && playerMovement.GroundedObject != null &&
+                (playerMovement.GroundedObject == propHit.transform || playerMovement.GroundedObject.IsChildOf(propHit.transform));
+
+            if (!isStandingOnProp)
             {
+                // Bullets and projectiles can NEVER be pulled
+                if (propHit.collider.GetComponentInParent<EnemyProjectile>() != null ||
+                    propHit.collider.GetComponentInParent<IDeflectableProjectile>() != null)
+                {
+                    return;
+                }
+
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target == null || target.CanBePulled)
                 {
                     Rigidbody targetRb = propHit.collider.attachedRigidbody;
                     if (targetRb != null && !targetRb.isKinematic)
                     {
+                        IKineticCarryTarget carryTarget = target as IKineticCarryTarget;
+                        if (carryTarget != null && !carryTarget.TryBeginCarry()) return;
+
                         heldRigidbody = targetRb;
                         heldProp = propHit.collider.GetComponentInParent<InteractableProp>();
                         if (heldProp != null) heldProp.SetCarriedState(true);
+                        heldCarryTarget = carryTarget;
+                        heldRigidbody.isKinematic = true;
                         heldRigidbody.angularDamping = 6.0f;
+
+                        // Ignore collision between held prop and player to eliminate jitter / self-propulsion
+                        Collider playerCol = playerMovement != null ? playerMovement.GetComponent<Collider>() : null;
+                        if (playerCol != null && propHit.collider != null)
+                        {
+                            heldCollider = propHit.collider;
+                            Physics.IgnoreCollision(heldCollider, playerCol, true);
+                        }
+
                         isGrappling = false;
                         if (grappleCable != null) grappleCable.enabled = false;
                         return;
@@ -227,18 +265,22 @@ public class PullAbility : MonoBehaviour
             }
         }
 
-        // Priority 2: Elastic Grapple Slingshot to static geometry or anchors (Redliner style)
+        // Priority 2: Elastic Grapple Slingshot to static geometry or anchors (if enabled)
+        if (!enableGrappleTraversal) return;
+
         // Primary probe: Sharp raycast up to maxGrappleRange (75m)
         RaycastHit grappleHit;
         bool hitFound = Physics.Raycast(origin, direction, out grappleHit, maxGrappleRange, grappleLayers, QueryTriggerInteraction.Ignore);
 
-        // Fallback probe: Generous spherecast (radius 0.55m) to catch distant pillars, thin beams, edges effortlessly
-        if (!hitFound)
+        // Fallback probe: Tight spherecast (radius 0.25m) starting 2.0m ahead to catch distant pillars without hitting ground at feet
+        if (!hitFound && maxGrappleRange > 2.0f)
         {
-            hitFound = Physics.SphereCast(origin, 0.55f, direction, out grappleHit, maxGrappleRange, grappleLayers, QueryTriggerInteraction.Ignore);
+            Vector3 assistOrigin = origin + direction * 2.0f;
+            hitFound = Physics.SphereCast(assistOrigin, 0.25f, direction, out grappleHit, maxGrappleRange - 2.0f, grappleLayers, QueryTriggerInteraction.Ignore);
         }
 
-        if (hitFound)
+        // Must hit valid surface at least 4.0m away from the player (prevents hooking floor at feet or instant auto-detach)
+        if (hitFound && grappleHit.collider != null && Vector3.Distance(origin, grappleHit.point) >= 4.0f)
         {
             StartGrapple(grappleHit.point, grappleHit.normal, grappleHit.collider);
         }
@@ -246,6 +288,9 @@ public class PullAbility : MonoBehaviour
 
     private void StartGrapple(Vector3 point, Vector3 normal, Collider hookedCollider)
     {
+        Vector3 origin = playerCamera != null ? playerCamera.transform.position : transform.position;
+        if (Vector3.Distance(origin, point) < 4.0f) return;
+
         isGrappling = true;
         grapplePoint = point;
         grappleNormal = normal;
@@ -315,16 +360,27 @@ public class PullAbility : MonoBehaviour
     public bool TryLaunchHeldObject()
     {
         if (heldRigidbody == null) return false;
+        if (heldProp != null && !heldProp.CanBeLaunched) return false;
 
         Rigidbody launchedRb = heldRigidbody;
-        InteractableProp prop = heldProp;
+        IKineticCarryTarget launchedTarget = heldCarryTarget;
 
         ReleaseHeldObject();
 
-        Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-        launchedRb.linearVelocity = launchDir * launchSpeed;
+        Vector3 camPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+        Vector3 camFwd = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+        Vector3 targetPoint = camPos + camFwd * 50f;
+        Vector3 launchDir = (targetPoint - launchedRb.position).normalized;
+        Vector3 playerVel = playerMovement != null ? playerMovement.Velocity : Vector3.zero;
 
-        // Apply recoil to player
+        // Crate Cannon Velocity Inheritance: 100% of launch speed + 45% of player forward velocity
+        Vector3 launchVelocity = launchDir * launchSpeed + playerVel * 0.45f;
+        launchedRb.isKinematic = false;
+        launchedRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        launchedRb.linearVelocity = launchVelocity;
+        launchedTarget?.OnLaunched();
+
+        // Apply recoil to player through authoritative movement controller API
         if (playerMovement != null)
         {
             playerMovement.ApplyRecoil(-launchDir * 6.5f);
@@ -409,9 +465,24 @@ public class PullAbility : MonoBehaviour
 
         Vector3 camPos = playerCamera != null ? playerCamera.transform.position : transform.position;
         Vector3 camForward = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-        Vector3 hoverTarget = camPos + camForward * hoverDistance;
+        Vector3 camRight = playerCamera != null ? playerCamera.transform.right : transform.right;
+        Vector3 camUp = playerCamera != null ? playerCamera.transform.up : transform.up;
 
-        // Heavy crate ground drag rule
+        // Obstruction retraction: clamp hold distance when walls or obstacles intervene (ignoring held prop itself!)
+        float targetDistance = Mathf.Max(hoverDistance, 3.2f);
+        if (Physics.SphereCast(camPos, 0.35f, camForward, out RaycastHit obsHit, targetDistance, obstructionLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (heldCollider == null || (obsHit.collider != heldCollider && !obsHit.collider.transform.IsChildOf(heldRigidbody.transform)))
+            {
+                targetDistance = Mathf.Max(obsHit.distance - 0.3f, 2.4f);
+            }
+        }
+
+        // Ergonomic Telekinesis Hold Position:
+        // Positioned in bottom-right pocket so the object NEVER blocks the crosshair or center vision!
+        Vector3 hoverTarget = camPos + (camForward * targetDistance) + (camRight * 1.15f) - (camUp * 0.55f);
+
+        // Heavy crate ground drag rule: heavy objects cannot hover or fly; clamped to ground plane
         if (heldProp != null && heldProp.Class == WeightClass.Heavy)
         {
             hoverTarget.y = heldRigidbody.position.y;
@@ -425,15 +496,14 @@ public class PullAbility : MonoBehaviour
             return;
         }
 
-        // 2. Weight-Class Responsive Spring Reel Dynamics:
-        // Light (~1kg): rapid 32 m/s snap (instant mid-air ammo snatch)
+        // 2. Weight-Class Responsive Glide into pocket:
+        // Light (~1kg): rapid 32 m/s snap
         // Medium (~5kg): agile 24 m/s reel
-        // Heavy (~25kg): 12 m/s ground drag (heavier resistance)
+        // Heavy (~25kg): 12 m/s ground drag
         Vector3 toTarget = hoverTarget - heldRigidbody.position;
         float distance = toTarget.magnitude;
 
         float classReelSpeed = maxReelSpeed;
-        float pullAccel = 50.0f;
 
         if (heldProp != null)
         {
@@ -441,27 +511,20 @@ public class PullAbility : MonoBehaviour
             {
                 case WeightClass.Light:
                     classReelSpeed = 32.0f;
-                    pullAccel = 65.0f;
                     break;
                 case WeightClass.Medium:
                     classReelSpeed = 24.0f;
-                    pullAccel = 50.0f;
                     break;
                 case WeightClass.Heavy:
                     classReelSpeed = 12.0f;
-                    pullAccel = 25.0f;
                     break;
             }
         }
 
-        if (distance > 0.1f)
+        if (distance > 0.02f)
         {
-            float speed = Mathf.Min(distance * 12.0f, classReelSpeed);
-            heldRigidbody.linearVelocity = Vector3.MoveTowards(heldRigidbody.linearVelocity, toTarget.normalized * speed, pullAccel * Time.fixedDeltaTime);
-        }
-        else
-        {
-            heldRigidbody.linearVelocity = Vector3.zero;
+            Vector3 nextPos = Vector3.MoveTowards(heldRigidbody.position, hoverTarget, classReelSpeed * Time.fixedDeltaTime);
+            heldRigidbody.MovePosition(nextPos);
         }
 
         // 3. Auto-align rotation to face forward with player camera (Riot Shielding)
@@ -473,14 +536,39 @@ public class PullAbility : MonoBehaviour
     {
         if (heldRigidbody != null)
         {
+            heldRigidbody.isKinematic = false;
             heldRigidbody.angularDamping = 0.05f;
+            if (playerMovement != null) heldRigidbody.linearVelocity = playerMovement.Velocity;
             if (heldProp != null) heldProp.SetCarriedState(false);
+
+            // Restore collision between player and released prop
+            if (heldCollider != null && playerMovement != null)
+            {
+                Collider playerCol = playerMovement.GetComponent<Collider>();
+                if (playerCol != null)
+                {
+                    Physics.IgnoreCollision(heldCollider, playerCol, false);
+                }
+                heldCollider = null;
+            }
+
             heldRigidbody = null;
             heldProp = null;
         }
+        if (heldCarryTarget is UnityEngine.Object carryObject && carryObject != null)
+        {
+            heldCarryTarget.EndCarry();
+        }
+        heldCarryTarget = null;
 
         if (vortexRings != null) vortexRings.enabled = false;
         if (trajectoryLine != null) trajectoryLine.enabled = false;
+    }
+
+    private void OnDisable()
+    {
+        ReleaseHeldObject();
+        StopGrapple(true);
     }
 
     private void UpdateGrappleVisual()
@@ -545,12 +633,16 @@ public class PullAbility : MonoBehaviour
     {
         if (trajectoryLine == null) return;
 
-        if (heldRigidbody != null)
+        // Only draw trajectory line if holding a launchable prop (Heavy objects are ground-dragged, not launched)
+        if (heldRigidbody != null && heldProp != null && heldProp.CanBeLaunched && heldProp.Class != WeightClass.Heavy)
         {
             trajectoryLine.enabled = true;
             Vector3 startPos = heldRigidbody.position;
             Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-            Vector3 currentVel = launchDir * launchSpeed;
+            Vector3 playerVel = playerMovement != null ? playerMovement.Velocity : Vector3.zero;
+
+            // Include velocity inheritance in prediction
+            Vector3 currentVel = launchDir * launchSpeed + playerVel * 0.45f;
             Vector3 gravity = Physics.gravity;
 
             int count = trajectoryLine.positionCount;

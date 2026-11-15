@@ -14,7 +14,6 @@ using UnityEngine.UI;
 /// </summary>
 public static class PlayerRigBuilder
 {
-    [MenuItem("Tools/REBOUND/1. Setup Complete Game (Arena + Player)", false, 0)]
     public static void SetupCompleteGame()
     {
         CreateRedlinerGrappleArena();
@@ -23,8 +22,6 @@ public static class PlayerRigBuilder
         Debug.Log("REBOUND: Setup Complete! 200m Redliner Grapple Arena & Player Rig are fully generated and ready to play!");
     }
 
-    [InitializeOnLoadMethod]
-    [MenuItem("Tools/REBOUND/2. Run Movement Unit Tests", false, 1)]
     public static void RunMovementUnitTests()
     {
         Debug.Log("==================================================");
@@ -64,7 +61,6 @@ public static class PlayerRigBuilder
         Debug.Log("==================================================");
     }
 
-    [MenuItem("Tools/REBOUND/Advanced/Snap Player to Safe Spawn", false, 20)]
     public static void SnapPlayerToSafeSpawn()
     {
         GameObject playerObj = GameObject.Find("Player_Rig");
@@ -114,8 +110,6 @@ public static class PlayerRigBuilder
         return new Vector3(0f, 7.6f, -2.5f);
     }
 
-    [MenuItem("Tools/REBOUND/Advanced/Create Player Rig Only", false, 21)]
-    [MenuItem("GameObject/REBOUND/Setup Complete Player Rig", false, 10)]
     public static GameObject CreatePlayerRig()
     {
         // 1. Remove existing Player_Rig if present
@@ -252,6 +246,10 @@ public static class PlayerRigBuilder
         pullSO.FindProperty("abilityRayOrigin").objectReferenceValue = rayOrigin.transform;
         pullSO.FindProperty("handTetherOrigin").objectReferenceValue = rightHand.transform;
         pullSO.ApplyModifiedProperties();
+
+        SerializedObject teleSO = new SerializedObject(telemetry);
+        teleSO.FindProperty("showOverlay").boolValue = false;
+        teleSO.ApplyModifiedProperties();
 
         Selection.activeGameObject = root;
         Undo.RegisterCreatedObjectUndo(root, "Create Upgraded Player Rig");
@@ -422,8 +420,6 @@ public static class PlayerRigBuilder
         return img;
     }
 
-    [MenuItem("Tools/REBOUND/Advanced/Create Arena Only (200m)", false, 22)]
-    [MenuItem("GameObject/REBOUND/Create Redliner Grapple Arena (200m)", false, 10)]
     public static void CreateRedlinerGrappleArena()
     {
         GameObject existing = GameObject.Find("TestRoom");
@@ -561,8 +557,6 @@ public static class PlayerRigBuilder
         Debug.Log("REBOUND: Redliner Grapple Arena (200m x 200m x 35m) created! 36m Central Spire, 4 High Towers, Gantries, Mega Ramps & Bowling Alley!");
     }
 
-    [MenuItem("Tools/REBOUND/Advanced/Create Test Physics Room", false, 23)]
-    [MenuItem("GameObject/REBOUND/Create Test Physics Room", false, 11)]
     public static void CreateTestRoom()
     {
         GameObject existing = GameObject.Find("TestRoom");
@@ -716,40 +710,9 @@ public static class PlayerRigBuilder
         Debug.Log("REBOUND: 6-Chamber Linear Flow Map created! (Chutes, Low Duct, Bunny-Hop Gap, Wall-Kick Alley, Barricade, Ski-Jump Arena & Hazard Reset)");
     }
 
-    [InitializeOnLoadMethod]
+    // Safe spawn helper (no automatic scene modification on domain reload)
     private static void AutoEnsurePlayerSafeSpawn()
     {
-        EditorApplication.delayCall += () =>
-        {
-            GameObject testRoom = GameObject.Find("TestRoom");
-            if (testRoom == null || testRoom.transform.Find("Arena_MainFloor") == null || testRoom.transform.Find("Target_Spire_Apex") == null)
-            {
-                Debug.Log("REBOUND: Upgrading scene to 200m Redliner Grapple Arena (36m Spire, 4 Towers, Mega Ramps & Target Switches)...");
-                CreateRedlinerGrappleArena();
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-                return;
-            }
-
-            GameObject playerObj = GameObject.Find("Player_Rig");
-            if (playerObj == null) return;
-
-            GameObject startHub = GameObject.Find("Chamber1_StartHub");
-            if (startHub != null)
-            {
-                float hubTop = startHub.transform.position.y + (startHub.transform.localScale.y * 0.5f);
-                if (playerObj.transform.position.y < hubTop || (playerObj.transform.position - startHub.transform.position).sqrMagnitude > 400f)
-                {
-                    Vector3 safePos = new Vector3(startHub.transform.position.x, hubTop + 1.1f, startHub.transform.position.z - 2.5f);
-                    playerObj.transform.position = safePos;
-                    playerObj.transform.rotation = Quaternion.identity;
-
-                    PlayerMovement pMove = playerObj.GetComponent<PlayerMovement>();
-                    if (pMove != null) pMove.SetCheckpoint(safePos);
-
-                    Debug.Log($"REBOUND: Automatically relocated Player_Rig to safe spawn on Chamber 1 StartHub: {safePos}");
-                }
-            }
-        };
     }
 
     private static GameObject CreatePlatform(Transform parent, int layer, string name, Vector3 pos, Vector3 scale)

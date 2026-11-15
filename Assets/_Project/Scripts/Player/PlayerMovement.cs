@@ -19,65 +19,78 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Locomotion Tuning")]
     [Tooltip("Standard walking speed.")]
-    [SerializeField] private float walkSpeed = 6.5f;
+    [SerializeField] private float walkSpeed = 3.2f;
 
     [Tooltip("Sprint running speed (held Shift).")]
-    [SerializeField] private float sprintSpeed = 11.5f;
+    [SerializeField] private float sprintSpeed = 5.4f;
 
     [Tooltip("Slow crouch walking speed when not sliding.")]
-    [SerializeField] private float crouchSpeed = 3.5f;
+    [SerializeField] private float crouchSpeed = 2.0f;
 
     [Tooltip("Ground directional acceleration rate.")]
-    [SerializeField] private float groundAcceleration = 55.0f;
+    [SerializeField] private float groundAcceleration = 40.0f;
 
     [Tooltip("Ground opposing-input braking deceleration.")]
-    [SerializeField] private float groundBraking = 45.0f;
+    [SerializeField] private float groundBraking = 35.0f;
 
     [Tooltip("Aerodynamic momentum decay when traveling above sprint speed on the ground.")]
     [SerializeField] private float groundMomentumDrag = 3.5f;
 
     [Tooltip("Air steering acceleration.")]
-    [SerializeField] private float airAcceleration = 26f;
+    [SerializeField] private float airAcceleration = 18f;
 
-    [Tooltip("Vertical impulse force on Space. 8.7m/s gives precisely 1.6m vertical clearance under 2.4x gravity.")]
-    [SerializeField] private float jumpImpulse = 8.7f;
+    [Tooltip("Vertical impulse force on Space. 8.2m/s gives precisely 1.45m vertical clearance under 2.4x gravity.")]
+    [SerializeField] private float jumpImpulse = 8.2f;
 
-    [Tooltip("Bunny-hop velocity increment when jumping out of a slide or chaining hops.")]
-    [SerializeField] private float bHopBoost = 2.5f;
+    [Tooltip("Optional subtle velocity increment on bunny-hop landing (0 for pure momentum preservation).")]
+    [SerializeField] private float bHopBoost = 0f;
 
     [Header("Slide Dynamics Tuning")]
     [Tooltip("Minimum horizontal speed required to initiate a slide (requires sprint).")]
-    [SerializeField] private float runThreshold = 7.5f;
+    [SerializeField] private float runThreshold = 4.2f;
 
     [Tooltip("Initial velocity boost added on top of running speed when entering a slide.")]
-    [SerializeField] private float slideBoost = 4.5f;
+    [SerializeField] private float slideBoost = 1.8f;
 
     [Tooltip("Minimum entry speed for a slide.")]
-    [SerializeField] private float minSlideEntrySpeed = 14.0f;
+    [SerializeField] private float minSlideEntrySpeed = 4.8f;
 
     [Tooltip("Minimum speed before slide smoothly drops back into a crouch walk.")]
-    [SerializeField] private float minSlideSpeed = 3.5f;
+    [SerializeField] private float minSlideSpeed = 1.8f;
 
     [Tooltip("Base ground friction deceleration per second on flat ground.")]
-    [SerializeField] private float slideFriction = 2.2f;
+    [SerializeField] private float slideFriction = 1.8f;
 
     [Tooltip("Aerodynamic drag factor proportional to speed (natural glide curve).")]
     [SerializeField] private float slideDrag = 0.035f;
 
     [Tooltip("Acceleration factor when sliding downhill.")]
-    [SerializeField] private float slopeAcceleration = 28.0f;
+    [SerializeField] private float slopeAcceleration = 16.0f;
 
     [Tooltip("Steering agility while sliding (degrees per second).")]
     [SerializeField] private float slideSteerRate = 160.0f;
 
     [Tooltip("Additional forward impulse when Push recoil is converted while sliding.")]
-    [SerializeField] private float slideRecoilBoost = 10.0f;
+    [SerializeField] private float slideRecoilBoost = 5.0f;
 
     [Tooltip("Maximum allowed speed (soft cap).")]
-    [SerializeField] private float maxSpeed = 35.0f;
+    [SerializeField] private float maxSpeed = 9.0f;
 
     [Tooltip("Minimum guaranteed slide duration upon triggering (seconds).")]
     [SerializeField] private float minSlideDuration = 0.35f;
+
+    [Header("Dash Tuning")]
+    [SerializeField] private float dashImpulse = 4.8f;
+    [SerializeField] private float dashCooldown = 1.0f;
+    [SerializeField] private float dashDuration = 0.22f;
+
+    [Header("Wall Run Tuning")]
+    [SerializeField] private float wallRunRayLength = 1.15f;
+    [SerializeField] private float wallRunGravityScale = 0.15f;
+    [SerializeField] private float wallRunMaxDuration = 1.8f;
+    [SerializeField] private float wallJumpForce = 10.5f;
+    [SerializeField] private float wallJumpUpForce = 8.0f;
+    [SerializeField] private LayerMask wallRunLayerMask;
 
     [Header("Capsule Dimensions (Feet Anchored at -1.0)")]
     [SerializeField] private float standingHeight = 2.0f;
@@ -131,6 +144,38 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 grappleAnchorPoint = Vector3.zero;
     private bool isJumpHeld = false;
 
+    // Dash State
+    private float dashTimer = 0f;
+    private float dashActiveTimer = 0f;
+    private bool isDashing = false;
+
+    // Wall Run State
+    private bool isWallRunning = false;
+    private int wallRunSide = 0; // -1 = Left, +1 = Right
+    private Vector3 wallNormal = Vector3.zero;
+    private float wallRunTimer = 0f;
+    private Vector3 wallForward = Vector3.forward;
+    private float wallRunCooldownTimer = 0f;
+
+    // Wall Hang State
+    private bool isWallHanging = false;
+    private float wallHangTimer = 0f;
+    private Vector3 wallHangNormal = Vector3.forward;
+    private float wallHangCooldown = 0f;
+
+    // Wall Vault & Kick Tuning
+    [Header("Wall Vault & Kick")]
+    [SerializeField] private float wallVaultImpulse = 9.5f;
+    [SerializeField] private float wallKickForce = 10.5f;
+    [SerializeField] private float wallKickUpForce = 8.0f;
+
+    // Aerial Dash Limiter
+    private bool canAirDash = true;
+
+    // Combat Landing Roll
+    private bool isRolling = false;
+    private float rollTimer = 0f;
+
     // Checkpoint & Hazard
     [SerializeField] private Vector3 currentCheckpointPos = new Vector3(0f, 7.6f, -2.5f);
     [SerializeField] private float voidKillY = -8.0f;
@@ -148,12 +193,19 @@ public class PlayerMovement : MonoBehaviour
     public bool IsGrounded => isGrounded || (Time.time - lastGroundedTime <= coyoteTime);
     public Transform GroundedObject => groundedObject;
     public Rigidbody Rb => rb;
+    public Vector3 Velocity => rb != null ? rb.linearVelocity : Vector3.zero;
     public Vector2 CurrentMoveInput => moveInput;
     public float CurrentSpeed => new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z).magnitude;
     public bool IsSliding => isSliding;
     public bool IsCrouching => isCrouching;
     public bool IsSprinting => isSprinting;
     public bool IsGrappling => isGrappling;
+    public bool IsDashing => isDashing;
+    public bool IsWallRunning => isWallRunning;
+    public bool IsWallHanging => isWallHanging;
+    public bool IsRolling => isRolling;
+    public int WallRunSide => wallRunSide;
+    public float DashCooldownRemaining => Mathf.Max(0f, dashTimer);
     public Vector3 SlideDirection => slideDirection;
     public Vector3 CurrentCheckpoint => currentCheckpointPos;
 
@@ -189,6 +241,10 @@ public class PlayerMovement : MonoBehaviour
         {
             groundLayerMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
         }
+        if (wallRunLayerMask.value == 0)
+        {
+            wallRunLayerMask = groundLayerMask;
+        }
         if (overheadClearanceMask.value == 0)
         {
             overheadClearanceMask = LayerMask.GetMask("Environment");
@@ -206,7 +262,17 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     public void EnsureSafeSpawnPosition()
     {
-        // Check 1: If Chamber 1 StartHub exists in scene, snap directly to its top surface
+        // Check 1: If Tutorial Chamber 1 Start Platform exists in scene, snap directly to its top surface
+        GameObject tutPlatform = GameObject.Find("C1_StartPlatform");
+        if (tutPlatform != null)
+        {
+            float topY = tutPlatform.transform.position.y + (tutPlatform.transform.localScale.y * 0.5f);
+            Vector3 safePos = new Vector3(tutPlatform.transform.position.x, topY + Mathf.Abs(feetLocalY) + 0.1f, tutPlatform.transform.position.z - 2.0f);
+            SnapToPosition(safePos);
+            return;
+        }
+
+        // Check 1b: Legacy start hub fallback
         GameObject startHub = GameObject.Find("Chamber1_StartHub");
         if (startHub != null)
         {
@@ -258,11 +324,26 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         CheckGroundStatus();
+        CheckForWallHang();
+        CheckForWallRun();
         ProcessBufferedJump();
         ProcessLedgeMantle();
         UpdateCrouchAndSlideState();
-        ApplyMovementVelocity();
-        ApplyCustomGravity();
+        UpdateDashState();
+
+        if (isWallRunning)
+        {
+            UpdateWallRunPhysics();
+        }
+        else if (isWallHanging)
+        {
+            UpdateWallHangPhysics();
+        }
+        else
+        {
+            ApplyMovementVelocity();
+            ApplyCustomGravity();
+        }
 
         if (transform.position.y < voidKillY)
         {
@@ -277,10 +358,19 @@ public class PlayerMovement : MonoBehaviour
     {
         UpdateDimensions();
 
+        if (dashTimer > 0f) dashTimer -= Time.deltaTime;
         if (slideBufferTimer > 0f) slideBufferTimer -= Time.deltaTime;
+        if (wallRunCooldownTimer > 0f) wallRunCooldownTimer -= Time.deltaTime;
+        if (wallHangCooldown > 0f) wallHangCooldown -= Time.deltaTime;
+        if (rollTimer > 0f)
+        {
+            rollTimer -= Time.deltaTime;
+            if (rollTimer <= 0f) isRolling = false;
+        }
 
         if (mouseLook != null)
         {
+            mouseLook.SetWallRunning(isWallRunning, wallRunSide);
             mouseLook.UpdateCameraMotion(moveInput, isGrounded, CurrentSpeed);
         }
 
@@ -311,6 +401,26 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public Vector3 GetCameraFlatForward()
+    {
+        Transform camT = mouseLook != null ? mouseLook.transform : null;
+        Vector3 forward = camT != null ? camT.forward : transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.001f) forward = transform.forward;
+        forward.y = 0f;
+        return forward.normalized;
+    }
+
+    public Vector3 GetCameraFlatRight()
+    {
+        Transform camT = mouseLook != null ? mouseLook.transform : null;
+        Vector3 right = camT != null ? camT.right : transform.right;
+        right.y = 0f;
+        if (right.sqrMagnitude < 0.001f) right = transform.right;
+        right.y = 0f;
+        return right.normalized;
+    }
+
     public void SetMoveInput(Vector2 dir)
     {
         moveInput = Vector2.ClampMagnitude(dir, 1f);
@@ -323,6 +433,14 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetCrouchInput(bool crouch)
     {
+        if (crouch && isDashing)
+        {
+            // Dash-to-Slide combo: cancel dash impulse into immediate power slide!
+            isDashing = false;
+            dashActiveTimer = 0f;
+            StartSlide(sprintSpeed + dashImpulse * 0.75f);
+        }
+
         if (crouch && !wantsCrouch)
         {
             // Fresh crouch press: generous buffer window for landing slide or instant chain
@@ -380,14 +498,34 @@ public class PlayerMovement : MonoBehaviour
     {
         bool justLanded = isGrounded && !wasGroundedLastFrame;
 
-        // 1. Redliner / Apex Air-to-Ground Landing Slide Queue
+        // 1. Redliner / Apex Air-to-Ground Landing Slide & Combat Roll Queue
         if (justLanded)
         {
             float horizontalSpeed = CurrentSpeed;
-            bool shouldSlideOnLand = wantsCrouch || (slideBufferTimer > 0f);
+            bool wantsCrouchOrBuffered = wantsCrouch || (slideBufferTimer > 0f);
 
-            // Only trigger landing slide if landing with actual sprint/run velocity!
-            if (shouldSlideOnLand && (horizontalSpeed >= (walkSpeed - 0.5f) || airborneRunPreserved))
+            // Combat Landing Roll: Dropping from height with high vertical speed and holding crouch
+            if (wantsCrouchOrBuffered && previousVerticalVelocity < -7.0f)
+            {
+                isRolling = true;
+                rollTimer = 0.4f;
+                slideBufferTimer = 0f;
+                airborneRunPreserved = false;
+
+                Vector3 camFwd = GetCameraFlatForward();
+                Vector3 camRight = GetCameraFlatRight();
+                Vector3 rollWish = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
+                if (rollWish.sqrMagnitude < 0.05f) rollWish = camFwd;
+
+                float rollSpeed = Mathf.Min(Mathf.Max(horizontalSpeed + 3.8f, minSlideEntrySpeed + 1.5f), maxSpeed);
+                rb.linearVelocity = new Vector3(rollWish.x * rollSpeed, 0f, rollWish.z * rollSpeed);
+                StartSlide(rollSpeed);
+
+                if (audioEffects != null) audioEffects.PlaySlideBoost();
+                if (mouseLook != null) mouseLook.TriggerLandingDip(-12.0f);
+            }
+            // Only trigger standard landing slide if landing with actual sprint/run velocity!
+            else if (wantsCrouchOrBuffered && (horizontalSpeed >= (walkSpeed - 0.5f) || airborneRunPreserved))
             {
                 // Landed while holding or buffering crouch with momentum: instant explosive landing slide!
                 float entrySpeed = Mathf.Max(horizontalSpeed + slideBoost, minSlideEntrySpeed);
@@ -512,9 +650,11 @@ public class PlayerMovement : MonoBehaviour
             }
 
             // Player can steer and carve slide direction with mouse aim and full WASD redirection (Redliner Slide Carving)
+            Vector3 camFwd = GetCameraFlatForward();
+            Vector3 camRight = GetCameraFlatRight();
             Vector3 aimDir = moveInput.sqrMagnitude > 0.05f 
-                ? (transform.forward * moveInput.y + transform.right * moveInput.x).normalized 
-                : transform.forward;
+                ? (camFwd * moveInput.y + camRight * moveInput.x).normalized 
+                : camFwd;
             if (aimDir.sqrMagnitude > 0.05f)
             {
                 Vector3 projectedAim = Vector3.ProjectOnPlane(aimDir, groundNormal).normalized;
@@ -539,17 +679,20 @@ public class PlayerMovement : MonoBehaviour
         airborneSlideBufferTimer = 0f;
 
         Vector3 horizontalVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        if (horizontalVel.sqrMagnitude > 0.5f)
+        Vector3 camFwd = GetCameraFlatForward();
+        Vector3 camRight = GetCameraFlatRight();
+
+        if (horizontalVel.sqrMagnitude > 0.5f && Vector3.Dot(horizontalVel.normalized, camFwd) > 0.3f)
         {
             slideDirection = horizontalVel.normalized;
         }
         else if (moveInput.sqrMagnitude > 0.1f)
         {
-            slideDirection = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
+            slideDirection = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
         }
         else
         {
-            slideDirection = transform.forward;
+            slideDirection = camFwd;
         }
 
         currentSlideSpeed = Mathf.Clamp(Mathf.Max(targetSpeed, minSlideEntrySpeed), minSlideEntrySpeed, maxSpeed);
@@ -586,18 +729,67 @@ public class PlayerMovement : MonoBehaviour
     private void ProcessBufferedJump()
     {
         bool canJump = (Time.time - lastGroundedTime <= coyoteTime);
-        // Supports both frame-tap jump buffering and Redliner-style hold-Space continuous bunny-hop chaining!
-        bool wantsJump = (Time.time - lastJumpPressedTime <= jumpBufferTime) || isJumpHeld;
+        // Tap jump buffer for precise parkour actions (wall jump, wall climb, neutral kick):
+        bool wantsTapJump = (Time.time - lastJumpPressedTime <= jumpBufferTime);
+        // Ground jump allows continuous bunny-hop chaining via held space:
+        bool wantsGroundJump = wantsTapJump || isJumpHeld;
+
+        // Wall-Hang Jump / Wall Climb:
+        if (isWallHanging && wantsTapJump)
+        {
+            lastJumpPressedTime = -10f;
+            ExecuteWallClimbJump();
+            return;
+        }
+
+        // Wall-Run Jump: Powerful zig-zag kick outward and upward across the chasm
+        if (isWallRunning && wantsTapJump)
+        {
+            lastJumpPressedTime = -10f;
+            ExecuteWallJump();
+            return;
+        }
+
+        // Mid-air Face Wall Vault & Wall Kick:
+        // When airborne near a vertical wall, tapping Space cleanly vaults up or kicks off
+        if (!isGrounded && wantsTapJump && !isWallRunning && wallRunCooldownTimer <= 0f)
+        {
+            Vector3 chestOrigin = transform.position + Vector3.up * 0.35f;
+            if (Physics.Raycast(chestOrigin, transform.forward, out RaycastHit faceHit, 1.25f, wallRunLayerMask, QueryTriggerInteraction.Ignore))
+            {
+                if (Mathf.Abs(faceHit.normal.y) < 0.35f)
+                {
+                    lastJumpPressedTime = -10f;
+                    wallRunCooldownTimer = 0.35f;
+                    canAirDash = true;
+
+                    if (moveInput.y > 0.1f)
+                    {
+                        // Holding W: Hoist up over the wall
+                        ExecuteWallClimbJump();
+                    }
+                    else
+                    {
+                        // Neutral or holding S: Wall-Kick backward into open space
+                        Vector3 kickVel = faceHit.normal * wallKickForce + Vector3.up * wallKickUpForce;
+                        rb.linearVelocity = kickVel;
+                        if (audioEffects != null) audioEffects.PlaySlideBoost();
+                        if (mouseLook != null) mouseLook.AddScreenShake(0.12f, faceHit.normal);
+                    }
+                    return;
+                }
+            }
+        }
 
         // Elastic Slingshot Jump: Pressing jump while grappling flings the player with extra aerial impulse
-        if (wantsJump && pullAbility != null && pullAbility.IsGrappling)
+        if (wantsGroundJump && pullAbility != null && pullAbility.IsGrappling)
         {
             lastJumpPressedTime = -10f;
             pullAbility.FlingGrappleJump();
             return;
         }
 
-        if (canJump && wantsJump)
+        if (canJump && wantsGroundJump)
         {
             lastJumpPressedTime = -10f;
             lastGroundedTime = -10f;
@@ -614,35 +806,54 @@ public class PlayerMovement : MonoBehaviour
                 airborneRunPreserved = true;
             }
 
-            if (wasSlidingBeforeJump || isSprinting || hSpeed >= runThreshold)
+            Vector3 camFwd = GetCameraFlatForward();
+            Vector3 camRight = GetCameraFlatRight();
+            Vector3 wishDir = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
+
+            if (wasSlidingBeforeJump)
             {
-                // SLIDE -> JUMP CHAIN & SPRINT JUMP (REDLINER BUNNY-HOP SPEED STACKING)
-                // Preserves 100% of horizontal speed PLUS injects bHopBoost (+2.5 m/s)!
-                float baseSpeed = Mathf.Max(hSpeed, currentSlideSpeed);
-                float boostedSpeed = Mathf.Min(baseSpeed + bHopBoost, maxSpeed);
-
-                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : transform.forward;
-
-                // Subtle steering influence toward movement input
-                Vector3 wishDir = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
+                // JUMPING OUT OF A SLIDE (Slide-Hop):
+                // Cleanly transfers 100% of slide velocity into the air without losing speed
+                float exitSpeed = Mathf.Min(Mathf.Max(hSpeed, currentSlideSpeed), maxSpeed);
+                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd;
                 if (wishDir.sqrMagnitude > 0.1f)
                 {
                     hopDir = Vector3.RotateTowards(hopDir, wishDir, 35f * Mathf.Deg2Rad, 0f);
                 }
 
-                Vector3 newHVel = hopDir * boostedSpeed;
+                Vector3 newHVel = hopDir * exitSpeed;
                 rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
 
                 isSliding = false;
                 airborneSlideBufferTimer = 0f;
 
                 if (audioEffects != null) audioEffects.PlaySlideBoost();
-                if (mouseLook != null) mouseLook.AddScreenShake(0.1f, Vector3.up);
+                if (mouseLook != null) mouseLook.AddScreenShake(0.08f, Vector3.up);
+            }
+            else if (hSpeed > sprintSpeed + 0.5f)
+            {
+                // HIGH-MOMENTUM PRESERVATION (Bunny-Hop from Grapple Slingshot / Downhill Surf / Rocket Jump):
+                // Preserves 100% of accumulated momentum through repeated hops without artificial runaway acceleration
+                float preservedSpeed = Mathf.Min(hSpeed + bHopBoost, maxSpeed);
+                Vector3 hopDir = horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd;
+                if (wishDir.sqrMagnitude > 0.1f)
+                {
+                    hopDir = Vector3.RotateTowards(hopDir, wishDir, 25f * Mathf.Deg2Rad, 0f);
+                }
+
+                Vector3 newHVel = hopDir * preservedSpeed;
+                rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
+
+                if (audioEffects != null) audioEffects.PlayFootstep();
             }
             else
             {
-                currentVel.y = jumpImpulse;
-                rb.linearVelocity = currentVel;
+                // STANDARD JUMP / SPRINT JUMP:
+                // Normal sprint jump stays at sprint speed (11.5 m/s); walk jump moves at walk speed (6.5 m/s)
+                float targetTakeoffSpeed = isSprinting && moveInput.y > 0.1f ? sprintSpeed : (moveInput.sqrMagnitude > 0.1f ? walkSpeed : 0f);
+                Vector3 jumpDir = wishDir.sqrMagnitude > 0.1f ? wishDir : (horizontalVel.sqrMagnitude > 0.1f ? horizontalVel.normalized : camFwd);
+                Vector3 newHVel = jumpDir * Mathf.Max(hSpeed, targetTakeoffSpeed);
+                rb.linearVelocity = new Vector3(newHVel.x, jumpImpulse, newHVel.z);
 
                 if (audioEffects != null) audioEffects.PlayFootstep();
             }
@@ -681,6 +892,12 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void ApplyEnemyKnockback(Vector3 launchVelocity)
+    {
+        isSliding = false;
+        rb.linearVelocity = launchVelocity;
     }
 
     public void ApplyRecoil(Vector3 recoilVelocity)
@@ -768,6 +985,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         isGrounded = foundGround;
+        if (isGrounded && isWallHanging) StopWallHang(0.1f);
 
         // Ground normal for slope surfing
         if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out RaycastHit normalHit, Mathf.Abs(feetLocalY) + 0.6f, groundLayerMask, QueryTriggerInteraction.Ignore))
@@ -783,6 +1001,7 @@ public class PlayerMovement : MonoBehaviour
         {
             lastGroundedTime = Time.time;
             hasAirRocketJumped = false;
+            canAirDash = true;
             if (mouseLook != null && previousVerticalVelocity < -2.0f)
             {
                 mouseLook.TriggerLandingDip(previousVerticalVelocity);
@@ -793,6 +1012,7 @@ public class PlayerMovement : MonoBehaviour
         {
             lastGroundedTime = Time.time;
             hasAirRocketJumped = false;
+            canAirDash = true;
         }
     }
 
@@ -807,7 +1027,9 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        Vector3 targetDirection = (transform.forward * moveInput.y + transform.right * moveInput.x);
+        Vector3 camFwd = GetCameraFlatForward();
+        Vector3 camRight = GetCameraFlatRight();
+        Vector3 targetDirection = (camFwd * moveInput.y + camRight * moveInput.x);
         Vector3 currentVel = rb.linearVelocity;
         Vector3 horizontalVel = new Vector3(currentVel.x, 0f, currentVel.z);
         float currentHorizontalSpeed = horizontalVel.magnitude;
@@ -840,11 +1062,13 @@ public class PlayerMovement : MonoBehaviour
                 {
                     Vector3 wishDir = targetDirection.normalized;
                     float dot = Vector3.Dot(horizontalVel.normalized, wishDir);
-                    if (dot > 0.1f)
+                    if (dot > 0.0f)
                     {
-                        // Moving along wish direction: gentle aerodynamic drag preserves speed runway
-                        newHorizontalVel = Vector3.MoveTowards(horizontalVel, targetVelocity, groundMomentumDrag * Time.fixedDeltaTime);
-                        newHorizontalVel = Vector3.RotateTowards(newHorizontalVel, wishDir, (airAcceleration * 1.2f / Mathf.Max(currentHorizontalSpeed, 6f)) * Time.fixedDeltaTime, 0f);
+                        // Moving along wish direction: smoothly carve/steer horizontal velocity toward wishDir
+                        // Responsive ground carving turns the velocity vector rapidly toward where the player points
+                        float turnRate = 8.0f * Time.fixedDeltaTime;
+                        Vector3 steeredVel = Vector3.RotateTowards(horizontalVel, wishDir * currentHorizontalSpeed, turnRate, 0f);
+                        newHorizontalVel = Vector3.MoveTowards(steeredVel, wishDir * targetSpeed, groundMomentumDrag * Time.fixedDeltaTime);
                     }
                     else
                     {
@@ -929,12 +1153,12 @@ public class PlayerMovement : MonoBehaviour
         isGrappling = true;
         grappleAnchorPoint = anchor;
 
-        float targetSpeed = Mathf.Lerp(24.0f, 35.0f, Mathf.Clamp01(distance / 35.0f));
+        float targetSpeed = Mathf.Lerp(18.0f, 25.0f, Mathf.Clamp01(distance / 35.0f));
 
         // If pulling toward ground or downward ramp while moving, enter power slide!
         if (isGrounded && pullDir.y <= 0.25f && !isSliding)
         {
-            StartSlide(Mathf.Max(CurrentSpeed + 4.0f, targetSpeed));
+            StartSlide(Mathf.Max(CurrentSpeed + 3.0f, targetSpeed));
         }
 
         Vector3 currentVel = rb.linearVelocity;
@@ -974,8 +1198,8 @@ public class PlayerMovement : MonoBehaviour
         Vector3 currentVel = rb.linearVelocity;
         float currentSpeed = currentVel.magnitude;
 
-        // Slingshot fling: injects boost on top of existing speed, minimum 16 m/s
-        float boostedSpeed = Mathf.Min(Mathf.Max(currentSpeed, 16.0f) + flingBoost, maxSpeed);
+        // Slingshot fling: injects boost on top of existing speed, minimum 14 m/s
+        float boostedSpeed = Mathf.Min(Mathf.Max(currentSpeed, 14.0f) + flingBoost, maxSpeed);
 
         // Blend look direction with current momentum direction for natural physics handoff
         Vector3 momentumDir = currentSpeed > 2.0f ? currentVel.normalized : transform.forward;
@@ -989,6 +1213,253 @@ public class PlayerMovement : MonoBehaviour
 
         rb.linearVelocity = launchDir * boostedSpeed;
         airborneRunPreserved = true;
+    }
+
+    public bool CanDash => dashTimer <= 0f && !isCrouching && (isGrounded || canAirDash);
+
+    /// <summary>
+    /// Executes an explosive forward or directional dash. Can be chained into a slide with Crouch.
+    /// Supports 1 Air-Dash per aerial chain, resetting upon touching ground, wall-running, or wall-hanging.
+    /// </summary>
+    public void PerformDash()
+    {
+        if (dashTimer > 0f) return;
+        if (!isGrounded && !canAirDash) return;
+
+        if (!isGrounded)
+        {
+            canAirDash = false;
+        }
+
+        dashTimer = dashCooldown;
+        isDashing = true;
+        dashActiveTimer = dashDuration;
+
+        Vector3 camFwd = GetCameraFlatForward();
+        Vector3 camRight = GetCameraFlatRight();
+        Vector3 wishDir = (camFwd * moveInput.y + camRight * moveInput.x).normalized;
+        if (wishDir.sqrMagnitude < 0.05f) wishDir = camFwd;
+
+        Vector3 dashVel = wishDir * (sprintSpeed + dashImpulse);
+        rb.linearVelocity = new Vector3(dashVel.x, isGrounded ? 0f : rb.linearVelocity.y * 0.5f, dashVel.z);
+
+        if (audioEffects != null) audioEffects.PlaySlideBoost();
+        if (mouseLook != null) mouseLook.AddScreenShake(0.12f, -wishDir);
+    }
+
+    private void UpdateDashState()
+    {
+        if (!isDashing) return;
+
+        dashActiveTimer -= Time.fixedDeltaTime;
+        if (dashActiveTimer <= 0f)
+        {
+            isDashing = false;
+        }
+
+        // Chaining into slide while dashing
+        if (wantsCrouch)
+        {
+            isDashing = false;
+            dashActiveTimer = 0f;
+            StartSlide(sprintSpeed + dashImpulse * 0.75f);
+        }
+    }
+
+    private void CheckForWallHang()
+    {
+        if (isGrounded || isWallRunning || isSliding || wallHangCooldown > 0f)
+        {
+            if (isWallHanging) StopWallHang(0.1f);
+            return;
+        }
+
+        // Only hang when pressing forward in mid-air
+        if (moveInput.y < 0.1f)
+        {
+            if (isWallHanging) StopWallHang(0.1f);
+            return;
+        }
+
+        Vector3 chestOrigin = transform.position + Vector3.up * 0.35f;
+        if (Physics.Raycast(chestOrigin, transform.forward, out RaycastHit wallHit, 1.25f, wallRunLayerMask, QueryTriggerInteraction.Ignore))
+        {
+            // Vertical wall
+            if (Mathf.Abs(wallHit.normal.y) < 0.35f && Vector3.Dot(transform.forward, -wallHit.normal) > 0.55f)
+            {
+                if (!isWallHanging)
+                {
+                    StartWallHang(wallHit.normal);
+                }
+                return;
+            }
+        }
+
+        if (isWallHanging) StopWallHang(0.1f);
+    }
+
+    private void StartWallHang(Vector3 normal)
+    {
+        isWallHanging = true;
+        wallHangNormal = normal;
+        wallHangTimer = 1.5f; // Clings for up to 1.5s
+        canAirDash = true;
+        rb.linearVelocity = Vector3.zero;
+        if (audioEffects != null) audioEffects.PlayFootstep();
+    }
+
+    private void UpdateWallHangPhysics()
+    {
+        wallHangTimer -= Time.fixedDeltaTime;
+        if (wallHangTimer <= 0f || moveInput.y < -0.1f)
+        {
+            StopWallHang(0.35f);
+            return;
+        }
+
+        // Stick to wall with gentle micro-slide
+        rb.linearVelocity = Vector3.down * 0.35f;
+    }
+
+    public void StopWallHang(float cooldown = 0.3f)
+    {
+        isWallHanging = false;
+        wallHangTimer = 0f;
+        wallHangCooldown = cooldown;
+    }
+
+    private void ExecuteWallClimbJump()
+    {
+        StopWallHang(0.45f);
+        // Explosive hoist up and forward onto the ledge!
+        Vector3 climbVelocity = Vector3.up * wallVaultImpulse + transform.forward * 3.8f;
+        rb.linearVelocity = climbVelocity;
+
+        if (audioEffects != null) audioEffects.PlayFootstep();
+        if (mouseLook != null) mouseLook.AddScreenShake(0.12f, Vector3.up);
+    }
+
+    private void CheckForWallRun()
+    {
+        if (isGrounded || isSliding || wallRunCooldownTimer > 0f)
+        {
+            if (isWallRunning) StopWallRun();
+            return;
+        }
+
+        // Requires player to be falling or at vertical apex and pressing forward
+        if (rb.linearVelocity.y > 6.0f || moveInput.y < 0.1f)
+        {
+            if (isWallRunning) StopWallRun();
+            return;
+        }
+
+        Vector3 probeOrigin = transform.position + Vector3.up * 0.2f;
+        bool hitRight = Physics.Raycast(probeOrigin, transform.right, out RaycastHit rightHit, wallRunRayLength, wallRunLayerMask, QueryTriggerInteraction.Ignore);
+        bool hitLeft = Physics.Raycast(probeOrigin, -transform.right, out RaycastHit leftHit, wallRunRayLength, wallRunLayerMask, QueryTriggerInteraction.Ignore);
+
+        // DO NOT start wall-running if player is jumping directly face-first into the wall
+        if (hitRight && Mathf.Abs(rightHit.normal.y) < 0.35f && Vector3.Dot(transform.forward, -rightHit.normal) < 0.65f)
+        {
+            StartWallRun(1, rightHit.normal);
+        }
+        else if (hitLeft && Mathf.Abs(leftHit.normal.y) < 0.35f && Vector3.Dot(transform.forward, -leftHit.normal) < 0.65f)
+        {
+            StartWallRun(-1, leftHit.normal);
+        }
+        else
+        {
+            if (isWallRunning) StopWallRun();
+        }
+    }
+
+    private void StartWallRun(int side, Vector3 normal)
+    {
+        wallRunSide = side;
+        wallNormal = normal;
+        canAirDash = true;
+
+        // Cap upward vertical velocity to 0.5 m/s so player runs horizontally along the wall
+        Vector3 currentVel = rb.linearVelocity;
+        if (currentVel.y > 0.5f)
+        {
+            currentVel.y = 0.5f;
+            rb.linearVelocity = currentVel;
+        }
+
+        // Calculate wall-forward direction
+        Vector3 wallTan = Vector3.Cross(wallNormal, Vector3.up).normalized;
+        if (side == -1) wallTan = -wallTan; // Invert for left side
+
+        // Align with player facing direction
+        if (Vector3.Dot(wallTan, transform.forward) < 0f)
+        {
+            wallTan = -wallTan;
+        }
+
+        wallForward = wallTan;
+
+        if (!isWallRunning)
+        {
+            isWallRunning = true;
+            wallRunTimer = wallRunMaxDuration;
+            if (audioEffects != null) audioEffects.PlaySlideStart();
+        }
+    }
+
+    private void StopWallRun()
+    {
+        isWallRunning = false;
+        wallRunSide = 0;
+        wallRunTimer = 0f;
+    }
+
+    private void UpdateWallRunPhysics()
+    {
+        wallRunTimer -= Time.fixedDeltaTime;
+        if (wallRunTimer <= 0f)
+        {
+            StopWallRun();
+            return;
+        }
+
+        // Maintain steady velocity along wall with slow gravitational drift
+        float currentSpeed = Mathf.Max(CurrentSpeed, sprintSpeed);
+        Vector3 targetHVel = wallForward * Mathf.Min(currentSpeed, maxSpeed);
+
+        float newY = rb.linearVelocity.y;
+        if (newY < 0f)
+        {
+            newY -= (9.81f * wallRunGravityScale) * Time.fixedDeltaTime;
+            newY = Mathf.Max(newY, -2.5f);
+        }
+        else
+        {
+            newY = Mathf.MoveTowards(newY, 0f, 15.0f * Time.fixedDeltaTime);
+        }
+
+        rb.linearVelocity = new Vector3(targetHVel.x, newY, targetHVel.z);
+    }
+
+    private void ExecuteWallJump()
+    {
+        // Directional steering bias from A / D
+        Vector3 wishRight = GetCameraFlatRight() * moveInput.x;
+
+        // Decisive, athletic wall jump:
+        // 1. Explosive kick AWAY from the wall (10.5 m/s)
+        // 2. Strong upward jump lift (8.0 m/s)
+        // 3. Forward momentum along the wall (Mathf.Max(CurrentSpeed, 7.5f))
+        // 4. Directional strafe bias (4.0 m/s)
+        Vector3 launchVel = wallNormal * wallJumpForce + Vector3.up * wallJumpUpForce + wallForward * Mathf.Max(CurrentSpeed, 7.5f) + wishRight * 4.0f;
+        rb.linearVelocity = launchVel;
+
+        StopWallRun();
+        canAirDash = true;
+        wallRunCooldownTimer = 0.35f;
+
+        if (audioEffects != null) audioEffects.PlaySlideBoost();
+        if (mouseLook != null) mouseLook.AddScreenShake(0.14f, wallNormal);
     }
 
     private void OnCollisionEnter(Collision collision)

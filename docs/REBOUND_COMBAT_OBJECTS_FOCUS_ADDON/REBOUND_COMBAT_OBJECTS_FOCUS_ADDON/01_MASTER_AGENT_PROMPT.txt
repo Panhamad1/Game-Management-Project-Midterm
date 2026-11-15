@@ -1,0 +1,232 @@
+# MASTER CODING-AGENT PROMPT — REBOUND Combat, Object Physics & Focus Upgrade
+
+You are a senior Unity gameplay engineer working inside the user's existing REBOUND Unity project. Your task is to implement the attached **Combat, Object Physics & Focus Upgrade Pack** as an additive upgrade to the movement work that is already underway.
+
+## Primary objective
+
+Improve the way the player fights using the existing pneumatic Push/Wind Cannon, dual-mode Pull/Vacuum Tether, physical objects, Crate Cannon, and Focus slow motion. The player must be able to use these systems while maintaining the high-speed movement behavior being implemented in the previous REBOUND movement upgrade.
+
+This is an implementation task, not a request for a design-only answer. Inspect the project, plan the integration, modify the real scripts and prefabs, compile, test, and report exactly what changed.
+
+## Mandatory scope
+
+Implement and integrate:
+
+1. Push/Wind Cannon targeting, impact handling, recoil integration, and projectile deflection.
+2. Pull's object-manipulation mode: target selection, pulling, carrying, retraction, shielding, and heavy-object dragging.
+3. A data-driven object classification/behavior system for light, medium, and heavy objects, with optional traits that do not require a map redesign.
+4. Physical projectile impact handling and balanced damage/knockback from thrown objects.
+5. Crate Cannon firing, velocity inheritance, recoil, prediction line, collision handling, and weak-point support.
+6. Focus as a fair, rechargeable slow-motion resource, while preserving responsive player input and movement as far as the existing Rigidbody architecture permits.
+7. Safe integration with the existing enemy receiver/interface scripts without redesigning enemy AI or replacing enemy archetypes.
+8. Readable audio, visual, reticle, and HUD feedback for these systems.
+9. Automated or reproducible validation for the interactions above.
+
+## Explicitly out of scope
+
+Do NOT:
+
+- Design, generate, or modify the map, Egyptian theme, level layout, environment art, or level progression.
+- Add, remove, replace, or redesign enemy archetypes.
+- Rewrite enemy navigation, attack telegraphs, attack cadence, health, or AI state machines unless a very small adapter is strictly required for a new physical interaction. If an enemy-side change is necessary, preserve its current behavior and explain the change.
+- Reimplement the movement upgrade from the previous resource pack.
+- Replace the player's current movement controller or grapple traversal controller just to simplify the new systems.
+- Change controls without checking the actual Input Actions and asking for permission if a genuine conflict cannot be resolved safely.
+- Invent unverified REDLINER numerical values and copy them into REBOUND.
+- Add a large progression, loot, crafting, inventory, or weapon system.
+- Add dozens of unique object types. The requested object system is based on a small number of useful physical roles.
+
+## Source-of-truth order
+
+Use this order when information conflicts:
+
+1. The actual Unity project code, serialized assets, prefabs, Input Actions, and current scene configuration.
+2. The most recent REBOUND player subsystem specification and the work already implemented from the previous movement pack.
+3. The current team handoff supplied by the user.
+4. This add-on pack's design recommendations.
+
+The handoff is explicitly described as outdated. Treat it as context, not guaranteed current code.
+
+## Integration rule: movement work already exists or is underway
+
+The previous resource pack focuses on movement and momentum. This package is a companion task. Do not reset or duplicate that work.
+
+Before editing:
+- Inspect Git status and do not destroy uncommitted work.
+- Identify the current owner of player velocity, input, grapple movement, time dilation, and target interfaces.
+- Write down the exact files that already contain movement-pack changes.
+- Identify the smallest integration points for Push recoil, Crate Cannon recoil, object manipulation, and Focus.
+- If a change overlaps an in-progress movement edit, integrate carefully instead of replacing the file.
+
+All player impulses must go through the project's authoritative movement/velocity API if one exists. Do not let Push, Crate Cannon, Grapple, Slide, and the movement controller independently overwrite Rigidbody velocity.
+
+## Required inspection
+
+Inspect at minimum, where present:
+
+- Player root prefab and Rigidbody/CapsuleCollider configuration.
+- `PlayerMovement.cs` or its current successor.
+- `PlayerAbilityInput.cs` and Input Actions asset.
+- `PushAbility.cs`.
+- `PullAbility.cs`.
+- `SlowMotionAbility.cs`.
+- `InteractableProp.cs` and all object prefabs.
+- `TargetButton.cs`.
+- `IKineticTarget.cs` and every class implementing it.
+- Enemy physics receiver scripts and weak-point colliders.
+- Sniper projectile and rapid-laser projectile scripts.
+- HUD/reticle scripts.
+- Audio effects scripts.
+- Current layers, collision matrix, physics settings, and fixed timestep.
+
+Do not assume a file path from documentation is correct. Locate the actual file.
+
+## Core design requirements
+
+### A. Push / Wind Cannon
+
+- Keep the current LMB behavior and current Push identity.
+- Push eligible objects and enemies through one consistent targeting/impact pipeline.
+- Preserve the existing 12 m range and 18 N·s starting impulse only if those values match the current project and feel correct in testing. Treat them as tunable starting values, not hard facts.
+- Preserve the existing close-surface recoil, wall kick, rocket-jump restriction, and slide-forward boost behavior if already implemented. Integrate those through the movement controller's external-impulse API.
+- Do not apply player recoil in open air when the current design says the surface-proximity condition is not met.
+- Add/verify projectile deflection for eligible incoming sniper rounds and rapid projectiles. Deflection must be a deliberate, readable, timing-based interaction, not an automatic global reflection of every projectile.
+- If the player is carrying a valid object, LMB fires the Crate Cannon instead of also firing the normal Push. Prevent double activation.
+- Respect target eligibility (`CanBePushed`, projectile deflectability, line of sight, layers, and one-shot input semantics).
+
+### B. Pull / object manipulation
+
+- Preserve dual-mode Pull: eligible movable target within the object range is selected for object manipulation; otherwise an eligible environment anchor can be selected for grapple traversal.
+- Do not rewrite the movement grapple if it has already been upgraded. Keep object manipulation and traversal as explicit modes with a single, predictable target decision.
+- Preserve current starting values if confirmed in project: 16 m object selection range, 75 m grapple traversal range, and approximately 2.5 m object hold distance.
+- Light and medium objects may be lifted/held. Heavy objects are ground-drag only.
+- Use a stable spring-damper or equivalent critically damped controller rather than snapping or repeatedly teleporting the object.
+- Retract the held object's desired position when an obstruction is detected; the old handoff's 1.2 m narrow-space fallback is a starting reference, not a mandatory hard-coded value.
+- Keep the object's collider active so it can physically block eligible projectiles and interact with the world. Prevent it from colliding with the player in a way that causes jitter or pushes the player. Restore collision settings when released.
+- Prevent self-levitation/box-riding: if the object is supporting the player's feet, do not pull it into a held state until the player steps off.
+- Heavy objects should not hover or become portable shields. Drag them on the ground, and allow them to be repositioned or pushed where their mass and scene geometry permit.
+- Do not allow every enemy to be grabbed. Only existing enemies explicitly configured as pullable may be pulled. Preserve their existing AI and damage behavior.
+
+### C. Object variety and physical combat
+
+Implement a small, data-driven object system with three core classes:
+
+- **Light:** quick to acquire and throw, low impact energy, useful against weak enemies or multiple light targets.
+- **Medium:** main all-purpose combat object, useful against ordinary enemies and exposed weak points, can be held as a projectile shield.
+- **Heavy:** ground-drag only, strong environmental blocker/weight/cover, not launched by the normal Crate Cannon.
+
+Starting design references from the existing handoff are approximately 1 kg, 5 kg, and 25 kg. Inspect actual prefabs and current values before changing them. Mass alone must not define the entire role: configure pull acceleration, max force, launch eligibility, impact multiplier, shield durability, drag behavior, and material response as data.
+
+Avoid needless object proliferation. Optional special traits such as fragile, dense, or reinforced may be supported by the data model, but implement them only if the core three classes are stable and there is a meaningful gameplay use. Do not build a new inventory or crafting system.
+
+### D. Crate Cannon
+
+- When a valid portable object is held, LMB launches it and suppresses the normal Push for that input event.
+- Keep the current 35 m/s launch-speed component as a starting value if confirmed by current code. Decide and document whether this is total world speed or an aim-directed launch component plus inherited player velocity. Prefer preserving some player velocity without silently producing extreme uncontrolled speeds.
+- Apply the current player recoil reference (approximately 6.5 m/s opposite aim) through the movement controller, not by replacing the whole Rigidbody velocity.
+- Preserve or rebuild the 20-segment trajectory line using the same launch velocity, gravity, drag, and Focus assumptions as the actual projectile.
+- Use Continuous Dynamic or an appropriate continuous collision mode while the prop is moving fast; choose the least expensive mode that reliably prevents tunneling.
+- Compute damage from relative impact speed / normal impact energy, use configurable thresholds and caps, and support weak-point multipliers only when the actual impact point intersects a configured weak-point collider/component.
+- One projectile must not apply damage every physics frame or repeatedly trigger the same target from `OnCollisionStay`. Use impact-event deduplication/cooldowns.
+- Let physics resolve the impact and bounce/stop behavior. Do not make all projectiles disappear on every hit unless the object's data explicitly says it breaks.
+
+### E. Focus / slow motion
+
+- Replace infinite free use with a rechargeable resource unless current project direction or existing implementation shows the player explicitly rejected this recommendation. The target design is frequent tactical use, not a rare ultimate.
+- Use a configurable meter, drain, recovery delay, recovery rate, and confirmed-action rewards.
+- Suggested initial tuning only: 100 capacity, 25 units per unscaled second while active, 0.75 s recovery delay, and 15 units per unscaled second while recovering. These are playtest starting values, not final balance.
+- Keep input, camera aim, UI, audio pitch handling, and the Focus meter responsive in real time.
+- Slow enemy movement, enemy animations/logic, eligible projectiles, and movable object simulation consistently.
+- The player should retain normal practical movement control and speed during Focus if the intended design still requires it. Unity global `Time.timeScale` also slows Rigidbody simulation; do not claim player movement is normal merely because mouse input uses `unscaledDeltaTime`. Inspect the actual physics architecture, implement a correct player/world time-domain solution, and validate displacement, gravity, collisions, and impulses under Focus. If the current dynamic Rigidbody architecture cannot safely provide this behavior with a small change, explain the tradeoff and implement the safest tested solution rather than adding arbitrary velocity multipliers.
+- Prevent pausing, UI focus, respawning, scene changes, and application pause from leaving global timeScale or fixedDeltaTime corrupted.
+- Reward meaningful confirmed actions, not spam. Suggested reward events are successful projectile deflection, successful weak-point impact, and meaningful objective activation. Add per-target/per-action anti-farming controls.
+
+### F. Enemy integration
+
+Do not change the enemy roster or AI. Preserve the existing four archetypes and tripwire hazard:
+- Swarmer: keep current movement/attack behavior; allow existing intended slide-ram, push, pull, and crate-impact responses.
+- Hulk: keep its leap/slam/stun behavior; retain resistance to ordinary Push/Pull and support damage to its existing exposed weak point.
+- Sniper: keep target tracking and firing behavior; make its eligible projectile deflectable and allow the reflected shot to travel back toward its source.
+- Rapid sentry: keep firing pattern; allow a carried eligible object to physically block its bolts and support existing flanking/crate impacts.
+- Tripwire: preserve current hazard behavior; Focus may affect it only if it is already implemented as a time-scaled simulation object.
+
+If interfaces have changed, add a compatibility adapter or migrate all implementers and callers atomically. Do not leave half the project using old method signatures.
+
+## Required implementation stages
+
+### Stage 0 — Audit and integration plan
+- Inspect code/assets/settings.
+- Record current values and existing behavior.
+- Identify conflicts and in-progress movement changes.
+- Produce a file-level integration plan.
+- Do not change runtime code yet.
+
+### Stage 1 — Shared target/interaction contracts
+- Resolve `IKineticTarget` signature differences.
+- Establish one consistent impact context or a safe adapter.
+- Establish a deflectable-projectile contract/adapter.
+- Compile all current implementers and callers.
+
+### Stage 2 — Object data and Pull object mode
+- Define/verify object weight classes and capabilities.
+- Implement stable pulling/holding and obstruction retraction.
+- Implement heavy ground dragging.
+- Implement owner-collision handling and anti-box-riding.
+- Validate object mode does not break grapple traversal.
+
+### Stage 3 — Crate Cannon and physical impacts
+- Implement valid launch rules and input priority.
+- Implement player velocity inheritance and recoil.
+- Implement trajectory prediction.
+- Implement impact energy, damage caps, weak points, and event deduplication.
+
+### Stage 4 — Push and projectile deflection
+- Integrate blast targets and player recoil.
+- Implement incoming projectile eligibility, timing/cone/range, reflection ownership, and feedback.
+- Validate no unintended recoil or double-fire.
+
+### Stage 5 — Focus
+- Implement recharge and reward rules.
+- Implement the world/player time-domain behavior.
+- Validate real-time player movement, collision, physics, enemies, projectiles, held objects, audio, and cleanup.
+
+### Stage 6 — Polish and balancing
+- Reticle states, labels, audio, impact VFX, camera feedback, optional small flow/chain feedback.
+- Tune values with playtests and profiler data.
+- Do not add map work.
+
+### Stage 7 — Regression and handoff
+- Run all tests in `10_VALIDATION_AND_PLAYTEST_SUITE.md`.
+- Run the previous movement pack's regression tests as well.
+- Provide files changed, settings changed, known limitations, and exact manual test steps.
+
+## Engineering standards
+
+- Follow the project's current Unity version and coding conventions.
+- Use serialized/configurable tuning parameters rather than unexplained magic numbers.
+- Use one authoritative owner for each input and each player velocity modification.
+- Use `FixedUpdate`/physics-step logic for forces and Rigidbody movement; use `Update` for input collection and UI, with buffering when required.
+- Avoid allocating garbage every physics frame (LINQ, repeated GetComponent, new collections, string concatenation).
+- Cache references and validate missing dependencies.
+- Handle disable/destroy/respawn correctly: release held objects, restore ignored collisions, release projectile ownership, stop time dilation, and clear events.
+- Use layers and collision masks explicitly; do not rely on object names.
+- Keep physics interactions deterministic enough to test; do not use `transform.position` teleporting for dynamic objects every frame.
+- Do not silently change player controls, enemy balance, or damage tuning.
+- Do not claim tests passed unless they were actually run.
+
+## Required final report
+
+When finished, report:
+
+1. What was inspected and what movement-pack work was already present.
+2. The exact systems implemented and their behavior.
+3. Files added/modified and why.
+4. Any interface migration or adapter.
+5. All changed serialized values, layers, collision matrix entries, and Input Actions.
+6. Focus time-domain implementation and measured player/world behavior.
+7. Object classes and actual tuned values.
+8. Tests run, results, and tests not run.
+9. Known limitations and remaining decisions.
+10. A short playtest route for Push, Pull, Crate Cannon, Focus, and enemy interaction.
+
+Do not report success for untested features. A compilable partial implementation with clearly identified remaining tests is better than claiming a complete result without evidence.

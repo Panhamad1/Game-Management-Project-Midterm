@@ -13,27 +13,33 @@ public class SlowMotionAbility : MonoBehaviour
     [SerializeField] private float slowMoTimeScale = 0.25f;
 
     [Header("Perspective & Sensory Tuning")]
-    [SerializeField] private float fovExpansion = 8.0f;
+    [Tooltip("FOV expansion disabled per user design preference to prevent arm stretching.")]
+    [SerializeField] private float fovExpansion = 0.0f;
 
-    [Header("Energy Meter (Seconds)")]
+    [Header("Energy Meter (Focus Resource)")]
     [Tooltip("If true, Slow Motion has zero cooldown and can be used indefinitely.")]
-    [SerializeField] private bool infiniteSlowMo = true;
-    [SerializeField] private float maxDuration = 4.0f;
-    [SerializeField] private float rechargeDuration = 6.0f;
+    [SerializeField] private bool infiniteSlowMo = false;
+    [SerializeField] private float maxEnergy = 100.0f;
+    [SerializeField] private float drainRate = 10.0f; // 100 / 10 = 10 seconds duration
+    [SerializeField] private float recoveryDelay = 0.5f; // Wait before recharging
+    [SerializeField] private float recoveryRate = 22.0f; // Recharges full in ~4.5s
+    [SerializeField] private float minActivationEnergy = 5.0f;
 
     private PlayerMovement playerMovement;
     private Camera playerCamera;
     private PlayerAudioEffects audioEffects;
 
     private float currentEnergy;
+    private float recoveryTimer = 0f;
     private bool isActive = false;
     private float defaultFixedDeltaTime;
-    private float baseFOV = 60f;
-    private float targetFOV;
 
     // Public API Contracts
     public bool IsActive => isActive;
-    public float EnergyPercent => infiniteSlowMo ? 1.0f : Mathf.Clamp01(currentEnergy / maxDuration);
+    public float FovExpansion => fovExpansion;
+    public float CurrentEnergy => currentEnergy;
+    public float MaxEnergy => maxEnergy;
+    public float EnergyPercent => infiniteSlowMo ? 1.0f : Mathf.Clamp01(currentEnergy / maxEnergy);
 
     private void Awake()
     {
@@ -43,13 +49,7 @@ public class SlowMotionAbility : MonoBehaviour
 
         if (playerCamera == null) playerCamera = Camera.main;
 
-        if (playerCamera != null)
-        {
-            baseFOV = playerCamera.fieldOfView;
-        }
-
-        targetFOV = baseFOV;
-        currentEnergy = maxDuration;
+        currentEnergy = maxEnergy;
         defaultFixedDeltaTime = Time.fixedDeltaTime;
     }
 
@@ -59,11 +59,11 @@ public class SlowMotionAbility : MonoBehaviour
 
         if (infiniteSlowMo)
         {
-            currentEnergy = maxDuration;
+            currentEnergy = maxEnergy;
         }
         else if (isActive)
         {
-            currentEnergy -= dt;
+            currentEnergy -= drainRate * dt;
             if (currentEnergy <= 0f)
             {
                 currentEnergy = 0f;
@@ -72,28 +72,27 @@ public class SlowMotionAbility : MonoBehaviour
         }
         else
         {
-            // Kinetic Siphon Recharge (TEAM_DEVELOPMENT_HANDBOOK.md:71)
-            // Focus primarily recharges while moving fast; slow baseline trickle while walking
-            float playerSpeed = playerMovement != null ? playerMovement.CurrentSpeed : 0f;
-            if (playerSpeed > 4.5f && currentEnergy < maxDuration)
+            if (recoveryTimer > 0f)
             {
-                float speedRatio = Mathf.Clamp01((playerSpeed - 4.5f) / 15.0f);
-                float rechargeRate = Mathf.Lerp(0.4f, 2.2f, speedRatio);
-                currentEnergy = Mathf.Min(currentEnergy + rechargeRate * dt, maxDuration);
+                recoveryTimer -= dt;
             }
-            else if (rechargeDuration > 0f && currentEnergy < maxDuration)
+            else if (currentEnergy < maxEnergy)
             {
-                // Slow ambient passive recovery
-                currentEnergy = Mathf.Min(currentEnergy + (maxDuration / rechargeDuration) * 0.15f * dt, maxDuration);
+                // Kinetic Siphon Recharge (TEAM_DEVELOPMENT_HANDBOOK.md:71)
+                // Focus recharges faster when moving fast
+                float rate = recoveryRate;
+                float playerSpeed = playerMovement != null ? playerMovement.CurrentSpeed : 0f;
+                if (playerSpeed > 6.0f)
+                {
+                    float speedRatio = Mathf.Clamp01((playerSpeed - 6.0f) / 14.0f);
+                    rate += 12.0f * speedRatio;
+                }
+
+                currentEnergy = Mathf.Min(currentEnergy + rate * dt, maxEnergy);
             }
         }
 
-        // Smooth camera FOV transition during Slow Motion
-        if (playerCamera != null)
-        {
-            targetFOV = baseFOV + (isActive ? fovExpansion : 0f);
-            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, dt * 10f);
-        }
+        // Camera FOV during Slow Motion is authoritatively handled by MouseLook.cs to avoid frame-by-frame FOV fighting.
     }
 
     /// <summary>
@@ -101,12 +100,12 @@ public class SlowMotionAbility : MonoBehaviour
     /// </summary>
     public void SiphonEnergy(float bonus)
     {
-        currentEnergy = Mathf.Min(currentEnergy + bonus, maxDuration);
+        currentEnergy = Mathf.Min(currentEnergy + bonus, maxEnergy);
     }
 
     public void ActivateSlowMotion()
     {
-        if (isActive || (!infiniteSlowMo && currentEnergy <= 0.5f)) return;
+        if (isActive || (!infiniteSlowMo && currentEnergy < minActivationEnergy)) return;
 
         isActive = true;
         Time.timeScale = slowMoTimeScale;
@@ -128,6 +127,7 @@ public class SlowMotionAbility : MonoBehaviour
         if (!isActive) return;
 
         isActive = false;
+        recoveryTimer = recoveryDelay;
         Time.timeScale = 1.0f;
         Time.fixedDeltaTime = defaultFixedDeltaTime;
 
@@ -139,6 +139,32 @@ public class SlowMotionAbility : MonoBehaviour
         if (audioEffects != null)
         {
             audioEffects.PlaySlowMoExit();
+        }
+    }
+
+    private void OnGUI()
+    {
+        if (isActive)
+        {
+            Color oldColor = GUI.color;
+
+            // Subtle electric focus edge accents (no murky grey wash covering screen!)
+            int edgeW = 12;
+            GUI.color = new Color(0.15f, 0.85f, 1.0f, 0.28f);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, edgeW), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0, Screen.height - edgeW, Screen.width, edgeW), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0, 0, edgeW, Screen.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(Screen.width - edgeW, 0, edgeW, Screen.height), Texture2D.whiteTexture);
+
+            // Clean bottom status pill
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.alignment = TextAnchor.MiddleCenter;
+            style.fontSize = 12;
+            style.fontStyle = FontStyle.Bold;
+            style.normal.textColor = new Color(0.2f, 0.95f, 1.0f, 0.95f);
+            GUI.Label(new Rect(0, Screen.height - 36, Screen.width, 24), "FOCUS // SLOW-MOTION ACTIVE", style);
+
+            GUI.color = oldColor;
         }
     }
 

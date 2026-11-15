@@ -16,19 +16,21 @@ public class MouseLook : MonoBehaviour
     [Header("Hierarchy References")]
     [SerializeField] private Transform playerBody;
 
-    [Header("Head Motion (Vertical Only)")]
-    [SerializeField] private float bobFrequency = 10.0f;
-    [SerializeField] private float bobVerticalAmplitude = 0.03f;
+    [Header("Head Motion & Tactile Bobbing")]
+    [SerializeField] private float bobFrequency = 8.5f;
+    [SerializeField] private float bobVerticalAmplitude = 0.08f;
+    [SerializeField] private float bobHorizontalAmplitude = 0.055f;
+    [SerializeField] private float bobRollIntensity = 1.6f;
 
     [Header("Landing Dip")]
-    [SerializeField] private float landingDipMax = 0.15f;
-    [SerializeField] private float landingRecoverySpeed = 6.0f;
+    [SerializeField] private float landingDipMax = 0.22f;
+    [SerializeField] private float landingRecoverySpeed = 7.0f;
 
     [Header("Dynamic FOV & Speed Banking")]
     [SerializeField] private float baseFOV = 85f;
-    [SerializeField] private float maxFOV = 105f;
-    [SerializeField] private float maxFOVSpeed = 30f;
-    [SerializeField] private float maxBankAngle = 2.5f;
+    [SerializeField] private float maxFOV = 96f;
+    [SerializeField] private float maxFOVSpeed = 25f;
+    [SerializeField] private float maxBankAngle = 2.0f;
     [SerializeField] private float bankSpeed = 8.0f;
 
     private Camera cam;
@@ -43,6 +45,8 @@ public class MouseLook : MonoBehaviour
     private float targetEyeLocalY = 0.65f;
     private float currentEyeLocalY = 0.65f;
     private bool isSliding = false;
+    private bool isWallRunning = false;
+    private int wallRunSide = 0;
     private Rigidbody bodyRb;
 
     private float shakeTrauma = 0f;
@@ -97,6 +101,12 @@ public class MouseLook : MonoBehaviour
         isSliding = sliding;
     }
 
+    public void SetWallRunning(bool wallRunning, int side)
+    {
+        isWallRunning = wallRunning;
+        wallRunSide = side;
+    }
+
     public void SetLookInput(Vector2 lookDelta)
     {
         currentLookDelta = lookDelta;
@@ -134,9 +144,11 @@ public class MouseLook : MonoBehaviour
         yawAngle += mouseX;
         if (playerBody != null)
         {
-            playerBody.rotation = Quaternion.Euler(0f, yawAngle, 0f);
+            Quaternion bodyRot = Quaternion.Euler(0f, yawAngle, 0f);
+            playerBody.rotation = bodyRot;
             if (bodyRb != null)
             {
+                bodyRb.rotation = bodyRot;
                 bodyRb.angularVelocity = Vector3.zero;
             }
         }
@@ -155,32 +167,49 @@ public class MouseLook : MonoBehaviour
             shakeTrauma = Mathf.MoveTowards(shakeTrauma, 0f, 4.0f * dt);
         }
 
-        // Apply local rotation to camera pivot with subtle speed banking and slide carve tilt
+        // Apply local rotation to camera pivot with wall-run tilt, slide roll, and subtle speed banking
         float targetRoll = -moveInput.x * Mathf.Clamp01(speed / 10f) * maxBankAngle;
-        currentRollAngle = Mathf.Lerp(currentRollAngle, targetRoll, bankSpeed * dt);
-        float effectivePitch = pitchAngle + (isSliding ? 1.5f : 0f);
-        transform.localRotation = Quaternion.Euler(effectivePitch, 0f, currentRollAngle);
-
-        // Dynamic FOV based on movement speed (+4 degrees when sliding, +2 degrees subtle breathe when in Slow-Mo)
-        if (cam != null)
+        if (isWallRunning)
         {
-            float targetFOV = Mathf.Lerp(baseFOV, maxFOV, Mathf.Clamp01(speed / maxFOVSpeed));
-            if (isSliding) targetFOV = Mathf.Min(targetFOV + 4f, maxFOV);
-            if (slowMotionAbility != null && slowMotionAbility.IsActive) targetFOV = Mathf.Min(targetFOV + 2.5f, maxFOV);
-            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, 8.0f * dt);
+            // Wall-run tilt: roll 9 degrees into the wall surface
+            targetRoll = (wallRunSide > 0 ? 9.0f : -9.0f);
+        }
+        else if (isSliding)
+        {
+            // Subtle carve tilt while sliding
+            targetRoll += (moveInput.x != 0f ? -moveInput.x * 3.5f : -2.0f);
         }
 
-        // 3. Vertical-Only Head Bobbing (disabled while sliding)
+        // 3. Tactile Multi-Axis Head Bobbing (disabled while sliding or wall running)
         Vector3 bobOffset = Vector3.zero;
-        if (isGrounded && !isSliding && moveInput.sqrMagnitude > 0.05f && speed > 0.5f)
+        float bobRoll = 0f;
+        if (isGrounded && !isSliding && !isWallRunning && moveInput.sqrMagnitude > 0.05f && speed > 0.4f)
         {
-            bobTimer += dt * bobFrequency;
+            float speedScale = Mathf.Clamp(speed / 3.8f, 0.8f, 1.6f);
+            bobTimer += dt * bobFrequency * speedScale;
             float verticalBob = Mathf.Sin(bobTimer) * bobVerticalAmplitude;
-            bobOffset = new Vector3(0f, verticalBob, 0f);
+            float horizontalBob = Mathf.Cos(bobTimer * 0.5f) * bobHorizontalAmplitude;
+            bobRoll = Mathf.Cos(bobTimer * 0.5f) * bobRollIntensity;
+            bobOffset = new Vector3(horizontalBob, verticalBob, 0f);
         }
         else
         {
             bobTimer = 0f;
+        }
+
+        targetRoll += bobRoll;
+        currentRollAngle = Mathf.Lerp(currentRollAngle, targetRoll, bankSpeed * dt);
+        float effectivePitch = pitchAngle + (isSliding ? 1.5f : 0f);
+        transform.localRotation = Quaternion.Euler(effectivePitch, 0f, currentRollAngle);
+
+        // Dynamic FOV: speed expansion + slide burst + dramatic slow-mo perspective warp
+        if (cam != null)
+        {
+            float targetFOV = Mathf.Lerp(baseFOV, maxFOV, Mathf.Clamp01(speed / maxFOVSpeed));
+            if (isSliding) targetFOV = Mathf.Min(targetFOV + 4f, maxFOV);
+            if (isWallRunning) targetFOV = Mathf.Min(targetFOV + 2.5f, maxFOV);
+            if (slowMotionAbility != null && slowMotionAbility.IsActive) targetFOV = Mathf.Min(targetFOV + slowMotionAbility.FovExpansion, 108f);
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, 8.0f * dt);
         }
 
         // 4. Landing Dip & Smooth Eye Height Transition (Never dips below target eye level)

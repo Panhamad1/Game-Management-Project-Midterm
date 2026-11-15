@@ -53,7 +53,7 @@ public class AbilityHUD : MonoBehaviour
 
         if (controlsGuideText != null)
         {
-            controlsGuideText.text = "[SHIFT] Sprint   [C] Slide   [SPACE] B-Hop/Fling   [LMB] Push/Boost   [RMB] Grapple/Grab   [Q/F] Focus";
+            controlsGuideText.text = "[SHIFT] Sprint   [CTRL/C] Slide   [SPACE] Jump/Wall-Kick   [LMB] Push/Launch   [RMB] Pull Prop   [F] Focus";
         }
 
         SetupCyanFocusTexture();
@@ -106,67 +106,98 @@ public class AbilityHUD : MonoBehaviour
         Color activeColor = defaultCrosshairColor;
         float bracketDistance = 14f;
 
-        // Mode 1: Carrying an object (Armed Crate Cannon)
-        if (pullAbility != null && pullAbility.IsCarrying)
+        // Priority 0: Deflectable Projectile in parry range
+        if (pushAbility != null && pushAbility.HasDeflectableTargetInSight(out _))
+        {
+            showBadge = true;
+            activeColor = targetAcquiredColor; // Electric Cyan
+            bracketDistance = 24f;
+            badgeInfo = "[LMB] DEFLECT PROJECTILE";
+        }
+        // Priority 1: Carrying an object (Armed Crate Cannon)
+        else if (pullAbility != null && pullAbility.IsCarrying)
         {
             showBadge = true;
             activeColor = crateCannonColor;
             bracketDistance = 22f;
-            badgeInfo = "[LMB] FIRE CRATE CANNON (35 m/s)";
+            string objClass = pullAbility.HeldProp != null ? pullAbility.HeldProp.Class.ToString().ToUpper() : "OBJECT";
+            badgeInfo = pullAbility.HeldProp != null && pullAbility.HeldProp.CanBeLaunched
+                ? $"[LMB] FIRE CRATE CANNON ({objClass})"
+                : $"CARRYING {objClass}";
         }
         else if (playerCamera != null)
         {
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-            // Priority 1: Check for Grab Targets (Props, Crates, TargetButtons) within 45m
+            // Priority 2: Check for Grab Targets (Props, Crates, TargetButtons) within 45m
             LayerMask targetMask = LayerMask.GetMask("Interactables", "Enemies", "Projectiles");
             if (targetMask.value == 0) targetMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
 
             bool hasPropTarget = Physics.Raycast(ray, out RaycastHit propHit, 45f, targetMask, QueryTriggerInteraction.Ignore);
             if (!hasPropTarget)
             {
-                hasPropTarget = Physics.SphereCast(ray, 0.75f, out propHit, 45f, targetMask, QueryTriggerInteraction.Ignore);
+                Ray assistRay = new Ray(ray.origin + ray.direction * 1.5f, ray.direction);
+                hasPropTarget = Physics.SphereCast(assistRay, 0.35f, out propHit, 43.5f, targetMask, QueryTriggerInteraction.Ignore);
             }
 
-            if (hasPropTarget)
+            if (hasPropTarget && propHit.collider != null)
             {
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target != null)
                 {
-                    propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
                     TargetButton button = propHit.collider.GetComponentInParent<TargetButton>();
+                    Rigidbody body = propHit.collider.attachedRigidbody;
+                    bool canGrab = target.CanBePulled && body != null && !body.isKinematic;
+                    if (canGrab || button != null)
+                    {
+                        propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
 
-                    showBadge = true;
-                    activeColor = grabObjectColor; // Vibrant Amber / Yellow
-                    bracketDistance = 20f; // Expand into open box
+                        float dist = Vector3.Distance(ray.origin, propHit.point);
+                        showBadge = true;
+                        activeColor = grabObjectColor; // Vibrant Amber / Yellow
+                        bracketDistance = 20f; // Expand into open box
 
-                    if (propUnderCrosshair != null)
-                    {
-                        badgeInfo = $"[RMB] GRAB · {propUnderCrosshair.name.ToUpper()} · {propHit.distance:F1}m";
-                    }
-                    else if (button != null)
-                    {
-                        badgeInfo = $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {propHit.distance:F1}m";
-                    }
-                    else
-                    {
-                        badgeInfo = $"[RMB] GRAB · {propHit.collider.gameObject.name.ToUpper()} · {propHit.distance:F1}m";
+                        if (propUnderCrosshair != null)
+                        {
+                            string verb = propUnderCrosshair.Class == WeightClass.Heavy ? "DRAG" : "GRAB";
+                            badgeInfo = $"[RMB] {verb} · {propUnderCrosshair.name.ToUpper()} ({propUnderCrosshair.Class.ToString().ToUpper()}) · {dist:F1}m";
+                        }
+                        else if (button != null)
+                        {
+                            badgeInfo = $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {dist:F1}m";
+                        }
+                        else
+                        {
+                            string targetName = propHit.collider.gameObject.name.ToUpper();
+                            badgeInfo = $"[RMB] GRAB · {targetName} · {dist:F1}m";
+                        }
                     }
                 }
             }
 
-            // Priority 2: If no grab object, check for Grapple Anchors (Walls, Floor, Towers, Ceiling) within 75m
-            if (!showBadge)
+            // Priority 3: Check for Grapple Anchors ONLY if grapple traversal is enabled
+            if (!showBadge && pullAbility != null && pullAbility.EnableGrappleTraversal)
             {
                 LayerMask grappleMask = LayerMask.GetMask("Environment", "Default", "GrappleAnchors");
                 if (grappleMask.value == 0) grappleMask = ~LayerMask.GetMask("Player", "Ignore Raycast");
 
-                if (Physics.Raycast(ray, out RaycastHit grappleHit, 75f, grappleMask, QueryTriggerInteraction.Ignore))
+                bool hasGrappleHit = Physics.Raycast(ray, out RaycastHit grappleHit, 75f, grappleMask, QueryTriggerInteraction.Ignore);
+                if (!hasGrappleHit)
                 {
-                    showBadge = true;
-                    activeColor = grappleAnchorColor; // Electric Cyan
-                    bracketDistance = 9.5f; // Contract into sharp diamond / cross
-                    badgeInfo = $"[RMB] GRAPPLE · {grappleHit.distance:F1}m";
+                    Ray assistGrappleRay = new Ray(ray.origin + ray.direction * 2.0f, ray.direction);
+                    hasGrappleHit = Physics.SphereCast(assistGrappleRay, 0.25f, out grappleHit, 73f, grappleMask, QueryTriggerInteraction.Ignore);
+                }
+
+                if (hasGrappleHit && grappleHit.collider != null)
+                {
+                    float grappleDist = Vector3.Distance(ray.origin, grappleHit.point);
+                    if (grappleDist >= 4.0f)
+                    {
+                        showBadge = true;
+                        activeColor = grappleAnchorColor; // Electric Cyan
+                        bracketDistance = 9.5f; // Contract into sharp diamond / cross
+                        badgeInfo = $"[RMB] GRAPPLE · {grappleDist:F1}m";
+                    }
                 }
             }
         }

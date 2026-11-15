@@ -52,9 +52,15 @@ public class PlayerAbilityInput : MonoBehaviour
 
             movement.SetMoveInput(moveVector);
 
-            // Sprint / Run (Hold Left Shift)
+            // Sprint / Run (Hold Left Shift) - Shift is strictly RUN, never Dash
             bool isSprintPressed = keyboard.leftShiftKey.isPressed;
             movement.SetSprintInput(isSprintPressed);
+
+            // Dash: Trigger directional burst strictly on tap Q
+            if (keyboard.qKey.wasPressedThisFrame)
+            {
+                movement.PerformDash();
+            }
 
             // Crouch / Slide (C or Left Ctrl)
             bool isCrouchPressed = keyboard.cKey.isPressed || keyboard.leftCtrlKey.isPressed;

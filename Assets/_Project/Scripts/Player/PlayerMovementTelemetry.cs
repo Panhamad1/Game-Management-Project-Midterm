@@ -16,8 +16,8 @@ using UnityEngine.InputSystem;
 public class PlayerMovementTelemetry : MonoBehaviour
 {
     [Header("Telemetry Settings")]
-    [Tooltip("If true, shows the diagnostic HUD overlay on screen.")]
-    [SerializeField] private bool showOverlay = true;
+    [Tooltip("If true, shows the diagnostic HUD overlay on screen. Toggle with F3.")]
+    [SerializeField] private bool showOverlay = false;
 
     [Tooltip("Key to toggle the telemetry overlay.")]
     [SerializeField] private Key toggleKey = Key.F3;
@@ -82,7 +82,7 @@ public class PlayerMovementTelemetry : MonoBehaviour
                 peakSlideSpeed = currentSpeed;
             }
 
-            speedCapTriggered = currentSpeed >= 34.8f;
+            speedCapTriggered = currentSpeed >= 25.8f;
         }
     }
 

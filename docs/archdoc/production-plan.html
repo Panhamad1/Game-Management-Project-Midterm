@@ -84,33 +84,33 @@
                   <td><strong>Person 1</strong></td>
                   <td><strong>Player &amp; Locomotion Lead</strong></td>
                   <td>
-                    First-person WASD movement, mouse look pitch/yaw, momentum slide, slope acceleration, bunny-hop speed preservation, overhead raycast clearance, ContinuousDynamic CCD, and Speed Camera banking/FOV.
+                    First-person WASD movement (3.2 m/s), sprint (5.4 m/s), slide (4.8 m/s), 1.5s wall-hang cling, +9.5m vertical climb vault (Space), zig-zag wall-jumping, ContinuousDynamic CCD, and MouseLook pitch/yaw with natural head-bob.
                   </td>
-                  <td>A responsive Rigidbody player controller that moves, slides, jumps, and recoils reliably up to 35 m/s without tipping over or clipping walls.</td>
+                  <td>A responsive Rigidbody parkour controller with reliable wall-running, ledge vaulting, and rocket recoil up to a calibrated 9.0 m/s speed cap.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 2</strong></td>
-                  <td><strong>Abilities &amp; Weaponless Combat Lead</strong></td>
+                  <td><strong>Abilities &amp; Kinetic Weaponry Lead</strong></td>
                   <td>
-                    Push Wind Blast impulse, slide recoil-convert boost, dual-mode Pull (grapple slingshot vs outline-highlighted prop snatch), Crate Cannon projectile launch, and narrow-vent elastic retraction.
+                    Push air blast impulse, 3.8m bullet deflection parry cone, Pull tractor beam into bottom-right pocket (0.42m, -0.32m, 1.35m), 32 m/s prop launch, and Chrono-Dilation Slow Motion (Z key, 25% physics timeScale).
                   </td>
-                  <td>Stable push, pull, grapple, and throwing mechanics that manipulate test crates and slingshot the player smoothly without glitching.</td>
+                  <td>Accurate kinetic physics abilities with unobstructed crosshair visibility, responsive deflection parrying, and crisp slow-motion visuals.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 3</strong></td>
                   <td><strong>Level Design &amp; Environment Lead</strong></td>
                   <td>
-                    Modular prefab kit (floors, walls, speed ramps), greybox parkour courses (Rooms 1 through 7), aerial grapple rings, destructible wooden barricades, laser tripwires, and speedrun split gates.
+                    Procedural 180m 6-Chamber Egyptian Academy generation (<code>EgyptianTutorialBuilder.cs</code>), Egyptian prop hierarchy (Urns, Boulders, Slabs with mass auras), Ankh target switches, chamber checkpoints, and void kill plane.
                   </td>
-                  <td>A playable sequence of seven high-speed test courses with clear goals, flow-focused grapple gaps, and zero dead-ends.</td>
+                  <td>A playable sequence of six linear Egyptian chambers teaching parkour and combat mechanics with seamless checkpoint resets.</td>
                 </tr>
                 <tr>
                   <td><strong>Person 4</strong></td>
-                  <td><strong>Slow-Mo, Enemy AI, UI &amp; Flow Lead</strong></td>
+                  <td><strong>Enemy AI, UI &amp; Audio Lead</strong></td>
                   <td>
-                    Momentum-siphon slow-motion focus manager, TurretAI with 1.0s predictive aim lasers, Swarm Rusher ram physics, Armored Brute collisions, speedrun medal timer HUD, and audio crescendo.
+                    4-tier enemy AI: SwarmerEnemy (65% death explosion, physical fling), HulkLeaperEnemy (ground slam with &lt;20m camera shake, back weakpoint, prop stagger), SniperEnemy (laser telegraph), SentryEnemy (plasma bursts), and combat HUD.
                   </td>
-                  <td>Working momentum-siphon slow-mo, telegraphed enemy AI, speedrun medal split readout, clear sound cues, and overall game flow.</td>
+                  <td>Engaging enemy combat with clear telegraphs, physical hit reactions, damage numbers, and synchronized sound cues.</td>
                 </tr>
               </tbody>
             </table>
@@ -137,7 +137,7 @@
                 <ul>
                   <li><label><input type="checkbox" class="task-check" data-task="m0-1"> Agree on identical Unity Editor version and URP render pipeline across all four computers.</label></li>
                   <li><label><input type="checkbox" class="task-check" data-task="m0-2"> Initialize Git repository with correct Unity <code>.gitignore</code> (ignore <code>Library/</code> and <code>Temp/</code>).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m0-3"> Create <code>Assets/_Project/</code> folder layout and set up Physics Layers (Player, Environment, Interactables, Hazards).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m0-3"> Create <code>Assets/_Project/</code> folder layout and set up Physics Layers (Player, Environment, Interactables, Hazards, Enemies, Projectiles).</label></li>
                 </ul>
               </div>
             </li>
@@ -147,15 +147,15 @@
               <div class="step-dot">1</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M1: Core Player Movement</strong>
+                  <strong>Milestone M1: Core Parkour Locomotion</strong>
                   <span class="status-badge" data-step-status="step-1">Not started</span>
                 </div>
-                <p class="prose">Build the first-person Rigidbody character controller.</p>
+                <p class="prose">Build the first-person Rigidbody character controller with parkour abilities.</p>
                 <ul>
                   <li><label><input type="checkbox" class="task-check" data-task="m1-1"> Build <code>PlayerRoot</code> prefab with Rigidbody, CapsuleCollider, and frozen X/Z rotations.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m1-2"> Implement <code>PlayerMovement.cs</code> (WASD walking, jumping, ground check sphere).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m1-3"> Implement <code>MouseLook.cs</code> on CameraPivot with vertical pitch clamping (-85° to +85°).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m1-4"> Test walking up 30° ramps and jumping across a 3m test gap without snagging.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-2"> Implement <code>PlayerMovement.cs</code>: walk (3.2 m/s), sprint (5.4 m/s), slide (4.8 m/s), and jump.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-3"> Implement 1.5s wall-hang cling and Space-triggered +9.5m vertical climb vault over high ledges.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m1-4"> Implement directional zig-zag wall-jumping and MouseLook with natural head-bob.</label></li>
                 </ul>
               </div>
             </li>
@@ -165,15 +165,15 @@
               <div class="step-dot">2</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M2: Right-Hand Push & Player Recoil</strong>
+                  <strong>Milestone M2: Push Blast & Bullet Deflection Parry</strong>
                   <span class="status-badge" data-step-status="step-2">Not started</span>
                 </div>
-                <p class="prose">Implement outward push blast and the backwards recoil jump.</p>
+                <p class="prose">Implement outward push blast, rocket recoil, and bullet deflection parry.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m2-1"> Create <code>AbilityTarget.cs</code> component and attach to test cubes of 2kg, 10kg, and 50kg.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m2-2"> Implement <code>PushAbility.cs</code> raycasting (12m range, 12.0 impulse units on target).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m2-3"> Implement player recoil: call <code>PlayerMovement.ApplyRecoil()</code> with 5.0 impulse units.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m2-4"> Verify recoil triggers when pushing empty space, and enforce 0.45s cooldown.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-1"> Implement <code>PushAbility.cs</code> (0.45s cooldown, launches carried props at 32 m/s).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-2"> Implement 3.8m parry cone sweeping incoming plasma bolts and reversing velocity at 35 m/s.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-3"> Implement player recoil impulse: call <code>PlayerMovement.ApplyRecoil()</code>.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m2-4"> Award +20 Focus energy to SlowMotionAbility upon successful bullet parries.</label></li>
                 </ul>
               </div>
             </li>
@@ -183,15 +183,15 @@
               <div class="step-dot">3</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M3: Left-Hand Continuous Pull</strong>
+                  <strong>Milestone M3: Kinetic Pull & Carry Pocket</strong>
                   <span class="status-badge" data-step-status="step-3">Not started</span>
                 </div>
-                <p class="prose">Implement continuous physics pull force towards the player.</p>
+                <p class="prose">Implement continuous physics pull force and clear pocket carry.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m3-1"> Implement <code>PullAbility.cs</code> raycast and target acquisition while LMB is held.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m3-2"> Calculate hold point 2.5m in front of camera and apply damped accelerating force.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m3-3"> Add 0.2m dead zone and 8.0 m/s maximum speed limit to eliminate jitter and wall clipping.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m3-4"> Verify releasing LMB safely drops the object without residual momentum spikes.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-1"> Implement <code>PullAbility.cs</code> (18m range tractor beam while RMB is held).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-2"> Seat carried props in bottom-right pocket offset (0.42m, -0.32m, 1.35m) so the forward crosshair view stays clear.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-3"> Block pulling enemy bullets to preserve bullet deflection parry balance.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m3-4"> Verify clicking LMB while holding a prop fires the Kinetic Prop Cannon at 32 m/s.</label></li>
                 </ul>
               </div>
             </li>
@@ -201,15 +201,15 @@
               <div class="step-dot">4</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M4: Combined Prototype Lab (Major Gate)</strong>
+                  <strong>Milestone M4: Chrono-Dilation Slow Motion (Major Gate)</strong>
                   <span class="status-badge" data-step-status="step-4">Not started</span>
                 </div>
-                <p class="prose">Combine dual-hand powers and slow motion in the test lab.</p>
+                <p class="prose">Implement slow-motion focus with crisp screen clarity.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m4-1"> Implement <code>SlowMotionAbility.cs</code> (0.25 timeScale, synchronized <code>fixedDeltaTime = 0.005f</code>).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m4-2"> Implement 4s drain and 6s recharge energy meter with unscaled UI update.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m4-3"> Test dual-hand control: pull crate with left hand while pushing barrier with right hand.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m4-4"> Pass Prototype Success Gate in <code>PrototypeLab.unity</code> before building levels.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-1"> Implement <code>SlowMotionAbility.cs</code> (Z key trigger, 0.25 timeScale, synchronized fixedDeltaTime).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-2"> Ensure player movement, look, and aiming stay at 100% full speed during slow motion.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-3"> Provide 100% crisp center screen with subtle 12px edge border accents and focus status.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m4-4"> Pass Prototype Success Gate in test sandbox before building academy chambers.</label></li>
                 </ul>
               </div>
             </li>
@@ -219,15 +219,15 @@
               <div class="step-dot">5</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M5: Level Progression Set (Rooms 1 to 7)</strong>
+                  <strong>Milestone M5: 6-Chamber Egyptian Academy</strong>
                   <span class="status-badge" data-step-status="step-5">Not started</span>
                 </div>
-                <p class="prose">Build the full 7-room greybox campaign using modular prefabs.</p>
+                <p class="prose">Build the 180m procedural Egyptian tutorial academy.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m5-1"> Build modular prefabs: floors, walls, ramps, doors, pressure plates, moving platforms.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m5-2"> Greybox Room 1 (Pull) and Room 2 (Push) with exit triggers.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m5-3"> Greybox Room 3 (Recoil Jump) and Room 4 (Slow-Mo Timing).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m5-4"> Greybox Rooms 5, 6, and 7 (Combined puzzle challenges and final chamber).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-1"> Implement <code>EgyptianTutorialBuilder.cs</code> to procedurally generate Chambers 1 through 6.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-2"> Build Chamber 1 (Locomotion & Slide) and Chamber 2 (Wall-Run Chasm).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-3"> Build Chamber 3 (Wall-Hang Climb Vault) and Chamber 4 (Kinetic Prop Weaponry & Ankhs).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m5-4"> Build Chamber 5 (Bullet Deflection) and Chamber 6 (Combat Mastery Sanctum).</label></li>
                 </ul>
               </div>
             </li>
@@ -237,15 +237,15 @@
               <div class="step-dot">6</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M6: Audio, Visual Feedback & Polish</strong>
+                  <strong>Milestone M6: Prop Mass Auras, 4-Tier Enemies & Audio</strong>
                   <span class="status-badge" data-step-status="step-6">Not started</span>
                 </div>
-                <p class="prose">Add sound effects, hand visuals, materials, and UI polish.</p>
+                <p class="prose">Add mass aura lights, enemy AI behaviors, and audiovisual polish.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m6-1"> Connect audio clips: push blast, pull energy hum, slow-mo whoosh, door open, impact thuds.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m6-2"> Add visual feedback: reticle highlight on valid objects, line renderer pull beam, push blast ring.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m6-3"> Apply industrial materials and emissive accent lighting to interactable objects.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m6-4"> Implement clean Main Menu, Pause Menu, and Room Completion screens.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-1"> Add ambient mass auras to props: Scarab Urns (jade mint), Sandstone Boulders (amber gold), Obsidian Slabs (ruby red).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-2"> Implement Swarmer flings with 65% death explosions and Hulk ground smash proximity camera shake (&lt;20m).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-3"> Connect audio feedback: air blast, suction hum, bullet deflection chime, and impact thuds.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m6-4"> Connect combat HUD: reticle feedback, floating health bars, and damage numbers.</label></li>
                 </ul>
               </div>
             </li>
@@ -255,15 +255,15 @@
               <div class="step-dot">7</div>
               <div class="step-card">
                 <div class="step-head">
-                  <strong>Milestone M7: Final Quality Assurance & Release</strong>
+                  <strong>Milestone M7: Quality Assurance & Standalone Release</strong>
                   <span class="status-badge" data-step-status="step-7">Not started</span>
                 </div>
-                <p class="prose">Run end-to-end playtests, fix edge-case bugs, and create the standalone build.</p>
+                <p class="prose">Run end-to-end playtests, verify void kill plane resets, and build release.</p>
                 <ul>
-                  <li><label><input type="checkbox" class="task-check" data-task="m7-1"> Conduct blind playtest with external students (zero verbal hints allowed).</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m7-2"> Verify softlock prevention: falling into any hazard resets within 1 second.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m7-3"> Create standalone Windows PC 64-bit build and verify 60+ FPS performance.</label></li>
-                  <li><label><input type="checkbox" class="task-check" data-task="m7-4"> Package submission build and verify game finishes from Room 1 through Room 7.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-1"> Conduct blind playtest through all 6 Egyptian chambers (zero verbal hints allowed).</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-2"> Verify void kill plane resets player to the last checkpoint within 0.05 seconds with zero glitches.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-3"> Create standalone Windows PC 64-bit build and verify consistent 60+ FPS performance.</label></li>
+                  <li><label><input type="checkbox" class="task-check" data-task="m7-4"> Package submission build and verify full completion from Chamber 1 to Sanctum exit.</label></li>
                 </ul>
               </div>
             </li>
