@@ -6,8 +6,7 @@ public static class SniperTestSetup
 {
     private const string Folder = "Assets/_Project/Prefabs";
 
-    [MenuItem("Tools/REBOUND/Enemies/Spawn Sniper Test Encounter")]
-    private static void SpawnEncounter()
+    public static void SpawnEncounter()
     {
         PlayerMovement player = Object.FindFirstObjectByType<PlayerMovement>();
         int enemyLayer = LayerMask.NameToLayer("Enemies");

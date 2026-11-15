@@ -6,8 +6,7 @@ public static class SwarmerTestSetup
 {
     private const string PrefabPath = "Assets/_Project/Prefabs/Swarmer.prefab";
 
-    [MenuItem("Tools/REBOUND/Enemies/Spawn Swarmer Test Pack")]
-    private static void SpawnPack()
+    public static void SpawnPack()
     {
         PlayerMovement player = Object.FindFirstObjectByType<PlayerMovement>();
         int enemyLayer = LayerMask.NameToLayer("Enemies");

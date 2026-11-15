@@ -7,8 +7,7 @@ public static class HulkTestSetup
     private const string Folder = "Assets/_Project/Prefabs";
     private const string PrefabPath = Folder + "/HulkLeaper.prefab";
 
-    [MenuItem("Tools/REBOUND/Enemies/Spawn Hulk Test Encounter")]
-    private static void SpawnEncounter()
+    public static void SpawnEncounter()
     {
         PlayerMovement player = Object.FindFirstObjectByType<PlayerMovement>();
         int enemies = LayerMask.NameToLayer("Enemies");

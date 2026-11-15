@@ -6,8 +6,7 @@ public static class SentryTestSetup
 {
     private const string PrefabFolder = "Assets/_Project/Prefabs";
 
-    [MenuItem("Tools/REBOUND/Enemies/Spawn Sentry Test Encounter")]
-    private static void SpawnEncounter()
+    public static void SpawnEncounter()
     {
         PlayerMovement player = Object.FindFirstObjectByType<PlayerMovement>();
         int enemyLayer = LayerMask.NameToLayer("Enemies");
