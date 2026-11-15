@@ -54,6 +54,92 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
         ApplyMassByClass();
     }
 
+    private Light auraLight;
+
+    private void Start()
+    {
+        if (propRenderers != null)
+        {
+            for (int i = 0; i < propRenderers.Length; i++)
+            {
+                if (propRenderers[i] == null) continue;
+                foreach (Material m in propRenderers[i].materials)
+                {
+                    if (m != null)
+                    {
+                        m.EnableKeyword("_EMISSION");
+                        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+                    }
+                }
+            }
+        }
+
+        CreateSubtleGlowAura();
+        ApplyGlowIndicator(false);
+    }
+
+    private void CreateSubtleGlowAura()
+    {
+        if (auraLight != null) return;
+
+        GameObject lightObj = new GameObject("GlowAura");
+        lightObj.transform.SetParent(transform, false);
+        lightObj.transform.localPosition = Vector3.up * 0.15f;
+
+        auraLight = lightObj.AddComponent<Light>();
+        auraLight.type = LightType.Point;
+        auraLight.range = 2.6f;
+        auraLight.intensity = 0.55f; // Soft, subtle ambient radiance
+
+        switch (weightClass)
+        {
+            case WeightClass.Light:
+                auraLight.color = new Color(0.18f, 0.95f, 0.55f); // Scarab Jade / Mint
+                break;
+            case WeightClass.Medium:
+                auraLight.color = new Color(1.0f, 0.82f, 0.22f); // Egyptian Gold / Amber
+                break;
+            case WeightClass.Heavy:
+            default:
+                auraLight.color = new Color(0.95f, 0.25f, 0.18f); // Molten Ruby / Crimson
+                break;
+        }
+    }
+
+    public void ApplyGlowIndicator(bool highlighted)
+    {
+        Color glowColor;
+        switch (weightClass)
+        {
+            case WeightClass.Light:
+                // Subtle Scarab Jade / Mint Cyan (Light: Urns, small rocks)
+                glowColor = new Color(0.12f, 0.75f, 0.45f) * (highlighted ? 0.9f : 0.45f);
+                break;
+            case WeightClass.Medium:
+                // Subtle Egyptian Amber / Gold (Medium: Sandstone boulders/crates)
+                glowColor = new Color(0.90f, 0.65f, 0.15f) * (highlighted ? 0.9f : 0.45f);
+                break;
+            case WeightClass.Heavy:
+            default:
+                // Subtle Molten Bronze / Deep Ruby (Heavy: Obsidian monoliths)
+                glowColor = new Color(0.80f, 0.20f, 0.15f) * (highlighted ? 0.9f : 0.45f);
+                break;
+        }
+
+        for (int i = 0; i < propRenderers.Length; i++)
+        {
+            if (propRenderers[i] == null) continue;
+            propRenderers[i].GetPropertyBlock(propBlock);
+            propBlock.SetColor("_EmissionColor", glowColor);
+            propRenderers[i].SetPropertyBlock(propBlock);
+        }
+
+        if (auraLight != null)
+        {
+            auraLight.intensity = highlighted ? 0.85f : 0.55f;
+        }
+    }
+
     public void SetCarriedState(bool carried)
     {
         isCarried = carried;
@@ -144,19 +230,14 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
 
     public void SetHighlighted(bool on)
     {
-        // Subtle emissive glow or outline when aimed at
-        for (int i = 0; i < propRenderers.Length; i++)
-        {
-            if (propRenderers[i] == null) continue;
-            propRenderers[i].GetPropertyBlock(propBlock);
-            propBlock.SetColor("_EmissionColor", on ? new Color(0.2f, 0.4f, 0.9f) : Color.black);
-            propRenderers[i].SetPropertyBlock(propBlock);
-        }
+        ApplyGlowIndicator(on);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject == gameObject) return;
+        // Held props must NEVER trigger crush damage or kinetic destruction while carried in hands
+        if (isCarried) return;
 
         float relativeSpeed = collision.relativeVelocity.magnitude;
         if (relativeSpeed >= crushSpeedThreshold)
@@ -172,7 +253,7 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
                 ContactPoint contact = collision.GetContact(0);
                 float mass = rb != null ? rb.mass : 5.0f;
                 float energy = 0.5f * mass * relativeSpeed * relativeSpeed;
-                bool isWeakPoint = collision.collider.CompareTag("WeakPoint") || collision.collider.gameObject.name.ToLower().Contains("weakpoint");
+                bool isWeakPoint = collision.collider.gameObject.name.ToLower().Contains("weakpoint") || collision.collider.GetComponentInParent<HulkWeakPoint>() != null;
 
                 KineticImpactContext context = new KineticImpactContext(
                     gameObject,

@@ -62,6 +62,7 @@ public sealed class HulkShockwave : MonoBehaviour
                     }
                     float strength = Mathf.Lerp(1f, 0.55f, playerDistance / radius);
                     player.ApplyEnemyKnockback((outward.normalized * knockbackSpeed + Vector3.up * launchSpeed) * strength);
+                    player.GetComponent<IDamageReceiver>()?.TakeDamage(damage, "HulkShockwave", GetInstanceID());
                     player.GetComponent<SwarmerTestHealth>()?.TakeDamage(damage);
                 }
             }

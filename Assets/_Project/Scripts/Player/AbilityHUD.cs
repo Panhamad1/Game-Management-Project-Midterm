@@ -53,7 +53,7 @@ public class AbilityHUD : MonoBehaviour
 
         if (controlsGuideText != null)
         {
-            controlsGuideText.text = "[SHIFT] Sprint   [C] Slide   [SPACE] B-Hop/Fling   [LMB] Push/Boost   [RMB] Grapple/Grab   [Q/F] Focus";
+            controlsGuideText.text = "[SHIFT] Sprint   [CTRL/C] Slide   [SPACE] Jump/Wall-Kick   [LMB] Push/Launch   [RMB] Pull Prop   [F] Focus";
         }
 
         SetupCyanFocusTexture();
@@ -175,8 +175,8 @@ public class AbilityHUD : MonoBehaviour
                 }
             }
 
-            // Priority 3: If no grab object, check for Grapple Anchors (Walls, Floor, Towers, Ceiling) within 75m
-            if (!showBadge)
+            // Priority 3: Check for Grapple Anchors ONLY if grapple traversal is enabled
+            if (!showBadge && pullAbility != null && pullAbility.EnableGrappleTraversal)
             {
                 LayerMask grappleMask = LayerMask.GetMask("Environment", "Default", "GrappleAnchors");
                 if (grappleMask.value == 0) grappleMask = ~LayerMask.GetMask("Player", "Ignore Raycast");

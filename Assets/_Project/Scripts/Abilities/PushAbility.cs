@@ -123,23 +123,49 @@ public class PushAbility : MonoBehaviour
         Vector3 rayOrigin = abilityRayOrigin != null ? abilityRayOrigin.position : playerCamera.transform.position;
         Vector3 rayDirection = playerCamera != null ? playerCamera.transform.forward : transform.forward;
 
-        // 0. Projectile Deflection: Check for incoming deflectable projectiles in a forward parry cone
+        // 0. Projectile Deflection: Check for incoming deflectable projectiles in a generous forward parry cone
         bool deflectedAny = false;
-        Collider[] deflectCandidates = Physics.OverlapSphere(rayOrigin + rayDirection * 2.0f, 2.6f, hitLayers, QueryTriggerInteraction.Collide);
-        foreach (var col in deflectCandidates)
+
+        // Check 1: OverlapSphere across all layers (~0) with 3.8m radius
+        Collider[] deflectCandidates = Physics.OverlapSphere(rayOrigin + rayDirection * 2.2f, 3.8f, ~0, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < deflectCandidates.Length; i++)
         {
-            IDeflectableProjectile deflectable = col.GetComponentInParent<IDeflectableProjectile>();
+            IDeflectableProjectile deflectable = deflectCandidates[i].GetComponentInParent<IDeflectableProjectile>();
             if (deflectable != null && deflectable.CanBeDeflected)
             {
                 if (deflectable.TryDeflect(rayDirection, playerMovement != null ? playerMovement.gameObject : gameObject))
                 {
                     deflectedAny = true;
-                    if (slowMotionAbility != null)
-                    {
-                        slowMotionAbility.SiphonEnergy(15.0f); // Deflection action reward (+15 energy)
-                    }
                 }
             }
+        }
+
+        // Check 2: Active EnemyProjectile sweep in front of player (ensures fast-moving bolts without colliders are deflected)
+        EnemyProjectile[] allProjectiles = UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None);
+        for (int i = 0; i < allProjectiles.Length; i++)
+        {
+            EnemyProjectile proj = allProjectiles[i];
+            if (proj == null || !proj.CanBeDeflected) continue;
+
+            Vector3 toProj = proj.transform.position - rayOrigin;
+            float dist = toProj.magnitude;
+            if (dist <= 6.5f && (dist < 1.5f || Vector3.Dot(rayDirection, toProj / dist) > 0.35f))
+            {
+                if (proj.TryDeflect(rayDirection, playerMovement != null ? playerMovement.gameObject : gameObject))
+                {
+                    deflectedAny = true;
+                }
+            }
+        }
+
+        if (deflectedAny)
+        {
+            if (slowMotionAbility != null)
+            {
+                slowMotionAbility.SiphonEnergy(20.0f); // Deflection action reward (+20 focus)
+            }
+            if (audioEffects != null) audioEffects.PlaySlideBoost();
+            if (mouseLook != null) mouseLook.AddScreenShake(0.35f, -rayDirection);
         }
 
         bool hitSurface = false;
@@ -212,8 +238,19 @@ public class PushAbility : MonoBehaviour
             {
                 kickDir = Vector3.Lerp(kickDir, hit.normal, 0.5f).normalized;
             }
+            // If standing on the ground and blasting the floor, clamp upward kick so standing players don't auto-launch
+            else if (playerMovement != null && playerMovement.IsGrounded && kickDir.y > 0.4f)
+            {
+                kickMagnitude = Mathf.Min(kickMagnitude, 4.2f);
+            }
 
             finalRecoilVelocity = kickDir * kickMagnitude;
+
+            // In slow-mo, scale down vertical impulse so reduced gravity doesn't over-launch player
+            if (slowMotionAbility != null && slowMotionAbility.IsActive && finalRecoilVelocity.y > 0f)
+            {
+                finalRecoilVelocity.y *= 0.45f;
+            }
         }
 
         if (playerMovement != null && hasSurfaceKick)
@@ -298,13 +335,26 @@ public class PushAbility : MonoBehaviour
         projectile = null;
         Vector3 origin = abilityRayOrigin != null ? abilityRayOrigin.position : (playerCamera != null ? playerCamera.transform.position : transform.position);
         Vector3 forward = playerCamera != null ? playerCamera.transform.forward : transform.forward;
-        Collider[] hits = Physics.OverlapSphere(origin + forward * 2.2f, 2.6f, hitLayers, QueryTriggerInteraction.Collide);
-        foreach (var col in hits)
+        Collider[] hits = Physics.OverlapSphere(origin + forward * 2.2f, 3.8f, ~0, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < hits.Length; i++)
         {
-            IDeflectableProjectile proj = col.GetComponentInParent<IDeflectableProjectile>();
+            IDeflectableProjectile proj = hits[i].GetComponentInParent<IDeflectableProjectile>();
             if (proj != null && proj.CanBeDeflected)
             {
                 projectile = proj;
+                return true;
+            }
+        }
+
+        EnemyProjectile[] allProjectiles = UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None);
+        for (int i = 0; i < allProjectiles.Length; i++)
+        {
+            EnemyProjectile ep = allProjectiles[i];
+            if (ep == null || !ep.CanBeDeflected) continue;
+            Vector3 toProj = ep.transform.position - origin;
+            if (toProj.sqrMagnitude <= 42.25f && Vector3.Dot(forward, toProj.normalized) > 0.35f)
+            {
+                projectile = ep;
                 return true;
             }
         }

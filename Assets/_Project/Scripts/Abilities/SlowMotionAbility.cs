@@ -13,15 +13,16 @@ public class SlowMotionAbility : MonoBehaviour
     [SerializeField] private float slowMoTimeScale = 0.25f;
 
     [Header("Perspective & Sensory Tuning")]
-    [SerializeField] private float fovExpansion = 8.0f;
+    [Tooltip("FOV expansion disabled per user design preference to prevent arm stretching.")]
+    [SerializeField] private float fovExpansion = 0.0f;
 
     [Header("Energy Meter (Focus Resource)")]
     [Tooltip("If true, Slow Motion has zero cooldown and can be used indefinitely.")]
     [SerializeField] private bool infiniteSlowMo = false;
     [SerializeField] private float maxEnergy = 100.0f;
-    [SerializeField] private float drainRate = 25.0f; // 100 / 25 = 4 seconds duration
-    [SerializeField] private float recoveryDelay = 0.75f; // Wait before recharging
-    [SerializeField] private float recoveryRate = 15.0f; // Recharges full in ~6.6s
+    [SerializeField] private float drainRate = 10.0f; // 100 / 10 = 10 seconds duration
+    [SerializeField] private float recoveryDelay = 0.5f; // Wait before recharging
+    [SerializeField] private float recoveryRate = 22.0f; // Recharges full in ~4.5s
     [SerializeField] private float minActivationEnergy = 5.0f;
 
     private PlayerMovement playerMovement;
@@ -138,6 +139,32 @@ public class SlowMotionAbility : MonoBehaviour
         if (audioEffects != null)
         {
             audioEffects.PlaySlowMoExit();
+        }
+    }
+
+    private void OnGUI()
+    {
+        if (isActive)
+        {
+            Color oldColor = GUI.color;
+
+            // Subtle electric focus edge accents (no murky grey wash covering screen!)
+            int edgeW = 12;
+            GUI.color = new Color(0.15f, 0.85f, 1.0f, 0.28f);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, edgeW), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0, Screen.height - edgeW, Screen.width, edgeW), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0, 0, edgeW, Screen.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(Screen.width - edgeW, 0, edgeW, Screen.height), Texture2D.whiteTexture);
+
+            // Clean bottom status pill
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.alignment = TextAnchor.MiddleCenter;
+            style.fontSize = 12;
+            style.fontStyle = FontStyle.Bold;
+            style.normal.textColor = new Color(0.2f, 0.95f, 1.0f, 0.95f);
+            GUI.Label(new Rect(0, Screen.height - 36, Screen.width, 24), "FOCUS // SLOW-MOTION ACTIVE", style);
+
+            GUI.color = oldColor;
         }
     }
 

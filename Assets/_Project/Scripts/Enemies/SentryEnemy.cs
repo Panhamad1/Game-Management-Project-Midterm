@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
+public sealed class SentryEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform head;
@@ -8,11 +8,11 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
     [SerializeField] private EnemyProjectile boltPrefab;
     [SerializeField, Min(1f)] private float maxHealth = 30f;
     [SerializeField, Min(0f)] private float detectionRange = 30f;
-    [SerializeField, Min(0f)] private float turnSpeed = 180f;
+    [SerializeField, Min(0f)] private float turnSpeed = 120f;
     [SerializeField, Min(1)] private int shotsPerBurst = 3;
-    [SerializeField, Min(0.1f)] private float shotsPerSecond = 4f;
-    [SerializeField, Min(0f)] private float burstPause = 1.5f;
-    [SerializeField, Min(0.1f)] private float projectileSpeed = 25f;
+    [SerializeField, Min(0.1f)] private float shotsPerSecond = 3.5f;
+    [SerializeField, Min(0f)] private float burstPause = 2.0f;
+    [SerializeField, Min(0.1f)] private float projectileSpeed = 16f;
     [SerializeField, Min(0f)] private float projectileDamage = 5f;
     [SerializeField, Min(0f)] private float aimSpread = 3f;
     [SerializeField, Min(0f)] private float pushDamage = 10f;
@@ -39,6 +39,7 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
     private void Awake()
     {
         health = maxHealth;
+        if (GetComponent<EnemyHitFlash>() == null) gameObject.AddComponent<EnemyHitFlash>();
         turretParts = new[]
         {
             new EnemyVisualPart(head, "Turret"),
@@ -123,13 +124,36 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget
 
     public void OnPushed(Vector3 direction, float force, Vector3 point) => TakeDamage(pushDamage);
     public void OnPulled(Transform origin, float force) { }
-    public void OnPhysicsCrush(float speed, GameObject prop) => TakeDamage(crushDamage);
+    public void OnPhysicsCrush(float speed, GameObject prop)
+    {
+        Vector3 hitDir = prop != null ? (transform.position - prop.transform.position).normalized : -transform.forward;
+        hitDir.y = 0.35f;
+        hitDir.Normalize();
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(hitDir * (speed * 8f), ForceMode.Impulse);
+        }
+        TakeDamage(crushDamage * Mathf.Max(1.0f, speed / 8.0f));
+    }
     public void OnPlayerSlideRam(float speed) { }
+
+    public void TakeDamage(float amount, string source = "Unknown", int attackId = 0)
+    {
+        TakeDamage(amount);
+    }
 
     private void TakeDamage(float amount)
     {
         if (health <= 0f) return;
         health -= amount;
-        if (health <= 0f) Destroy(gameObject);
+        FloatingDamageNumber.Spawn(transform.position + Vector3.up * 1.2f, amount, amount >= 30f);
+        GetComponent<EnemyHitFlash>()?.Flash();
+        if (health <= 0f)
+        {
+            FindAnyObjectByType<PlayerHealth>()?.HealOnKill("Sentry", transform.position);
+            Destroy(gameObject);
+        }
     }
 }

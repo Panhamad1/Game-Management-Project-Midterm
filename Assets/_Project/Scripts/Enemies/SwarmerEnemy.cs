@@ -2,23 +2,23 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
-public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryTarget
+public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryTarget, IDamageReceiver
 {
     [SerializeField] private Transform player;
     [SerializeField, Min(1f)] private float maxHealth = 20f;
     [SerializeField, Min(0f)] private float launchDamage = 10f;
     [SerializeField, Min(0f)] private float pushDamage = 10f;
     [SerializeField, Min(0f)] private float detectionRange = 25f;
-    [SerializeField, Min(0f)] private float flightSpeed = 10f;
+    [SerializeField, Min(0f)] private float flightSpeed = 4.2f;
     [SerializeField, Min(0f)] private float hoverOffset = 1f;
-    [SerializeField, Min(0f)] private float roamSpeed = 2f;
+    [SerializeField, Min(0f)] private float roamSpeed = 1.4f;
     [SerializeField, Min(0f)] private float roamRadius = 5f;
     [SerializeField, Min(0f)] private float attackRange = 5f;
     [SerializeField, Min(0f)] private float windupTime = 0.5f;
-    [SerializeField, Min(0f)] private float leapSpeed = 11f;
-    [SerializeField, Min(0f)] private float attackCooldown = 1f;
+    [SerializeField, Min(0f)] private float leapSpeed = 5.8f;
+    [SerializeField, Min(0f)] private float attackCooldown = 1.2f;
     [SerializeField, Min(0f)] private float damage = 15f;
-    [SerializeField, Min(0f)] private float ramSpeedThreshold = 7.5f;
+    [SerializeField, Min(0f)] private float ramSpeedThreshold = 5.0f;
     [SerializeField] private bool canBePulled = true;
     [SerializeField] private bool canBePushed = true;
 
@@ -78,6 +78,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
         appearance = new MaterialPropertyBlock();
         environmentMask = LayerMask.GetMask("Environment", "Default");
         health = maxHealth;
+        if (GetComponent<EnemyHitFlash>() == null) gameObject.AddComponent<EnemyHitFlash>();
         float clearance = hoverOffset;
         if (Physics.SphereCast(body.position, bodyCollider.bounds.extents.x, Vector3.up,
                 out RaycastHit ceiling, hoverOffset, environmentMask, QueryTriggerInteraction.Ignore))
@@ -231,12 +232,24 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
         if (dead || carried) return;
         if (launched)
         {
-            IKineticTarget target = collision.collider.GetComponentInParent<IKineticTarget>();
-            if (target != null && collision.relativeVelocity.magnitude >= 4f)
+            // 65% chance to detonate into a high-yield plasma explosion!
+            bool triggersExplosion = UnityEngine.Random.value < 0.65f;
+            Vector3 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : transform.position;
+
+            if (triggersExplosion)
             {
-                target.OnPhysicsCrush(collision.relativeVelocity.magnitude, gameObject);
+                DetonatePlasmaExplosion(impactPoint);
+            }
+            else
+            {
+                IKineticTarget target = collision.collider.GetComponentInParent<IKineticTarget>();
+                if (target != null && collision.relativeVelocity.magnitude >= 4f)
+                {
+                    target.OnPhysicsCrush(collision.relativeVelocity.magnitude, gameObject);
+                }
             }
             EndLaunch();
+            TakeDamage(maxHealth * 2f, "LaunchDetonation", 0);
             return;
         }
 
@@ -256,6 +269,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
         }
         attackHit = true;
         EndLunge();
+        movement.GetComponent<IDamageReceiver>()?.TakeDamage(damage, "Swarmer", GetInstanceID());
         movement.GetComponent<SwarmerTestHealth>()?.TakeDamage(damage);
     }
 
@@ -263,6 +277,50 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     {
         body.linearVelocity = Vector3.zero;
         Interrupt();
+    }
+
+    private void DetonatePlasmaExplosion(Vector3 origin)
+    {
+        float explosionRadius = 6.5f;
+        float explosionDamage = 75.0f;
+
+        Collider[] hits = Physics.OverlapSphere(origin, explosionRadius);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].gameObject == gameObject) continue;
+
+            IDamageReceiver receiver = hits[i].GetComponentInParent<IDamageReceiver>();
+            if (receiver != null)
+            {
+                receiver.TakeDamage(explosionDamage, "SwarmerExplosion", GetInstanceID());
+            }
+
+            Rigidbody hitRb = hits[i].attachedRigidbody;
+            if (hitRb != null && !hitRb.isKinematic)
+            {
+                hitRb.AddExplosionForce(750f, origin, explosionRadius, 1.2f, ForceMode.Impulse);
+            }
+
+            IKineticTarget kinetic = hits[i].GetComponentInParent<IKineticTarget>();
+            if (kinetic != null)
+            {
+                kinetic.OnPhysicsCrush(16f, gameObject);
+            }
+        }
+
+        FloatingDamageNumber.Spawn(origin + Vector3.up * 1.5f, explosionDamage, true);
+
+        // Screen shake if player is within vicinity
+        PlayerMovement pMove = UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+        if (pMove != null)
+        {
+            float dist = Vector3.Distance(origin, pMove.transform.position);
+            if (dist < 18.0f)
+            {
+                var look = pMove.GetComponentInChildren<MouseLook>();
+                if (look != null) look.AddScreenShake(Mathf.Lerp(0.35f, 0.05f, dist / 18.0f), Vector3.up);
+            }
+        }
     }
 
     public void OnPushed(Vector3 direction, float force, Vector3 point)
@@ -313,12 +371,32 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     public void OnPhysicsCrush(float speed, GameObject prop)
     {
         if (dead || speed < 4f) return;
-        if (!TakeDamage(speed)) Interrupt();
+
+        // Physical knockback fling: send the swarmer flying in the direction of impact!
+        Vector3 knockbackDir = prop != null ? (transform.position - prop.transform.position).normalized : -transform.forward;
+        knockbackDir.y = Mathf.Max(knockbackDir.y, 0.35f);
+        knockbackDir.Normalize();
+
+        if (body != null)
+        {
+            body.isKinematic = false;
+            body.useGravity = true;
+            body.linearVelocity = knockbackDir * (speed * 1.6f) + Vector3.up * 4.2f;
+        }
+
+        if (!TakeDamage(speed * 2.2f)) Interrupt();
+    }
+
+    public void TakeDamage(float amount, string source = "Unknown", int attackId = 0)
+    {
+        TakeDamage(amount);
     }
 
     private bool TakeDamage(float amount)
     {
         health -= amount;
+        FloatingDamageNumber.Spawn(transform.position + Vector3.up * 0.4f, amount, amount >= 30f);
+        GetComponent<EnemyHitFlash>()?.Flash();
         if (health > 0f) return false;
         Defeat();
         return true;
@@ -341,6 +419,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
         if (dead) return;
         dead = true;
         foreach (Collider hitbox in GetComponents<Collider>()) hitbox.enabled = false;
+        FindAnyObjectByType<PlayerHealth>()?.HealOnKill("Swarmer", transform.position);
         Defeated?.Invoke(this);
         Destroy(gameObject);
     }

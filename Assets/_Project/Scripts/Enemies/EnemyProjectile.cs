@@ -11,6 +11,17 @@ public sealed class EnemyProjectile : MonoBehaviour, IKineticTarget, IDeflectabl
     private SlowMotionAbility focus;
     private bool reflected;
 
+    private void Awake()
+    {
+        SphereCollider col = GetComponent<SphereCollider>();
+        if (col == null)
+        {
+            col = gameObject.AddComponent<SphereCollider>();
+            col.isTrigger = true;
+            col.radius = 0.5f;
+        }
+    }
+
     public bool CanBePulled => false;
     public bool CanBePushed => CanBeDeflected;
 
@@ -34,10 +45,20 @@ public sealed class EnemyProjectile : MonoBehaviour, IKineticTarget, IDeflectabl
             transform.rotation = Quaternion.LookRotation(newDirection);
         }
 
+        speed = Mathf.Max(speed * 1.6f, 32.0f);
+        damage = Mathf.Max(damage * 2.0f, 45.0f);
+
         hitMask &= ~LayerMask.GetMask("Player");
         // Ensure enemies can be hit by reflected projectile
         hitMask |= LayerMask.GetMask("Enemy", "Default", "Interactable");
         expiresAt = Time.time + 4f;
+
+        TrailRenderer trail = GetComponent<TrailRenderer>();
+        if (trail != null)
+        {
+            trail.startColor = new Color(0.15f, 0.95f, 1.0f, 0.95f);
+            trail.endColor = new Color(0.1f, 0.5f, 1.0f, 0f);
+        }
 
         return true;
     }
@@ -60,10 +81,24 @@ public sealed class EnemyProjectile : MonoBehaviour, IKineticTarget, IDeflectabl
     public void Launch(Transform owner, float boltSpeed, float boltDamage, int collisionMask)
     {
         shooter = owner;
-        speed = boltSpeed;
+        speed = Mathf.Min(boltSpeed, 22.0f); // Calibrated to match player parkour speed
         damage = boltDamage;
         hitMask = collisionMask;
         expiresAt = Time.time + 4f;
+
+        // Ensure dynamic bright plasma trail for visual clarity
+        TrailRenderer trail = GetComponent<TrailRenderer>();
+        if (trail == null)
+        {
+            trail = gameObject.AddComponent<TrailRenderer>();
+            trail.time = 0.22f;
+            trail.startWidth = 0.16f;
+            trail.endWidth = 0.02f;
+            Shader unlit = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+            if (unlit != null) trail.material = new Material(unlit);
+            trail.startColor = new Color(1.0f, 0.45f, 0.1f, 0.95f);
+            trail.endColor = new Color(1.0f, 0.1f, 0.1f, 0f);
+        }
     }
 
     private void FixedUpdate()
@@ -93,13 +128,16 @@ public sealed class EnemyProjectile : MonoBehaviour, IKineticTarget, IDeflectabl
                 }
                 else
                 {
-                    // Reflected bolt can damage other enemies or health receivers
+                    // Reflected bolt damages enemies or health receivers
                     closest.collider.GetComponentInParent<IKineticTarget>()?.OnPhysicsCrush(speed, gameObject);
+                    closest.collider.GetComponentInParent<IDamageReceiver>()?.TakeDamage(damage, "Deflected_Projectile", GetInstanceID());
                     closest.collider.GetComponentInParent<SwarmerTestHealth>()?.TakeDamage(damage);
                 }
             }
             else
             {
+                // Damages player or targets
+                closest.collider.GetComponentInParent<IDamageReceiver>()?.TakeDamage(damage, "Enemy_Projectile", GetInstanceID());
                 closest.collider.GetComponentInParent<SwarmerTestHealth>()?.TakeDamage(damage);
             }
             Destroy(gameObject);

@@ -17,6 +17,10 @@ public class PullAbility : MonoBehaviour
     [SerializeField] private float maxReelSpeed = 24.0f;
     [SerializeField] private float leashBreakDistance = 55.0f;
 
+    [Header("Grapple Traversal Mode")]
+    [Tooltip("If false, grapple hook traversal is disabled so Pull focuses exclusively on manipulating physics props.")]
+    [SerializeField] private bool enableGrappleTraversal = false;
+
     [Header("Grapple Slingshot Tuning (World & Anchors)")]
     [Tooltip("Maximum distance to attach a grapple hook to walls, floors, or anchors.")]
     [SerializeField] private float maxGrappleRange = 75.0f;
@@ -50,8 +54,6 @@ public class PullAbility : MonoBehaviour
 
     private Rigidbody heldRigidbody;
     private InteractableProp heldProp;
-    private Rigidbody heldRigidbody;
-    private InteractableProp heldProp;
     private Collider heldCollider;
     private IKineticCarryTarget heldCarryTarget;
     private bool isPulling = false;
@@ -69,6 +71,7 @@ public class PullAbility : MonoBehaviour
     public bool IsCarrying => heldRigidbody != null;
     public bool IsGrappling => isGrappling;
     public bool IsPulling => isPulling;
+    public bool EnableGrappleTraversal => enableGrappleTraversal;
     public Vector3 GrapplePoint => grapplePoint;
     public Rigidbody HeldRigidbody => heldRigidbody;
     public InteractableProp HeldProp => heldProp;
@@ -189,6 +192,11 @@ public class PullAbility : MonoBehaviour
         if (audioEffects != null) audioEffects.SetSuctionLoop(false);
     }
 
+    public void ResetState()
+    {
+        StopPull();
+    }
+
     /// <summary>
     /// Dual-mode target acquisition:
     /// Priority 1: Pick up interactive props within maxPullRange.
@@ -218,6 +226,13 @@ public class PullAbility : MonoBehaviour
 
             if (!isStandingOnProp)
             {
+                // Bullets and projectiles can NEVER be pulled
+                if (propHit.collider.GetComponentInParent<EnemyProjectile>() != null ||
+                    propHit.collider.GetComponentInParent<IDeflectableProjectile>() != null)
+                {
+                    return;
+                }
+
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target == null || target.CanBePulled)
                 {
@@ -231,6 +246,7 @@ public class PullAbility : MonoBehaviour
                         heldProp = propHit.collider.GetComponentInParent<InteractableProp>();
                         if (heldProp != null) heldProp.SetCarriedState(true);
                         heldCarryTarget = carryTarget;
+                        heldRigidbody.isKinematic = true;
                         heldRigidbody.angularDamping = 6.0f;
 
                         // Ignore collision between held prop and player to eliminate jitter / self-propulsion
@@ -249,7 +265,9 @@ public class PullAbility : MonoBehaviour
             }
         }
 
-        // Priority 2: Elastic Grapple Slingshot to static geometry or anchors (Redliner style)
+        // Priority 2: Elastic Grapple Slingshot to static geometry or anchors (if enabled)
+        if (!enableGrappleTraversal) return;
+
         // Primary probe: Sharp raycast up to maxGrappleRange (75m)
         RaycastHit grappleHit;
         bool hitFound = Physics.Raycast(origin, direction, out grappleHit, maxGrappleRange, grappleLayers, QueryTriggerInteraction.Ignore);
@@ -349,11 +367,15 @@ public class PullAbility : MonoBehaviour
 
         ReleaseHeldObject();
 
-        Vector3 launchDir = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+        Vector3 camPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+        Vector3 camFwd = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+        Vector3 targetPoint = camPos + camFwd * 50f;
+        Vector3 launchDir = (targetPoint - launchedRb.position).normalized;
         Vector3 playerVel = playerMovement != null ? playerMovement.Velocity : Vector3.zero;
 
         // Crate Cannon Velocity Inheritance: 100% of launch speed + 45% of player forward velocity
         Vector3 launchVelocity = launchDir * launchSpeed + playerVel * 0.45f;
+        launchedRb.isKinematic = false;
         launchedRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         launchedRb.linearVelocity = launchVelocity;
         launchedTarget?.OnLaunched();
@@ -443,14 +465,22 @@ public class PullAbility : MonoBehaviour
 
         Vector3 camPos = playerCamera != null ? playerCamera.transform.position : transform.position;
         Vector3 camForward = playerCamera != null ? playerCamera.transform.forward : transform.forward;
+        Vector3 camRight = playerCamera != null ? playerCamera.transform.right : transform.right;
+        Vector3 camUp = playerCamera != null ? playerCamera.transform.up : transform.up;
 
-        // Obstruction retraction: clamp hold distance when walls or obstacles intervene
-        float targetDistance = hoverDistance;
-        if (Physics.SphereCast(camPos, 0.25f, camForward, out RaycastHit obsHit, hoverDistance, obstructionLayers, QueryTriggerInteraction.Ignore))
+        // Obstruction retraction: clamp hold distance when walls or obstacles intervene (ignoring held prop itself!)
+        float targetDistance = Mathf.Max(hoverDistance, 3.2f);
+        if (Physics.SphereCast(camPos, 0.35f, camForward, out RaycastHit obsHit, targetDistance, obstructionLayers, QueryTriggerInteraction.Ignore))
         {
-            targetDistance = Mathf.Max(obsHit.distance - 0.25f, 1.2f);
+            if (heldCollider == null || (obsHit.collider != heldCollider && !obsHit.collider.transform.IsChildOf(heldRigidbody.transform)))
+            {
+                targetDistance = Mathf.Max(obsHit.distance - 0.3f, 2.4f);
+            }
         }
-        Vector3 hoverTarget = camPos + camForward * targetDistance;
+
+        // Ergonomic Telekinesis Hold Position:
+        // Positioned in bottom-right pocket so the object NEVER blocks the crosshair or center vision!
+        Vector3 hoverTarget = camPos + (camForward * targetDistance) + (camRight * 1.15f) - (camUp * 0.55f);
 
         // Heavy crate ground drag rule: heavy objects cannot hover or fly; clamped to ground plane
         if (heldProp != null && heldProp.Class == WeightClass.Heavy)
@@ -466,15 +496,14 @@ public class PullAbility : MonoBehaviour
             return;
         }
 
-        // 2. Weight-Class Responsive Spring Reel Dynamics:
-        // Light (~1kg): rapid 32 m/s snap (instant mid-air ammo snatch)
+        // 2. Weight-Class Responsive Glide into pocket:
+        // Light (~1kg): rapid 32 m/s snap
         // Medium (~5kg): agile 24 m/s reel
-        // Heavy (~25kg): 12 m/s ground drag (heavier resistance)
+        // Heavy (~25kg): 12 m/s ground drag
         Vector3 toTarget = hoverTarget - heldRigidbody.position;
         float distance = toTarget.magnitude;
 
         float classReelSpeed = maxReelSpeed;
-        float pullAccel = 50.0f;
 
         if (heldProp != null)
         {
@@ -482,27 +511,20 @@ public class PullAbility : MonoBehaviour
             {
                 case WeightClass.Light:
                     classReelSpeed = 32.0f;
-                    pullAccel = 65.0f;
                     break;
                 case WeightClass.Medium:
                     classReelSpeed = 24.0f;
-                    pullAccel = 50.0f;
                     break;
                 case WeightClass.Heavy:
                     classReelSpeed = 12.0f;
-                    pullAccel = 25.0f;
                     break;
             }
         }
 
-        if (distance > 0.1f)
+        if (distance > 0.02f)
         {
-            float speed = Mathf.Min(distance * 12.0f, classReelSpeed);
-            heldRigidbody.linearVelocity = Vector3.MoveTowards(heldRigidbody.linearVelocity, toTarget.normalized * speed, pullAccel * Time.fixedDeltaTime);
-        }
-        else
-        {
-            heldRigidbody.linearVelocity = Vector3.zero;
+            Vector3 nextPos = Vector3.MoveTowards(heldRigidbody.position, hoverTarget, classReelSpeed * Time.fixedDeltaTime);
+            heldRigidbody.MovePosition(nextPos);
         }
 
         // 3. Auto-align rotation to face forward with player camera (Riot Shielding)
@@ -514,7 +536,9 @@ public class PullAbility : MonoBehaviour
     {
         if (heldRigidbody != null)
         {
+            heldRigidbody.isKinematic = false;
             heldRigidbody.angularDamping = 0.05f;
+            if (playerMovement != null) heldRigidbody.linearVelocity = playerMovement.Velocity;
             if (heldProp != null) heldProp.SetCarriedState(false);
 
             // Restore collision between player and released prop

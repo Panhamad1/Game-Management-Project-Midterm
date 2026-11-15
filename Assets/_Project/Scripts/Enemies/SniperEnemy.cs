@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
+public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform muzzle;
@@ -47,6 +47,7 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
     private void Awake()
     {
         health = maxHealth;
+        if (GetComponent<EnemyHitFlash>() == null) gameObject.AddComponent<EnemyHitFlash>();
         lens = new EnemyVisualPart(transform, "Lens");
         lensRim = new EnemyVisualPart(transform, "Lens rim");
         lensRecess = new EnemyVisualPart(transform, "Lens recess");
@@ -165,13 +166,36 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget
     public void OnReturnedShot() => TakeDamage(health);
     public void OnPushed(Vector3 direction, float force, Vector3 point) => TakeDamage(kineticDamage);
     public void OnPulled(Transform origin, float force) { }
-    public void OnPhysicsCrush(float speed, GameObject prop) => TakeDamage(kineticDamage);
+    public void OnPhysicsCrush(float speed, GameObject prop)
+    {
+        Vector3 hitDir = prop != null ? (transform.position - prop.transform.position).normalized : -transform.forward;
+        hitDir.y = 0.35f;
+        hitDir.Normalize();
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(hitDir * (speed * 10f), ForceMode.Impulse);
+        }
+        TakeDamage(kineticDamage);
+    }
     public void OnPlayerSlideRam(float speed) { }
+
+    public void TakeDamage(float amount, string source = "Unknown", int attackId = 0)
+    {
+        TakeDamage(amount);
+    }
 
     private void TakeDamage(float damage)
     {
         if (health <= 0f) return;
         health -= damage;
-        if (health <= 0f) Destroy(gameObject);
+        FloatingDamageNumber.Spawn(transform.position + Vector3.up * 1.5f, damage, damage >= 40f);
+        GetComponent<EnemyHitFlash>()?.Flash();
+        if (health <= 0f)
+        {
+            FindAnyObjectByType<PlayerHealth>()?.HealOnKill("Sniper", transform.position);
+            Destroy(gameObject);
+        }
     }
 }

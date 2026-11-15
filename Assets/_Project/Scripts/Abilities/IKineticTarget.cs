@@ -23,7 +23,7 @@ public interface IKineticTarget
     void OnPhysicsCrush(float impactSpeed, GameObject flyingProp);
 
     // Advanced kinetic impact with full context (damage, energy, weak-point detection)
-    void OnKineticImpact(in KineticImpactContext context);
+    void OnKineticImpact(in KineticImpactContext context) { }
 
     // Called when the player physically rams into this target at high slide speed (TEAM_DEVELOPMENT_HANDBOOK.md:182)
     void OnPlayerSlideRam(float slideSpeed);

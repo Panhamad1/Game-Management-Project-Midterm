@@ -2,19 +2,19 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
-public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
+public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
 {
     [SerializeField] private PlayerMovement player;
     [SerializeField] private Renderer armor;
     [SerializeField] private GameObject weakPoint;
     [SerializeField] private HulkShockwave shockwave;
     [SerializeField, Min(1f)] private float maxHealth = 90f;
-    [SerializeField, Min(0f)] private float walkSpeed = 3f;
+    [SerializeField, Min(0f)] private float walkSpeed = 2.2f;
     [SerializeField, Min(0f)] private float detectionRange = 24f;
     [SerializeField, Min(0f)] private float slamRange = 12f;
     [SerializeField, Min(0f)] private float slamCooldown = 6f;
     [SerializeField, Min(0f)] private float windupTime = 0.8f;
-    [SerializeField, Min(0.1f)] private float jumpHeight = 4f;
+    [SerializeField, Min(0.1f)] private float jumpHeight = 3.2f;
     [SerializeField, Min(0f)] private float stunDuration = 2.5f;
     [SerializeField, Min(0f)] private float meleeRange = 2.3f;
     [SerializeField, Min(0f)] private float meleeDamage = 20f;
@@ -55,6 +55,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
     {
         body = GetComponent<Rigidbody>();
         health = maxHealth;
+        if (GetComponent<EnemyHitFlash>() == null) gameObject.AddComponent<EnemyHitFlash>();
         floorMask = LayerMask.GetMask("Environment", "Default");
         appearance = new MaterialPropertyBlock();
         if (weakPoint != null)
@@ -177,6 +178,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
             meleeSwingAge = 0f;
             Vector3 outward = flat.sqrMagnitude > 0.001f ? flat.normalized : transform.forward;
             player.ApplyEnemyKnockback(outward * meleeKnockbackSpeed + Vector3.up * meleeLiftSpeed);
+            player.GetComponent<IDamageReceiver>()?.TakeDamage(meleeDamage, "HulkLeaper", GetInstanceID());
             player.GetComponent<SwarmerTestHealth>()?.TakeDamage(meleeDamage);
         }
     }
@@ -221,7 +223,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
             {
                 if (Mathf.Abs(Vector3.Dot(collision.relativeVelocity, contact.normal)) >= 4f)
                 {
-                    DamageDuringRecovery(impactSpeed, 1f);
+                    TakeItemHit(impactSpeed, collision.gameObject, 1f);
                     break;
                 }
             }
@@ -236,7 +238,24 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
         nextSlam = Time.time + slamCooldown;
         if (weakPoint != null) weakPoint.SetActive(true);
         SetArmorColor(new Color(0.16f, 0.19f, 0.23f));
-        if (landed && shockwave != null) shockwave.Emit(point, player);
+        if (landed)
+        {
+            if (player != null)
+            {
+                float playerDist = Vector3.Distance(transform.position, player.transform.position);
+                float maxShakeDist = 20.0f;
+                if (playerDist < maxShakeDist)
+                {
+                    float shakeIntensity = Mathf.Lerp(0.55f, 0.05f, playerDist / maxShakeDist);
+                    var mouseLook = player.GetComponentInChildren<MouseLook>();
+                    if (mouseLook != null)
+                    {
+                        mouseLook.AddScreenShake(shakeIntensity, Vector3.down);
+                    }
+                }
+            }
+            if (shockwave != null) shockwave.Emit(point, player);
+        }
     }
 
     private void StopHorizontal()
@@ -254,7 +273,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
 
     public void OnPushed(Vector3 direction, float force, Vector3 point) { }
     public void OnPulled(Transform origin, float force) { }
-    public void OnPhysicsCrush(float speed, GameObject prop) => TakeItemHit(speed, prop, 1f);
+    public void OnPhysicsCrush(float speed, GameObject prop) => TakeItemHit(speed, prop, 1.5f);
     public void OnPlayerSlideRam(float speed) { }
 
     public void HitExposedCore(float speed, GameObject prop) => TakeItemHit(speed, prop, weakPointMultiplier);
@@ -262,15 +281,37 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget
     private void TakeItemHit(float speed, GameObject prop, float multiplier)
     {
         if (prop == null || (prop.TryGetComponent<InteractableProp>(out var crate) && crate.IsCarried)) return;
-        DamageDuringRecovery(speed, multiplier);
+        if (speed < 3.5f) return;
+
+        // Physical knockback impulse on Hulk:
+        Vector3 hitDir = prop != null ? (transform.position - prop.transform.position).normalized : -transform.forward;
+        hitDir.y = 0.2f;
+        hitDir.Normalize();
+
+        if (body != null)
+        {
+            float knockbackStrength = (state == State.Stunned) ? speed * 1.4f : speed * 0.75f;
+            body.AddForce(hitDir * knockbackStrength + Vector3.up * 2.2f, ForceMode.Impulse);
+        }
+
+        // If stunned or hitting weakpoint: full critical multiplier!
+        // If hitting heavy armor: absorbs impact, but still takes 0.45x damage and flashes red!
+        float activeMultiplier = (state == State.Stunned) ? multiplier : 0.45f;
+        float damage = speed * activeMultiplier;
+        TakeDamage(damage, state == State.Stunned ? "Core_Crush" : "Armor_Impact", 0);
     }
 
-    private void DamageDuringRecovery(float speed, float multiplier)
+    public void TakeDamage(float amount, string source = "Unknown", int attackId = 0)
     {
-        if (health <= 0f || state != State.Stunned || speed < 4f) return;
-        health -= speed * multiplier;
-        if (health > 0f) return;
-        Defeated?.Invoke(this);
-        Destroy(gameObject);
+        if (health <= 0f) return;
+        health -= amount;
+        FloatingDamageNumber.Spawn(transform.position + Vector3.up * 2.0f, amount, amount >= 40f);
+        GetComponent<EnemyHitFlash>()?.Flash();
+        if (health <= 0f)
+        {
+            FindAnyObjectByType<PlayerHealth>()?.HealOnKill("HulkLeaper", transform.position);
+            Defeated?.Invoke(this);
+            Destroy(gameObject);
+        }
     }
 }
