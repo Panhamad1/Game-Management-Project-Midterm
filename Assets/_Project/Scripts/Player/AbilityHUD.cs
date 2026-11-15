@@ -145,26 +145,32 @@ public class AbilityHUD : MonoBehaviour
                 IKineticTarget target = propHit.collider.GetComponentInParent<IKineticTarget>();
                 if (target != null)
                 {
-                    propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
                     TargetButton button = propHit.collider.GetComponentInParent<TargetButton>();
+                    Rigidbody body = propHit.collider.attachedRigidbody;
+                    bool canGrab = target.CanBePulled && body != null && !body.isKinematic;
+                    if (canGrab || button != null)
+                    {
+                        propUnderCrosshair = propHit.collider.GetComponentInParent<InteractableProp>();
 
-                    float dist = Vector3.Distance(ray.origin, propHit.point);
-                    showBadge = true;
-                    activeColor = grabObjectColor; // Vibrant Amber / Yellow
-                    bracketDistance = 20f; // Expand into open box
+                        float dist = Vector3.Distance(ray.origin, propHit.point);
+                        showBadge = true;
+                        activeColor = grabObjectColor; // Vibrant Amber / Yellow
+                        bracketDistance = 20f; // Expand into open box
 
-                    if (propUnderCrosshair != null)
-                    {
-                        string verb = propUnderCrosshair.Class == WeightClass.Heavy ? "DRAG" : "GRAB";
-                        badgeInfo = $"[RMB] {verb} · {propUnderCrosshair.name.ToUpper()} ({propUnderCrosshair.Class.ToString().ToUpper()}) · {dist:F1}m";
-                    }
-                    else if (button != null)
-                    {
-                        badgeInfo = $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {dist:F1}m";
-                    }
-                    else
-                    {
-                        badgeInfo = $"[RMB] GRAB · {propHit.collider.gameObject.name.ToUpper()} · {dist:F1}m";
+                        if (propUnderCrosshair != null)
+                        {
+                            string verb = propUnderCrosshair.Class == WeightClass.Heavy ? "DRAG" : "GRAB";
+                            badgeInfo = $"[RMB] {verb} · {propUnderCrosshair.name.ToUpper()} ({propUnderCrosshair.Class.ToString().ToUpper()}) · {dist:F1}m";
+                        }
+                        else if (button != null)
+                        {
+                            badgeInfo = $"TARGET SWITCH · {button.ButtonName.ToUpper()} · {dist:F1}m";
+                        }
+                        else
+                        {
+                            string targetName = propHit.collider.gameObject.name.ToUpper();
+                            badgeInfo = $"[RMB] GRAB · {targetName} · {dist:F1}m";
+                        }
                     }
                 }
             }
