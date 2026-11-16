@@ -35,6 +35,14 @@ The HUD shows player and enemy health, remaining lives, wave progress, and elaps
 2. Extract the entire ZIP, open the `REBOUND-Windows` folder, and run `REBOUND.exe`. Unity is optional for the Windows build.
 3. Select **Play** on the main menu.
 
+## Play on macOS
+
+This build supports Intel and Apple silicon Macs running macOS 12 or later. You can play without installing Unity.
+
+1. [Download REBOUND-macOS.zip](https://github.com/Panhamad1/Game-Management-Project-Midterm/raw/master/Builds/REBOUND-macOS.zip).
+2. Extract the ZIP and open `REBOUND.app`.
+3. Select **Play** on the main menu.
+
 ## Open the Unity project
 
 1. Clone the repository and use the default branch, `master`.
