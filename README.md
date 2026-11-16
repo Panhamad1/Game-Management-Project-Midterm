@@ -1,74 +1,53 @@
-# REBOUND — First-Person Physics Action & Parkour Game
+# REBOUND
 
-Welcome to the **REBOUND** repository. Built in Unity for our Game Development Midterm.
+**Mid-Term Group Project · Playable Obstacle Course**
 
----
+REBOUND is a first-person parkour and physics combat game built in Unity. You are sealed inside an Egyptian pyramid. Use movement and objects in the room to survive five increasingly difficult enemy waves, then walk through the exit to finish the run.
 
-## Quick Setup (1 Click)
+## How the game works
 
-1. Open `Assets/monirath-game.unity` (or `Assets/Scenes/SampleScene.unity`).
-2. In the top Unity menu, click: **`Tools > REBOUND > Clean Scene (Delete All Arenas & Test Rooms)`**.
-3. Next, click: **`Tools > REBOUND > Build 6-Chamber Tutorial Academy (Complete)`**.
-4. Press **Play (`Ctrl + P`)**.
+Select **Play** to start the timer and the first wave countdown. The room’s pillars provide cover, and the stairway leads to a raised platform. Early waves start with flying Swarmers. Later waves add Sentries that fire bursts, Hulks that knock players back with ground slams, and Snipers that warn you with a red laser before shooting.
 
----
+Pull a crate toward you to use it as cover, then throw it to damage an enemy. Push can knock targets back or send incoming shots back toward enemies. The player and movable props use Unity Rigidbodies. Solid colliders block movement, crate impacts deal damage on contact, and an exit trigger checks whether the player has cleared the waves.
 
-## Controls Summary
+The HUD shows player and enemy health, remaining lives, wave progress, and elapsed time. You have **two lives**. The first time your HP reaches zero, it refills on the spot and the same wave continues. The second time ends the run with **Game Over**. Clear Wave 5 and cross the opened exit to see your finish time. The fastest successful run is saved locally. **Play Again** starts a fresh run.
 
-| Action | Key / Input | What It Does |
-|---|---|---|
-| **Walk** | `WASD` | Normal ground movement at `3.2 m/s`. |
-| **Run / Sprint** | `Left Shift + WASD` | Sprint forward at `5.4 m/s`. |
-| **Crouch** | `Ctrl` or `C` | Crouch-walk under low obstacles at `2.0 m/s`. |
-| **Power Slide** | `Left Shift + Ctrl` | Slide at `4.8 m/s` with full 360-degree steering and carving. |
-| **Dash** | `Q` | Instant burst of directional speed. Resets when touching the ground or walls. |
-| **Jump & Hop** | `Space` | Jump up with a `1.6m` arc. Hold Space to bunny-hop continuously. |
-| **Wall-Run** | Jump along a wall | Run horizontally along walls with slow, floaty gravity. |
-| **Zig-Zag Wall-Jump** | `Space` while wall-running | Kick off the wall with `10.5 m/s` outward push and `8.0 m/s` lift. Steer with `A` or `D`. |
-| **Wall-Hang** | Hold `W` into a wall in mid-air | Cling to the wall for up to 1.5 seconds. |
-| **Wall-Climb Vault** | `Space` while wall-hanging | Hoist yourself `+9.5m` up and forward over the ledge. |
-| **Push (Air Cannon)** | `Left Mouse Button (LMB)` | Blasts objects away within 12m. Rocket jump off floors and walls. |
-| **Deflect Bullets** | `LMB` when a bullet approaches | Deflects enemy laser bolts back at enemies with double speed (`35 m/s`) and double damage. |
-| **Pull & Carry** | `Hold Right Mouse Button (RMB)` | Pulls objects into your bottom-right pocket so your view stays clear. Bullets cannot be pulled. |
-| **Throw / Launch Prop** | `LMB while holding prop` | Fires the held object at `32 m/s` as a heavy kinetic projectile. |
-| **Slow Motion (Focus)** | `Z` | Slows the world to 25% speed. The screen stays clear with an electric edge border. |
+## Controls
 
----
+| Input | Action |
+| --- | --- |
+| WASD and mouse | Move and look around |
+| Left Shift | Sprint |
+| C or Left Ctrl | Crouch, or slide while sprinting |
+| Space | Jump or kick off a wall |
+| Q | Dash. This input also toggles Focus in the current build. |
+| Left mouse | Push, deflect a shot, or throw the held item |
+| Hold right mouse | Pull and carry a prop. Release to drop it. |
+| F or middle mouse | Toggle Focus to slow the world |
+| R | Return to the checkpoint |
+| Esc | Pause. Choose Resume, Restart, or Exit. |
 
-## Egyptian Props & Mass Glow
+## Run the project
 
-Throwable objects in the game have a soft ambient glow around them so you can see their mass from across the room:
+1. Clone the repository and use the default branch, `master`.
+2. Open the project in **Unity 6000.3.8f1** and let Unity import the project.
+3. Open [pyramid-map.unity](Assets/Scenes/pyramid-map.unity) and enter Play Mode. Choose **Play** on the in-game menu.
 
-- **Light Props (Scarab Urns)**: Mint Green aura (`1.5 kg`). Quick to pull and launch.
-- **Medium Props (Sandstone Boulders & Relics)**: Amber Gold aura (`12 kg`). Great for smashing doors and barricades.
-- **Heavy Props (Obsidian Slabs)**: Molten Ruby aura (`45 kg`). Acts as a heavy shield against enemy fire.
+For the Windows 64-bit build, [download REBOUND-Windows.zip](https://github.com/Panhamad1/Game-Management-Project-Midterm/raw/master/Builds/REBOUND-Windows.zip), extract the entire archive, open the `REBOUND-Windows` folder, and run `REBOUND.exe`. You can play without installing Unity.
 
----
+See [System Explanation](SYSTEM_EXPLANATION.md) for the technical project overview.
 
-## Enemies
+## Team and credits
 
-- **Swarmer (20 HP)**: Fast flying attacker. When you grab and throw a Swarmer, it has a 65% chance to explode into a high-yield plasma blast (`6.5m` blast radius, 75 damage). Struck by props, it flies backward like a ragdoll.
-- **Rapid Laser Sentry (50 HP)**: Fires 3-round bursts of red laser bolts. Deflect the bolts back with Push (`LMB`) or block them with a prop.
-- **Hulk Leaper (90 HP)**: Heavy armored brute. Slams the ground with a shockwave that shakes the screen if you are within 20m. Throwing blocks at him deals damage, flashes red, shows damage numbers, and staggers him backward.
-- **Sniper Enemy (10 HP)**: Tracks you with a red laser sight and fires a lethal bolt. Deflect his bolt back at him to defeat him instantly.
+| Contributor | Work |
+| --- | --- |
+| Panha (`panha`) | Enemy AI and models, five-wave encounter, pyramid gameplay integration, and combat fixes |
+| Svay Monirath | Player movement, physics-based abilities, combat integration, and tutorial tools |
+| `vanchhoeurngchao-cmyk` (`chhoeurng` branch) | Pyramid map and environment layout |
 
----
+The environment uses the imported [Dungeon Modular Pack](Assets/DungeonModularPack) and [Low Poly Dungeon FREE](Assets/LowPolyDungeonFree) assets. The latter includes its own [setup guide](Assets/LowPolyDungeonFree/Documentation.pdf). OpenAI Codex assisted with implementation, debugging, and documentation.
 
-## 6-Chamber Egyptian Academy Tutorial
+## Submission links
 
-The game features a linear 180-meter training academy:
-- **Chamber 1**: Movement basics (Walking, Sprinting, Crouching, Sliding under gates).
-- **Chamber 2**: Wall-running across open chasms.
-- **Chamber 3**: Wall-hanging on cliffs and using Wall-Climb to scale terraces.
-- **Chamber 4**: Kinetic props (pulling urns and boulders into your pocket, smashing breakable barricades and Ankh target buttons).
-- **Chamber 5**: Slow Motion and Bullet Deflection against a laser sentry.
-- **Chamber 6**: The Combat Sanctum (defeating Swarmers, Sentries, and the Hulk Leaper).
-
----
-
-## Documentation Index
-
-- **Gameplay & Player Manual**: [`docs/PLAYER_SYSTEM_MANUAL.md`](docs/PLAYER_SYSTEM_MANUAL.md)
-- **Enemy Combat Guide**: [`docs/REBOUND_ENEMY_GAMEPLAY_GUIDE.md`](docs/REBOUND_ENEMY_GAMEPLAY_GUIDE.md)
-- **Interactive Web Documentation**: [`docs/archdoc/index.html`](docs/archdoc/index.html) (open in any web browser)
-- **Single-File Offline Export**: [`docs/rebound-docs.html`](docs/rebound-docs.html)
+- [Unity project repository](https://github.com/Panhamad1/Game-Management-Project-Midterm)
+- **Gameplay recording** — Add the public YouTube or Google Drive link.
