@@ -24,8 +24,7 @@ The HUD shows player and enemy health, remaining lives, wave progress, and elaps
 | Left Shift | Sprint |
 | C or Left Ctrl | Crouch, or slide while sprinting |
 | Space | Jump or kick off a wall |
-| Q | Dash and toggle Focus |
-| F or middle mouse | Toggle Focus to slow the world |
+| Q | toggle Focus to slow down everything|
 | Left mouse | Push, deflect a shot, or throw the held item |
 | Hold right mouse | Pull and carry a prop. Release to drop it. |
 | Esc | Pause. Choose Resume, Restart, or Exit. |
@@ -50,7 +49,7 @@ See [System Explanation](SYSTEM_EXPLANATION.md) for the technical project overvi
 | --- | --- |
 | Panha (`panha`) | Enemy AI and models, five-wave encounter, pyramid gameplay integration, and combat fixes |
 | Svay Monirath | Player movement, physics-based abilities, combat integration, and tutorial tools |
-| `vanchhoeurngchao-cmyk` (`chhoeurng` branch) | Pyramid map and environment layout |
+| `vanchhoeurngchao-cmyk, Phally Sovanratana` (`chhoeurng` branch) | Pyramid map and environment layout |
 
 ## Asset and tutorial references
 
@@ -61,4 +60,4 @@ See [System Explanation](SYSTEM_EXPLANATION.md) for the technical project overvi
 
 ## Gameplay video
 
-Public gameplay video link pending.
+[Watch or download the REBOUND gameplay recording](https://github.com/Panhamad1/Game-Management-Project-Midterm/raw/master/Gameplay/Rebound-Gameplay.mp4) (MP4, 88 MB).
