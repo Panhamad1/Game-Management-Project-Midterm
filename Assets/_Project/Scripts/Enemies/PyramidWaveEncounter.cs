@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
+[DefaultExecutionOrder(100)]
 public sealed class PyramidWaveEncounter : MonoBehaviour
 {
-    private const int StartingLives = 3;
+    private const int StartingLives = 2;
     [SerializeField] private PlayerHealth player;
     [SerializeField] private GameObject exitDoor;
     [SerializeField] private BoxCollider exitThreshold;
@@ -51,8 +53,13 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
     private PlayerAbilityInput playerInput;
     private bool started;
     private bool ownsPause;
+    private bool paused;
+    private int lastPauseToggleFrame = -1;
+    private bool escapeEventHeld;
+    private static bool restartOnLoad;
     private float previousTimeScale;
     private double startedAt;
+    private double pausedAt;
     private float bestTime;
     private float finishTime;
     private bool recordBeaten;
@@ -93,6 +100,12 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
         playerInput = player.GetComponent<PlayerAbilityInput>();
         playerCamera = player.GetComponentInChildren<Camera>();
         bestTime = PlayerPrefs.GetFloat(BestTimeKey, 0f);
+        if (restartOnLoad)
+        {
+            restartOnLoad = false;
+            BeginRun();
+            return;
+        }
         PauseForMenu();
     }
 
@@ -100,10 +113,7 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
     {
         started = true;
         startedAt = Time.realtimeSinceStartupAsDouble;
-        RestoreTime();
-        if (playerInput != null) playerInput.enabled = true;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        ResumeControls();
         nextWaveAt = Time.time + 3f;
         SpawnSupply(new Vector2(9f, -10f));
         SpawnSupply(new Vector2(9f, -18f));
@@ -134,9 +144,45 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
         Time.timeScale = previousTimeScale;
     }
 
+    private void ResumeControls()
+    {
+        RestoreTime();
+        if (playerInput != null) playerInput.enabled = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void ResumeRun()
+    {
+        startedAt += Time.realtimeSinceStartupAsDouble - pausedAt;
+        paused = false;
+        ResumeControls();
+    }
+
+    private void TogglePause()
+    {
+        if (!started || defeated || escaped || lastPauseToggleFrame == Time.frameCount) return;
+        lastPauseToggleFrame = Time.frameCount;
+        if (paused)
+        {
+            ResumeRun();
+            return;
+        }
+
+        paused = true;
+        pausedAt = Time.realtimeSinceStartupAsDouble;
+        PauseForMenu();
+    }
+
     private void Update()
     {
         if (!started || defeated || escaped) return;
+        if (Keyboard.current?.escapeKey.wasPressedThisFrame == true)
+        {
+            TogglePause();
+            return;
+        }
+        if (paused) return;
         if (complete)
         {
             // Use the player's position as a fallback if a fast dash skips the trigger callback.
@@ -248,13 +294,24 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
 
     private void OnGUI()
     {
+        if (Event.current.keyCode == KeyCode.Escape)
+        {
+            if (Event.current.type == EventType.KeyUp) escapeEventHeld = false;
+            else if (Event.current.type == EventType.KeyDown && started && !defeated && !escaped)
+            {
+                if (!escapeEventHeld) TogglePause();
+                escapeEventHeld = true;
+                Event.current.Use();
+            }
+        }
+
         if (labelStyle == null)
         {
             labelStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 18 };
             titleStyle = new GUIStyle(labelStyle) { fontSize = 32, fontStyle = FontStyle.Bold };
             titleStyle.normal.textColor = new Color(1f, 0.78f, 0.40f);
         }
-        if (!started || escaped || defeated)
+        if (!started || escaped || defeated || paused)
         {
             DrawMenu();
             return;
@@ -313,7 +370,7 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
         float width = Mathf.Min(420f, Screen.width - 32f);
         Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - 270f) * 0.5f, width, 270f);
         GUI.Box(panel, GUIContent.none);
-        string title = escaped ? "VICTORY" : defeated ? "GAME OVER" : "REBOUND PYRAMID";
+        string title = paused ? "PAUSED" : escaped ? "VICTORY" : defeated ? "GAME OVER" : "REBOUND PYRAMID";
         GUI.Label(new Rect(panel.x, panel.y + 23f, width, 46f), title, titleStyle);
         if (escaped)
         {
@@ -322,36 +379,48 @@ public sealed class PyramidWaveEncounter : MonoBehaviour
         }
         else if (defeated)
         {
-            GUI.Label(new Rect(panel.x, panel.y + 72f, width, 32f), "You used all three lives.", labelStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 72f, width, 32f), "You ran out of lives.", labelStyle);
         }
         GUI.Label(new Rect(panel.x, panel.y + 108f, width, 30f),
             bestTime > 0f ? "Best time  " + FormatTime(bestTime) : "Best time  —", labelStyle);
 
         float buttonWidth = Mathf.Min(200f, width - 32f);
         float buttonX = panel.center.x - buttonWidth * 0.5f;
+        if (paused)
+        {
+            if (GUI.Button(new Rect(buttonX, panel.y + 130f, buttonWidth, 35f), "Resume")) ResumeRun();
+            if (GUI.Button(new Rect(buttonX, panel.y + 172f, buttonWidth, 35f), "Restart"))
+            {
+                restartOnLoad = true;
+                ReloadScene();
+            }
+            if (GUI.Button(new Rect(buttonX, panel.y + 214f, buttonWidth, 35f), "Exit")) ExitGame();
+            return;
+        }
         bool runEnded = escaped || defeated;
         if (GUI.Button(new Rect(buttonX, panel.y + 155f, buttonWidth, 40f), runEnded ? "Play Again" : "Play"))
         {
-            if (runEnded)
-            {
-                RestoreTime();
-                SceneManager.LoadScene(gameObject.scene.path);
-            }
-            else
-            {
-                BeginRun();
-            }
+            if (runEnded) ReloadScene();
+            else BeginRun();
         }
 
-        if (GUI.Button(new Rect(buttonX, panel.y + 207f, buttonWidth, 40f), "Exit"))
-        {
-            RestoreTime();
+        if (GUI.Button(new Rect(buttonX, panel.y + 207f, buttonWidth, 40f), "Exit")) ExitGame();
+    }
+
+    private void ReloadScene()
+    {
+        RestoreTime();
+        SceneManager.LoadScene(gameObject.scene.path);
+    }
+
+    private void ExitGame()
+    {
+        RestoreTime();
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+        UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
-        }
     }
 
     private static string FormatTime(float seconds)

@@ -14,6 +14,7 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
     [SerializeField, Min(0.1f)] private float roundSpeed = 42f;
     [SerializeField, Min(0f)] private float roundDamage = 60f;
     [SerializeField, Min(0f)] private float kineticDamage = 10f;
+    [SerializeField, Min(1f)] private float aimTurnSpeed = 240f;
 
     private SlowMotionAbility focus;
     private Camera playerCamera;
@@ -36,8 +37,12 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
     private EnemyVisualPart barrel;
     private EnemyVisualPart leftGlove;
     private EnemyVisualPart rightGlove;
+    private EnemyVisualPart weaponMuzzle;
+    private EnemyVisualPart leftSleeve;
+    private EnemyVisualPart rightSleeve;
     private float chargePose;
     private float recoil;
+    private float aimPitch;
 
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
@@ -56,6 +61,9 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
         barrel = new EnemyVisualPart(transform, "Relic rifle barrel");
         leftGlove = new EnemyVisualPart(transform, "Left glove");
         rightGlove = new EnemyVisualPart(transform, "Right glove");
+        weaponMuzzle = new EnemyVisualPart(transform, "Muzzle");
+        leftSleeve = new EnemyVisualPart(transform, "Left sleeve");
+        rightSleeve = new EnemyVisualPart(transform, "Right sleeve");
         if (player == null) player = FindFirstObjectByType<PlayerMovement>()?.transform;
         if (player != null)
         {
@@ -78,13 +86,23 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
 
     private void Update()
     {
-        if (health <= 0f || player == null || muzzle == null || laser == null ||
-            roundPrefab == null || Time.time < readyAt) return;
+        if (health <= 0f || player == null || muzzle == null || laser == null || roundPrefab == null) return;
 
         Vector3 aim = playerCamera != null ? playerCamera.transform.position : player.position;
         Vector3 offset = aim - muzzle.position;
         if (offset.sqrMagnitude < 0.001f || offset.sqrMagnitude > detectionRange * detectionRange ||
             Physics.Linecast(muzzle.position, aim, coverMask, QueryTriggerInteraction.Ignore))
+        {
+            locking = false;
+            laser.enabled = false;
+            UpdateAimPose(aim, false);
+            return;
+        }
+
+        UpdateAimPose(aim, Time.time >= readyAt);
+        if (Time.time < readyAt) return;
+        offset = aim - muzzle.position;
+        if (offset.sqrMagnitude < 0.001f || Physics.Linecast(muzzle.position, aim, coverMask, QueryTriggerInteraction.Ignore))
         {
             locking = false;
             laser.enabled = false;
@@ -106,7 +124,7 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
             warned = true;
             playerLook?.AddScreenShake(0.15f, offset.normalized);
         }
-        if (Time.time < firingAt) return;
+        if (Time.time < firingAt || Vector3.Angle(muzzle.forward, offset) > 7f) return;
 
         locking = false;
         laser.enabled = false;
@@ -117,19 +135,40 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
         recoil = 0.17f;
     }
 
+    private void UpdateAimPose(Vector3 target, bool aiming)
+    {
+        Vector3 heading = Vector3.ProjectOnPlane(target - transform.position, Vector3.up);
+        if (aiming && heading.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(heading),
+                aimTurnSpeed * Time.deltaTime);
+        }
+
+        Vector3 shoulder = new Vector3(0f, 1.55f, 0.12f);
+        Vector3 localAim = transform.InverseTransformPoint(target) - shoulder;
+        float targetPitch = aiming
+            ? -Mathf.Atan2(localAim.y, new Vector2(localAim.x, localAim.z).magnitude) * Mathf.Rad2Deg
+            : 0f;
+        aimPitch = Mathf.MoveTowards(aimPitch, targetPitch, aimTurnSpeed * Time.deltaTime);
+        chargePose = Mathf.MoveTowards(chargePose, aiming ? 1f : 0f, Time.deltaTime * 4f);
+        Vector3 weaponOffset = Vector3.down * (0.065f * (1f - chargePose)) + Vector3.back * recoil;
+        Quaternion pitch = Quaternion.Euler(aimPitch, 0f, 0f);
+        Vector3 pivotOffset = shoulder + pitch * (weaponOffset - shoulder);
+        lens.Orbit(pitch, pivotOffset, Quaternion.identity);
+        lensRim.Orbit(pitch, pivotOffset, Quaternion.identity);
+        lensRecess.Orbit(pitch, pivotOffset, Quaternion.identity);
+        rifle.Orbit(pitch, pivotOffset, Quaternion.identity);
+        barrel.Orbit(pitch, pivotOffset, Quaternion.identity);
+        leftGlove.Orbit(pitch, pivotOffset, Quaternion.identity);
+        rightGlove.Orbit(pitch, pivotOffset, Quaternion.identity);
+        weaponMuzzle.Orbit(pitch, pivotOffset, Quaternion.identity);
+        leftSleeve.Pose(weaponOffset * 0.3f, Quaternion.Euler(aimPitch * 0.6f, 0f, 0f));
+        rightSleeve.Pose(weaponOffset * 0.3f, Quaternion.Euler(aimPitch * 0.6f, 0f, 0f));
+        recoil = Mathf.MoveTowards(recoil, 0f, Time.deltaTime * 0.9f);
+    }
+
     private void LateUpdate()
     {
-        chargePose = Mathf.MoveTowards(chargePose, locking ? 1f : 0f, Time.deltaTime * 4f);
-        Vector3 weaponOffset = Vector3.down * (0.065f * (1f - chargePose)) + Vector3.back * recoil;
-        lens.Pose(weaponOffset, Quaternion.identity);
-        lensRim.Pose(weaponOffset, Quaternion.identity);
-        lensRecess.Pose(weaponOffset, Quaternion.identity);
-        rifle.Pose(weaponOffset, Quaternion.identity);
-        barrel.Pose(weaponOffset, Quaternion.identity);
-        leftGlove.Pose(weaponOffset, Quaternion.identity);
-        rightGlove.Pose(weaponOffset, Quaternion.identity);
-        recoil = Mathf.MoveTowards(recoil, 0f, Time.deltaTime * 0.9f);
-
         if (!locking || player == null || muzzle == null || laser == null || health <= 0f)
         {
             if (laser != null) laser.enabled = false;

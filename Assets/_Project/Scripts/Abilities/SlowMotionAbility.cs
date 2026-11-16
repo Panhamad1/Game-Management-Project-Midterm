@@ -55,6 +55,8 @@ public class SlowMotionAbility : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f) return;
+
         float dt = Time.unscaledDeltaTime;
 
         if (infiniteSlowMo)
