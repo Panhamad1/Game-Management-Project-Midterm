@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
-public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
+public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver, IEnemyHealthStatus
 {
     [SerializeField] private PlayerMovement player;
     [SerializeField] private Renderer armor;
@@ -29,6 +29,7 @@ public sealed class HulkLeaperEnemy : MonoBehaviour, IKineticTarget, IDamageRece
     private MaterialPropertyBlock appearance;
     private int floorMask;
     private float health;
+    public float HealthPercent => Mathf.Clamp01(health / maxHealth);
     private float stateUntil;
     private float landingDeadline;
     private float nextSlam;

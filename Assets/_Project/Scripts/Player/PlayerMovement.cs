@@ -178,6 +178,9 @@ public class PlayerMovement : MonoBehaviour
 
     // Checkpoint & Hazard
     [SerializeField] private Vector3 currentCheckpointPos = new Vector3(0f, 7.6f, -2.5f);
+    [SerializeField] private bool useAuthoredSpawn;
+
+    public bool UseAuthoredSpawn => useAuthoredSpawn;
     [SerializeField] private float voidKillY = -8.0f;
 
     // Timing
@@ -253,7 +256,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
-        EnsureSafeSpawnPosition();
+        if (useAuthoredSpawn) currentCheckpointPos = transform.position;
+        else EnsureSafeSpawnPosition();
     }
 
     /// <summary>

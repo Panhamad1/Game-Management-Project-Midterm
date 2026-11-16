@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
+public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver, IEnemyHealthStatus
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform muzzle;
@@ -21,6 +21,7 @@ public sealed class SniperEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
     private int coverMask;
     private int hitMask;
     private float health;
+    public float HealthPercent => Mathf.Clamp01(health / maxHealth);
     private float firingAt;
     private float readyAt;
     private bool locking;

@@ -38,7 +38,7 @@ A flying insect-like drone that hovers and lunges at you.
 
 ## 2. Rapid-Laser Sentry
 
-**Health**: 30 HP.
+**Health**: 50 HP.
 
 A stationary turret that locks onto you and fires rapid laser bursts.
 
@@ -50,7 +50,7 @@ A stationary turret that locks onto you and fires rapid laser bursts.
 ### How to Defeat It
 - **Deflect its bolts**: Stand in the line of fire and tap `LMB` (Push) as the bolts arrive. The bolts deflect back at the Sentry at **35 m/s**, flashing cyan and dealing double damage.
 - **Block with an Obsidian Slab**: Hold an Obsidian Slab with `RMB` as a riot shield. It absorbs all incoming laser bolts.
-- **Throw a Boulder at it**: Launching an Egyptian sandstone boulder into the turret deals heavy damage and knocks it backward.
+- **Throw a Boulder at it**: Launching a sandstone boulder deals up to **45 damage** and knocks the turret backward. Follow up with another hit to defeat a full-health turret.
 
 ---
 

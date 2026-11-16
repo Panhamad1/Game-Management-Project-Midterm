@@ -48,7 +48,7 @@ Throwable objects in the game have a soft ambient glow around them so you can se
 ## Enemies
 
 - **Swarmer (20 HP)**: Fast flying attacker. When you grab and throw a Swarmer, it has a 65% chance to explode into a high-yield plasma blast (`6.5m` blast radius, 75 damage). Struck by props, it flies backward like a ragdoll.
-- **Rapid Laser Sentry (30 HP)**: Fires 3-round bursts of red laser bolts. Deflect the bolts back with Push (`LMB`) or block them with a prop.
+- **Rapid Laser Sentry (50 HP)**: Fires 3-round bursts of red laser bolts. Deflect the bolts back with Push (`LMB`) or block them with a prop.
 - **Hulk Leaper (90 HP)**: Heavy armored brute. Slams the ground with a shockwave that shakes the screen if you are within 20m. Throwing blocks at him deals damage, flashes red, shows damage numbers, and staggers him backward.
 - **Sniper Enemy (10 HP)**: Tracks you with a red laser sight and fires a lethal bolt. Deflect his bolt back at him to defeat him instantly.
 

@@ -334,7 +334,7 @@ MonoBehaviour:
   head: {fileID: 1352336178386530782}
   muzzle: {fileID: 4623037922760518652}
   boltPrefab: {fileID: 8976644369083874840, guid: 686e666418db4a2469511cc3493b13f8, type: 3}
-  maxHealth: 30
+  maxHealth: 50
   detectionRange: 30
   turnSpeed: 180
   shotsPerBurst: 3
@@ -345,6 +345,7 @@ MonoBehaviour:
   aimSpread: 3
   pushDamage: 10
   crushDamage: 10
+  maxCrushDamage: 45
   sightMask:
     serializedVersion: 2
     m_Bits: 0

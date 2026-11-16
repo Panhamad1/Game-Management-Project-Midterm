@@ -20,6 +20,7 @@ public class PlayerHealth : MonoBehaviour, IDamageReceiver
     [Header("Health Settings")]
     [SerializeField, Min(10f)] private float maxHealth = 100f;
     [SerializeField] private float invulnerabilityWindow = 0.05f; // Short window to prevent physics engine double-ticks
+    [SerializeField] private bool useExternalLifeHandling;
 
     [Header("Debug Status")]
     [SerializeField] private float currentHealth;
@@ -185,8 +186,10 @@ public class PlayerHealth : MonoBehaviour, IDamageReceiver
         if (isDead) return;
         isDead = true;
 
-        Debug.LogWarning("[PlayerHealth] Player killed! Executing clean ability and position reset...", this);
         OnPlayerDied?.Invoke();
+        if (useExternalLifeHandling) return;
+
+        Debug.LogWarning("[PlayerHealth] Player killed! Executing clean ability and position reset...", this);
 
         // 1. Reset Traversal / Grapple / Prop Carry
         if (pullAbility != null)
@@ -220,6 +223,15 @@ public class PlayerHealth : MonoBehaviour, IDamageReceiver
         damageFlashAlpha = 0f;
 
         OnPlayerRespawned?.Invoke();
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
+    public void RefillAfterLifeLost()
+    {
+        if (!useExternalLifeHandling || !isDead) return;
+
+        currentHealth = maxHealth;
+        isDead = false;
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
@@ -262,11 +274,11 @@ public class PlayerHealth : MonoBehaviour, IDamageReceiver
             GUI.color = oldColor;
         }
 
-        // 2. Sleek Tactical Health HUD (Bottom Left)
+        // Health HUD in the top-left corner.
         float barWidth = 220f;
         float barHeight = 18f;
         float startX = 30f;
-        float startY = Screen.height - 50f;
+        float startY = 48f;
 
         // Background box
         GUI.Box(new Rect(startX - 5, startY - 24, barWidth + 10, barHeight + 32), "");

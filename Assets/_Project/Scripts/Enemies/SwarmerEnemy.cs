@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
-public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryTarget, IDamageReceiver
+public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryTarget, IDamageReceiver, IEnemyHealthStatus
 {
     [SerializeField] private Transform player;
     [SerializeField, Min(1f)] private float maxHealth = 20f;
@@ -29,6 +30,7 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
     private MaterialPropertyBlock appearance;
     private int environmentMask;
     private float health;
+    public float HealthPercent => Mathf.Clamp01(health / maxHealth);
     private float launchAt;
     private float resumeAt;
     private float projectileExpiresAt;
@@ -281,31 +283,43 @@ public sealed class SwarmerEnemy : MonoBehaviour, IKineticTarget, IKineticCarryT
 
     private void DetonatePlasmaExplosion(Vector3 origin)
     {
-        float explosionRadius = 6.5f;
-        float explosionDamage = 75.0f;
+        const float explosionRadius = 3.25f;
+        const float explosionDamage = 75f;
 
-        Collider[] hits = Physics.OverlapSphere(origin, explosionRadius);
-        for (int i = 0; i < hits.Length; i++)
+        var damageByTarget = new Dictionary<IDamageReceiver, float>();
+        var kineticTargets = new HashSet<IKineticTarget>();
+        var rigidbodies = new HashSet<Rigidbody>();
+        foreach (Collider hit in Physics.OverlapSphere(origin, explosionRadius, ~0, QueryTriggerInteraction.Ignore))
         {
-            if (hits[i].gameObject == gameObject) continue;
+            if (hit.transform.IsChildOf(transform)) continue;
 
-            IDamageReceiver receiver = hits[i].GetComponentInParent<IDamageReceiver>();
+            IDamageReceiver receiver = hit.GetComponentInParent<IDamageReceiver>();
             if (receiver != null)
             {
-                receiver.TakeDamage(explosionDamage, "SwarmerExplosion", GetInstanceID());
+                float distance = Vector3.Distance(origin, hit.ClosestPoint(origin));
+                float damageAtDistance = explosionDamage * (1f - Mathf.Clamp01(distance / explosionRadius));
+                damageByTarget.TryGetValue(receiver, out float previousDamage);
+                damageByTarget[receiver] = Mathf.Max(previousDamage, damageAtDistance);
+            }
+            else if (hit.GetComponentInParent<IKineticTarget>() is IKineticTarget kinetic)
+            {
+                kineticTargets.Add(kinetic);
             }
 
-            Rigidbody hitRb = hits[i].attachedRigidbody;
-            if (hitRb != null && !hitRb.isKinematic)
+            Rigidbody hitRb = hit.attachedRigidbody;
+            if (hitRb != null && !hitRb.isKinematic && rigidbodies.Add(hitRb))
             {
                 hitRb.AddExplosionForce(750f, origin, explosionRadius, 1.2f, ForceMode.Impulse);
             }
+        }
 
-            IKineticTarget kinetic = hits[i].GetComponentInParent<IKineticTarget>();
-            if (kinetic != null)
-            {
-                kinetic.OnPhysicsCrush(16f, gameObject);
-            }
+        foreach (var hit in damageByTarget)
+        {
+            if (hit.Value > 0f) hit.Key.TakeDamage(hit.Value, "SwarmerExplosion", GetInstanceID());
+        }
+        foreach (IKineticTarget target in kineticTargets)
+        {
+            target.OnPhysicsCrush(16f, gameObject);
         }
 
         FloatingDamageNumber.Spawn(origin + Vector3.up * 1.5f, explosionDamage, true);

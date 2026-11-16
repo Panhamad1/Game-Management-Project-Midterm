@@ -1,12 +1,12 @@
 using UnityEngine;
 
-public sealed class SentryEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
+public sealed class SentryEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver, IEnemyHealthStatus
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform head;
     [SerializeField] private Transform muzzle;
     [SerializeField] private EnemyProjectile boltPrefab;
-    [SerializeField, Min(1f)] private float maxHealth = 30f;
+    [SerializeField, Min(1f)] private float maxHealth = 50f;
     [SerializeField, Min(0f)] private float detectionRange = 30f;
     [SerializeField, Min(0f)] private float turnSpeed = 120f;
     [SerializeField, Min(1)] private int shotsPerBurst = 3;
@@ -17,10 +17,12 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
     [SerializeField, Min(0f)] private float aimSpread = 3f;
     [SerializeField, Min(0f)] private float pushDamage = 10f;
     [SerializeField, Min(0f)] private float crushDamage = 10f;
+    [SerializeField, Min(0f)] private float maxCrushDamage = 45f;
     [SerializeField] private LayerMask sightMask;
     [SerializeField] private LayerMask projectileMask;
 
     private float health;
+    public float HealthPercent => Mathf.Clamp01(health / maxHealth);
     private int shotsRemaining;
     private float nextShot;
     private float readyAt;
@@ -135,7 +137,7 @@ public sealed class SentryEnemy : MonoBehaviour, IKineticTarget, IDamageReceiver
             rb.isKinematic = false;
             rb.AddForce(hitDir * (speed * 8f), ForceMode.Impulse);
         }
-        TakeDamage(crushDamage * Mathf.Max(1.0f, speed / 8.0f));
+        TakeDamage(Mathf.Min(maxCrushDamage, crushDamage * Mathf.Max(1.0f, speed / 8.0f)));
     }
     public void OnPlayerSlideRam(float speed) { }
 

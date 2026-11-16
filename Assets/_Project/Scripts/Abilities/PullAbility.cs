@@ -55,6 +55,7 @@ public class PullAbility : MonoBehaviour
     private Rigidbody heldRigidbody;
     private InteractableProp heldProp;
     private Collider heldCollider;
+    private LayerMask heldOriginalExcludedLayers;
     private IKineticCarryTarget heldCarryTarget;
     private bool isPulling = false;
     private Vector3 initialHandLocalPos;
@@ -243,8 +244,13 @@ public class PullAbility : MonoBehaviour
                         if (carryTarget != null && !carryTarget.TryBeginCarry()) return;
 
                         heldRigidbody = targetRb;
+                        heldOriginalExcludedLayers = targetRb.excludeLayers;
                         heldProp = propHit.collider.GetComponentInParent<InteractableProp>();
-                        if (heldProp != null) heldProp.SetCarriedState(true);
+                        if (heldProp != null)
+                        {
+                            heldProp.SetCarriedState(true);
+                            targetRb.excludeLayers = heldOriginalExcludedLayers.value | LayerMask.GetMask("Enemies", "Enemy");
+                        }
                         heldCarryTarget = carryTarget;
                         heldRigidbody.isKinematic = true;
                         heldRigidbody.angularDamping = 6.0f;
@@ -521,15 +527,64 @@ public class PullAbility : MonoBehaviour
             }
         }
 
+        Vector3 nextPos = heldRigidbody.position;
+        int solidLayers = obstructionLayers | LayerMask.GetMask("Default");
+        BoxCollider box = heldCollider as BoxCollider;
+        Vector3 halfSize = heldCollider != null ? heldCollider.bounds.extents : Vector3.zero;
+        if (box != null)
+        {
+            Vector3 scale = box.transform.lossyScale;
+            halfSize = Vector3.Scale(box.size * 0.5f,
+                new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+        }
+        Vector3 castExtents = Vector3.Max(halfSize - Vector3.one * 0.025f, Vector3.one * 0.01f);
         if (distance > 0.02f)
         {
-            Vector3 nextPos = Vector3.MoveTowards(heldRigidbody.position, hoverTarget, classReelSpeed * Time.fixedDeltaTime);
+            nextPos = Vector3.MoveTowards(heldRigidbody.position, hoverTarget, classReelSpeed * Time.fixedDeltaTime);
+            if (heldCollider != null)
+            {
+                Quaternion orientation = box != null ? box.transform.rotation : Quaternion.identity;
+                Vector3 step = nextPos - heldRigidbody.position;
+                nextPos = heldRigidbody.position + ResolveHeldTravel(
+                    heldCollider.bounds.center, castExtents, orientation, step, solidLayers);
+            }
             heldRigidbody.MovePosition(nextPos);
         }
 
         // 3. Auto-align rotation to face forward with player camera (Riot Shielding)
         Quaternion targetRotation = playerCamera != null ? playerCamera.transform.rotation : transform.rotation;
-        heldRigidbody.MoveRotation(Quaternion.Slerp(heldRigidbody.rotation, targetRotation, 14f * Time.fixedDeltaTime));
+        Quaternion nextRotation = Quaternion.Slerp(heldRigidbody.rotation, targetRotation, 14f * Time.fixedDeltaTime);
+        if (box != null)
+        {
+            Quaternion rotationDelta = nextRotation * Quaternion.Inverse(heldRigidbody.rotation);
+            Vector3 center = nextPos + rotationDelta * (box.bounds.center - heldRigidbody.position);
+            if (Physics.CheckBox(center, castExtents,
+                    rotationDelta * box.transform.rotation, solidLayers, QueryTriggerInteraction.Ignore)) return;
+        }
+        heldRigidbody.MoveRotation(nextRotation);
+    }
+
+    private static Vector3 ResolveHeldTravel(Vector3 center, Vector3 extents, Quaternion orientation, Vector3 step, int solidLayers)
+    {
+        const float clearance = 0.04f;
+        Vector3 travel = Vector3.zero;
+        // A second sweep lets the crate follow the wall while still stopping at corners.
+        for (int sweep = 0; sweep < 2 && step.sqrMagnitude > 0.000001f; sweep++)
+        {
+            float length = step.magnitude;
+            Vector3 direction = step / length;
+            if (!Physics.BoxCast(center + travel, extents, direction, out RaycastHit wall, orientation,
+                    length + clearance, solidLayers, QueryTriggerInteraction.Ignore))
+            {
+                travel += step;
+                break;
+            }
+
+            Vector3 advance = direction * Mathf.Clamp(wall.distance - clearance, 0f, length);
+            travel += advance;
+            step = Vector3.ProjectOnPlane(step - advance, wall.normal);
+        }
+        return travel;
     }
 
     private void ReleaseHeldObject()
@@ -537,6 +592,7 @@ public class PullAbility : MonoBehaviour
         if (heldRigidbody != null)
         {
             heldRigidbody.isKinematic = false;
+            heldRigidbody.excludeLayers = heldOriginalExcludedLayers;
             heldRigidbody.angularDamping = 0.05f;
             if (playerMovement != null) heldRigidbody.linearVelocity = playerMovement.Velocity;
             if (heldProp != null) heldProp.SetCarriedState(false);

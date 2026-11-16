@@ -150,7 +150,7 @@ public static class PlayerRigBuilder
         PlayerAudioEffects audioEffects = root.AddComponent<PlayerAudioEffects>();
         PlayerMovement movement = root.AddComponent<PlayerMovement>();
         PlayerAbilityInput abilityInput = root.AddComponent<PlayerAbilityInput>();
-        PlayerMovementTelemetry telemetry = root.AddComponent<PlayerMovementTelemetry>();
+        root.AddComponent<PlayerMovementTelemetry>();
 
         // Ground Check sensor point
         GameObject groundCheck = new GameObject("GroundCheck");
@@ -246,10 +246,6 @@ public static class PlayerRigBuilder
         pullSO.FindProperty("abilityRayOrigin").objectReferenceValue = rayOrigin.transform;
         pullSO.FindProperty("handTetherOrigin").objectReferenceValue = rightHand.transform;
         pullSO.ApplyModifiedProperties();
-
-        SerializedObject teleSO = new SerializedObject(telemetry);
-        teleSO.FindProperty("showOverlay").boolValue = false;
-        teleSO.ApplyModifiedProperties();
 
         Selection.activeGameObject = root;
         Undo.RegisterCreatedObjectUndo(root, "Create Upgraded Player Rig");

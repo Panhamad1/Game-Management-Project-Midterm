@@ -43,6 +43,7 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
 
     private int lastImpactTargetId = 0;
     private float lastImpactTime = -10f;
+    private Vector3 incomingVelocity;
 
     private void Awake()
     {
@@ -233,11 +234,22 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
         ApplyGlowIndicator(on);
     }
 
+    private void FixedUpdate()
+    {
+        incomingVelocity = isCarried ? Vector3.zero : rb.linearVelocity;
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject == gameObject) return;
         // Held props must NEVER trigger crush damage or kinetic destruction while carried in hands
         if (isCarried) return;
+
+        // The enemy's own approach can make relative speed high even when this crate is stationary.
+        // Use the crate velocity from before contact resolution, which can shove the crate on impact.
+        ContactPoint contact = collision.GetContact(0);
+        float propApproachSpeed = -Vector3.Dot(incomingVelocity, contact.normal);
+        if (propApproachSpeed < crushSpeedThreshold) return;
 
         float relativeSpeed = collision.relativeVelocity.magnitude;
         if (relativeSpeed >= crushSpeedThreshold)
@@ -250,7 +262,6 @@ public class InteractableProp : MonoBehaviour, IKineticTarget
             IKineticTarget target = collision.collider.GetComponentInParent<IKineticTarget>();
             if (target != null && collision.rigidbody != rb)
             {
-                ContactPoint contact = collision.GetContact(0);
                 float mass = rb != null ? rb.mass : 5.0f;
                 float energy = 0.5f * mass * relativeSpeed * relativeSpeed;
                 bool isWeakPoint = collision.collider.gameObject.name.ToLower().Contains("weakpoint") || collision.collider.GetComponentInParent<HulkWeakPoint>() != null;

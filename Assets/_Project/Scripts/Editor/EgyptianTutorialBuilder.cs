@@ -102,6 +102,13 @@ public static class EgyptianTutorialBuilder
     [MenuItem("Tools/REBOUND/2. Spawn Player Only", false, 1)]
     public static void SpawnPlayerOnly()
     {
+        var player = Object.FindAnyObjectByType<PlayerMovement>();
+        if (player != null && player.gameObject.scene == SceneManager.GetActiveScene() && player.UseAuthoredSpawn)
+        {
+            Debug.Log("REBOUND: Using the player spawn already placed inside this scene.", player);
+            Selection.activeGameObject = player.gameObject;
+            return;
+        }
         SpawnAndPositionPlayer(new Vector3(0f, 1.2f, 2f));
         Debug.Log("REBOUND: Player Rig positioned safely at (0, 1.2, 2)!");
     }
