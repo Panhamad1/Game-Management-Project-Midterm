@@ -18,6 +18,7 @@ public class PlayerAbilityInput : MonoBehaviour
     [Header("Input Options")]
     [Tooltip("If true, Slow Motion toggles on/off with Shift/Q/F. If false, it requires holding.")]
     [SerializeField] private bool toggleSlowMotion = true;
+    [SerializeField] private bool allowCheckpointReset = true;
 
     private void Awake()
     {
@@ -76,7 +77,7 @@ public class PlayerAbilityInput : MonoBehaviour
             }
 
             // Quick Checkpoint Reset (R Key)
-            if (keyboard.rKey.wasPressedThisFrame)
+            if (allowCheckpointReset && keyboard.rKey.wasPressedThisFrame)
             {
                 movement.RespawnAtCheckpoint();
             }

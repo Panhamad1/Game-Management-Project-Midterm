@@ -40669,6 +40669,7 @@ MonoBehaviour:
   pullAbility: {fileID: 0}
   slowMotionAbility: {fileID: 0}
   toggleSlowMotion: 1
+  allowCheckpointReset: 0
 --- !u!114 &7000000000000183
 MonoBehaviour:
   m_ObjectHideFlags: 0

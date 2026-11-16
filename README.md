@@ -2,9 +2,13 @@
 
 **Mid-Term Group Project · Playable Obstacle Course**
 
-REBOUND is a first-person parkour and physics combat game built in Unity. You are sealed inside an Egyptian pyramid. Use movement and objects in the room to survive five increasingly difficult enemy waves, then walk through the exit to finish the run.
+REBOUND is a first-person parkour and physics combat game set inside an Egyptian pyramid.
 
-## How the game works
+## Objective
+
+Survive five enemy waves and walk through the opened exit to finish the run.
+
+## Rules
 
 Select **Play** to start the timer and the first wave countdown. The room’s pillars provide cover, and the stairway leads to a raised platform. Early waves start with flying Swarmers. Later waves add Sentries that fire bursts, Hulks that knock players back with ground slams, and Snipers that warn you with a red laser before shooting.
 
@@ -20,20 +24,23 @@ The HUD shows player and enemy health, remaining lives, wave progress, and elaps
 | Left Shift | Sprint |
 | C or Left Ctrl | Crouch, or slide while sprinting |
 | Space | Jump or kick off a wall |
-| Q | Dash. This input also toggles Focus in the current build. |
+| Q | Dash and toggle Focus |
+| F or middle mouse | Toggle Focus to slow the world |
 | Left mouse | Push, deflect a shot, or throw the held item |
 | Hold right mouse | Pull and carry a prop. Release to drop it. |
-| F or middle mouse | Toggle Focus to slow the world |
-| R | Return to the checkpoint |
 | Esc | Pause. Choose Resume, Restart, or Exit. |
 
-## Run the project
+## Play on Windows
+
+1. [Download REBOUND-Windows.zip](https://github.com/Panhamad1/Game-Management-Project-Midterm/raw/master/Builds/REBOUND-Windows.zip).
+2. Extract the entire ZIP, open the `REBOUND-Windows` folder, and run `REBOUND.exe`. Unity is optional for the Windows build.
+3. Select **Play** on the main menu.
+
+## Open the Unity project
 
 1. Clone the repository and use the default branch, `master`.
 2. Open the project in **Unity 6000.3.8f1** and let Unity import the project.
 3. Open [pyramid-map.unity](Assets/Scenes/pyramid-map.unity) and enter Play Mode. Choose **Play** on the in-game menu.
-
-For the Windows 64-bit build, [download REBOUND-Windows.zip](https://github.com/Panhamad1/Game-Management-Project-Midterm/raw/master/Builds/REBOUND-Windows.zip), extract the entire archive, open the `REBOUND-Windows` folder, and run `REBOUND.exe`. You can play without installing Unity.
 
 See [System Explanation](SYSTEM_EXPLANATION.md) for the technical project overview.
 
@@ -45,9 +52,13 @@ See [System Explanation](SYSTEM_EXPLANATION.md) for the technical project overvi
 | Svay Monirath | Player movement, physics-based abilities, combat integration, and tutorial tools |
 | `vanchhoeurngchao-cmyk` (`chhoeurng` branch) | Pyramid map and environment layout |
 
-The environment uses the imported [Dungeon Modular Pack](Assets/DungeonModularPack) and [Low Poly Dungeon FREE](Assets/LowPolyDungeonFree) assets. The latter includes its own [setup guide](Assets/LowPolyDungeonFree/Documentation.pdf). OpenAI Codex assisted with implementation, debugging, and documentation.
+## Asset and tutorial references
 
-## Submission links
+- [Dungeon Modular Pack](Assets/DungeonModularPack) and [Low Poly Dungeon FREE](Assets/LowPolyDungeonFree) provide the dungeon environment assets. The latter includes an [asset setup guide](Assets/LowPolyDungeonFree/Documentation.pdf).
+- The [REDLINER movement source register](docs/REBOUND_REDLINE_AGENT_PACK/REBOUND_REDLINE_AGENT_PACK/08_SOURCE_REGISTER.md) lists the movement tutorials and demonstrations used as design references.
+- The [REBOUND Player System Manual](docs/PLAYER_SYSTEM_MANUAL.md) covers movement and abilities. The [Enemy Gameplay Guide](docs/REBOUND_ENEMY_GAMEPLAY_GUIDE.md) explains the enemies and how to fight them.
+- OpenAI Codex assisted with implementation, debugging, and documentation.
 
-- [Unity project repository](https://github.com/Panhamad1/Game-Management-Project-Midterm)
-- **Gameplay recording** — Add the public YouTube or Google Drive link.
+## Gameplay video
+
+Public gameplay video link pending.
