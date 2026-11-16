@@ -1,8 +1,8 @@
-# REBOUND
+# Game Title: REBOUND
 
-**Mid-Term Group Project · Playable Obstacle Course**
+**Playable Obstacle Course**
 
-REBOUND is a first-person parkour and physics combat game set inside an Egyptian pyramid.
+REBOUND is a first-person physics combat game set inside an Egyptian pyramid.
 
 ## Objective
 
